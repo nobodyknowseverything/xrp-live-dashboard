@@ -10,7 +10,7 @@
     html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#000;color:#fff;font-family:system-ui,sans-serif}
     #map{
       height:500px;
-      background:url('https://i.imgur.com/8eK8e8b.jpg') center/cover no-repeat fixed;
+      background:url('https://i.imgur.com/8eK8e8b.jpg') center/cover no-repeat;
       position:relative;
       border-radius:0 0 1.5rem 1.5rem;
       overflow:hidden;
@@ -43,14 +43,17 @@
     <div id="map"><canvas id="arcs"></canvas></div>
   </div>
 
-  <!-- Order Book, Live Trades, ETFs, Clock — all 100% working (same as your last good version) -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Order Book</h2></div>
     <div class="overflow-x-auto max-h-96">
       <table class="w-full text-sm"><thead class="sticky top-0 bg-gray-800"><tr>
-        <th class="text-left p-3 font-medium text-green-400">Total</th><th class="text-right p-3 font-medium text-green-400">Size</th><th class="text-right p-3 font-medium text-green-400">Bid</th>
+        <th class="text-left p-3 font-medium text-green-400">Total</th>
+        <th class="text-right p-3 font-medium text-green-400">Size</th>
+        <th class="text-right p-3 font-medium text-green-400">Bid</th>
         <th class="text-left p-3 text-gray-400">│</th>
-        <th class="text-left p-3 font-medium text-red-400">Ask</th><th class="text-right p-3 font-medium text-red-400">Size</th><th class="text-right p-3 font-medium text-red-400">Total</th>
+        <th class="text-left p-3 font-medium text-red-400">Ask</th>
+        <th class="text-right p-3 font-medium text-red-400">Size</th>
+        <th class="text-right p-3 font-medium text-red-400">Total</th>
       </tr></thead><tbody id="bookBody" class="divide-y divide-gray-800"></tbody></table>
     </div>
   </div>
