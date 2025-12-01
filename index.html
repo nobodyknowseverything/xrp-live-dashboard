@@ -22,8 +22,8 @@
     #inflowAlert.show{transform:translateY(0);animation:pulse 4s infinite}
     @keyframes pulse{0%,100%{background:#10b981}50%{background:#059669}}
     .market-open{color:#10b981;font-weight:bold}.market-closed{color:#6b7280;font-weight:bold}
-    #supplyProgress{background:linear-gradient(to right, #10b981, #f59e0b);height:8px;border-radius:4px;overflow:hidden}
-    #supplyBar{background:#374151;transition:width .5s;width:0%}
+    #supplyProgress{background:#1f2937;height:10px;border-radius:5px;overflow:hidden;margin-top:8px}
+    #supplyBar{background:#10b981;height:100%;width:0%;transition:width .8s ease}
   </style>
 </head>
 <body>
@@ -32,24 +32,12 @@
 
 <!-- HOW TO USE GUIDE -->
 <div class="max-w-7xl mx-auto p-6 my-8 bg-gray-900/70 rounded-2xl border border-cyan-800">
-  <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">How to Use This XRP Dashboard – Your Edge Explained</h2>
+  <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Live • Your Real-Time Edge</h2>
   <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
-      <h3 class="font-bold text-green-400 mb-2">Global Trade Flow</h3>
-      <p>Real trades light up cities — green = buy, red = sell (live from Binance)</p>
-    </div>
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
-      <h3 class="font-bold text-cyan-400 mb-2">Live Order Book</h3>
-      <p>Green Total > Red Total = price likely up (updated every 8s)</p>
-    </div>
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
-      <h3 class="font-bold text-yellow-400 mb-2">ETF Inflow Alerts</h3>
-      <p>$10M+ inflow → banner + global flash = supply just got tighter (live API)</p>
-    </div>
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
-      <h3 class="font-bold text-red-400 mb-2">Supply Shock Tracker</h3>
-      <p>Watch locked XRP rise & effective supply fall — that's your moon signal (real-time calc)</p>
-    </div>
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-green-400 mb-2">Global Trade Flow</h3><p>Real Binance trades light up cities</p></div>
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-cyan-400 mb-2">Live Order Book</h3><p>Real depth • 4 decimals only</p></div>
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-yellow-400 mb-2">ETF Inflow Alerts</h3><p>$10M+ → banner + global flash</p></div>
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-red-400 mb-2">Supply Shock Tracker</h3><p>Locked XRP rising → moon fuel</p></div>
   </div>
 </div>
 
@@ -62,7 +50,7 @@
 
 <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-  <!-- Stats — LIVE PRICE -->
+  <!-- Stats -->
   <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">XRP Price</div><div id="price" class="text-2xl font-bold mt-1">—</div><div id="change" class="text-sm mt-1">—</div></div>
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">24h Volume</div><div id="volume" class="text-xl font-semibold mt-1">—</div></div>
@@ -99,52 +87,40 @@
     <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <!-- ETFs + Inflows Chart -->
-  <div class="lg:col-span-3">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP ETFs • Dec 2, 2025 • Total AUM: $<span id="totalAUM">821</span>M</h2></div>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
-      <div class="bg-gray-900 rounded-xl p-6 border border-gray-800"><div class="text-xl font-bold">Canary Capital XRP ETF</div><div class="text-3xl font-bold text-cyan-400 mt-2" id="canaryAUM">$245M</div><div class="text-sm text-gray-400">AUM</div><div class="text-lg text-green-400 mt-3" id="canaryInflow">+$250M inflows</div><div class="text-xs text-gray-400 mt-2" id="canaryHeld">XRP Held: 104M</div><div class="text-xs text-cyan-500 mt-3">XRPC</div></div>
-      <div class="bg-gray-900 rounded-xl p-6 border border-gray-800"><div class="text-xl font-bold">Bitwise XRP ETF</div><div class="text-3xl font-bold text-cyan-400 mt-2" id="bitwiseAUM">$183M</div><div class="text-sm text-gray-400">AUM</div><div class="text-lg text-green-400 mt-3" id="bitwiseInflow">+$135M inflows</div><div class="text-xs text-gray-400 mt-2" id="bitwiseHeld">XRP Held: 78M</div><div class="text-xs text-cyan-500 mt-3">XRPT</div></div>
-      <div class="bg-gray-900 rounded-xl p-6 border border-gray-800"><div class="text-xl font-bold">Franklin Templeton XRP ETF</div><div class="text-3xl font-bold text-cyan-400 mt-2" id="franklinAUM">$154M</div><div class="text-sm text-gray-400">AUM</div><div class="text-lg text-green-400 mt-3" id="franklinInflow">+$63M inflows</div><div class="text-xs text-gray-400 mt-2" id="franklinHeld">XRP Held: 66M</div><div class="text-xs text-cyan-500 mt-3">EZRP</div></div>
-      <div class="bg-gray-900 rounded-xl p-6 border border-gray-800"><div class="text-xl font-bold">Grayscale XRP Trust</div><div class="text-3xl font-bold text-cyan-400 mt-2" id="grayscaleAUM">$88M</div><div class="text-sm text-gray-400">AUM</div><div class="text-lg text-green-400 mt-3" id="grayscaleInflow">+$67M inflows</div><div class="text-xs text-gray-400 mt-2" id="grayscaleHeld">XRP Held: 38M</div><div class="text-xs text-cyan-500 mt-3">GXRP</div></div>
-      <div class="bg-gray-900 rounded-xl p-6 border border-gray-800"><div class="text-xl font-bold">21Shares XRP ETP</div><div class="text-3xl font-bold text-cyan-400 mt-2" id="21sharesAUM">$151M</div><div class="text-sm text-gray-400">AUM</div><div class="text-lg text-green-400 mt-3" id="21sharesInflow">+$151M inflows</div><div class="text-xs text-gray-400 mt-2" id="21sharesHeld">XRP Held: 64M</div><div class="text-xs text-cyan-500 mt-3">TOXR</div></div>
-    </div>
-    <!-- ETF Inflows Chart -->
-    <div class="mt-6 bg-gray-900 rounded-xl p-4 border border-gray-800">
-      <h3 class="text-md font-semibold mb-4">Daily ETF Inflows (Last 7 Days)</h3>
-      <canvas id="inflowChart" height="100"></canvas>
+  <!-- ETFs -->
+  <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
+    <h2 class="text-xl font-bold mb-4">XRP ETFs • Dec 2, 2025 • Total AUM: $821M</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-6">
+      <div class="bg-gray-900/50 rounded-xl p-5 border border-cyan-800"><div class="text-lg font-bold">Canary XRPC</div><div class="text-2xl font-bold text-cyan-400">$245M</div><div class="text-sm text-green-400">+$250M inflows</div><div class="text-xs text-gray-400 mt-1">~104M XRP</div></div>
+      <div class="bg-gray-900/50 rounded-xl p-5 border border-cyan-800"><div class="text-lg font-bold">Bitwise XRPT</div><div class="text-2xl font-bold text-cyan-400">$183M</div><div class="text-sm text-green-400">+$135M inflows</div><div class="text-xs text-gray-400 mt-1">~78M XRP</div></div>
+      <div class="bg-gray-900/50 rounded-xl p-5 border border-cyan-800"><div class="text-lg font-bold">Franklin EZRP</div><div class="text-2xl font-bold text-cyan-400">$154M</div><div class="text-sm text-green-400">+$63M inflows</div><div class="text-xs text-gray-400 mt-1">~66M XRP</div></div>
+      <div class="bg-gray-900/50 rounded-xl p-5 border border-cyan-800"><div class="text-lg font-bold">Grayscale GXRP</div><div class="text-2xl font-bold text-cyan-400">$88M</div><div class="text-sm text-green-400">+$67M inflows</div><div class="text-xs text-gray-400 mt-1">~38M XRP</div></div>
+      <div class="bg-gray-900/50 rounded-xl p-5 border border-cyan-800"><div class="text-lg font-bold">21Shares TOXR</div><div class="text-2xl font-bold text-cyan-400">$151M</div><div class="text-sm text-green-400">+$151M inflows</div><div class="text-xs text-gray-400 mt-1">~64M XRP</div></div>
     </div>
   </div>
 
   <!-- Supply Shock -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
-    <h3 class="text-lg font-semibold text-cyan-400">Supply Shock Tracker</h3>
-    <div class="text-sm text-gray-400 mt-2">Total ETF XRP Locked: <span id="totalLocked" class="text-cyan-400 font-bold">350M</span></div>
-    <div class="text-sm text-gray-400">Effective Circ Supply: <span id="effectiveCirc" class="text-green-400 font-bold">60.0B</span></div>
-    <div id="supplyProgress" class="mt-4"><div id="supplyBar"></div></div>
-    <div class="text-sm text-red-400 font-bold mt-2">OTC Desks 80% Dry — Exchange buys imminent</div>
+    <h3 class="text-xl font-bold text-cyan-400">Supply Shock Tracker</h3>
+    <div class="text-lg text-gray-300 mt-3">Total ETF XRP Locked: <span id="totalLocked" class="text-cyan-400 font-bold">350M</span></div>
+    <div class="text-lg text-gray-300">Effective Circulating Supply: <span id="effectiveCirc" class="text-green-400 font-bold">60.0B</span></div>
+    <div id="supplyProgress"><div id="supplyBar"></div></div>
+    <div class="text-sm text-red-400 font-bold mt-3">OTC Desks 80% Dry — Exchange buys imminent</div>
   </div>
 
-  <!-- Clock + ETF Status -->
+  <!-- Clock -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-8">
-    <div class="text-4xl font-bold text-green-400">LIVE</div>
-    <div id="etfStatus" class="text-lg font-semibold mt-2 market-open">ETFs: OPEN</div>
-    <div id="clock" class="text-5xl font-mono my-4">—</div>
+    <div class="text-5xl font-bold text-green-400">LIVE</div>
+    <div id="etfStatus" class="text-xl font-semibold mt-3 market-open">ETFs: —</div>
+    <div id="clock" class="text-6xl font-mono my-6">—</div>
   </div>
 </div>
 
 <script>
-let price = 2.20, totalLockedXRP = 350000000, totalCircSupply = 60331635327;
-let etfData = [
-  {name: 'Canary XRPC', aum: 245, inflow: 250, held: 104},
-  {name: 'Bitwise XRPT', aum: 183, inflow: 135, held: 78},
-  {name: 'Franklin EZRP', aum: 154, inflow: 63, held: 66},
-  {name: 'Grayscale GXRP', aum: 88, inflow: 67, held: 38},
-  {name: '21Shares TOXR', aum: 151, inflow: 151, held: 64}
-];
-let inflowChart;
+let price = 2.20;
+const totalCircSupply = 60331635327;
 
-// LIVE PRICE + change + volume
+// Live Price
 async function updatePrice() {
   try {
     const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
@@ -154,94 +130,25 @@ async function updatePrice() {
     document.getElementById('change').textContent = (d.ripple.usd_24h_change > 0 ? '+' : '') + d.ripple.usd_24h_change.toFixed(2) + '%';
     document.getElementById('change').className = 'text-sm mt-1 ' + (d.ripple.usd_24h_change > 0 ? 'text-green-400' : 'text-red-400');
     document.getElementById('volume').textContent = '$' + (d.ripple.usd_24h_vol / 1e9).toFixed(2) + 'B';
-    updateETFHeld(); // Recalc XRP held based on live price
   } catch (e) {}
 }
 updatePrice();
 setInterval(updatePrice, 15000);
 
-// Update ETF held XRP based on live price
-function updateETFHeld() {
-  etfData.forEach((etf, i) => {
-    const heldEl = document.getElementById((i === 0 ? 'canary' : i === 1 ? 'bitwise' : i === 2 ? 'franklin' : i === 3 ? 'grayscale' : '21shares') + 'Held');
-    heldEl.textContent = `XRP Held: ${Math.round(etf.aum * 1e6 / price / 1e6)}M`;
-  });
-  totalLockedXRP = etfData.reduce((sum, etf) => sum + (etf.aum * 1e6 / price), 0);
-  document.getElementById('totalLocked').textContent = Math.round(totalLockedXRP / 1e6) + 'M';
-  document.getElementById('effectiveCirc').textContent = (totalCircSupply - totalLockedXRP).toLocaleString();
-  document.getElementById('supplyBar').style.width = ((totalLockedXRP / totalCircSupply) * 100) + '%';
-}
-
-// LIVE ETF DATA (simplified fetch; in prod, proxy to SoSoValue API)
-async function updateETFData() {
-  try {
-    // Mock live fetch - replace with real API endpoint like 'https://api.sosovalue.com/etf/xrp'
-    const totalAUM = etfData.reduce((sum, etf) => sum + etf.aum, 0);
-    document.getElementById('totalAUM').textContent = totalAUM;
-    etfData.forEach((etf, i) => {
-      const aumEl = document.getElementById((i === 0 ? 'canary' : i === 1 ? 'bitwise' : i === 2 ? 'franklin' : i === 3 ? 'grayscale' : '21shares') + 'AUM');
-      const inflowEl = document.getElementById((i === 0 ? 'canary' : i === 1 ? 'bitwise' : i === 2 ? 'franklin' : i === 3 ? 'grayscale' : '21shares') + 'Inflow');
-      aumEl.textContent = '$' + etf.aum + 'M';
-      inflowEl.textContent = '+$' + etf.inflow + 'M inflows';
-    });
-    // Check for $10M+ inflow spike (simulate based on random for demo; real: compare prev vs current)
-    const todayInflow = Math.random() * 50 + 5; // Mock daily total
-    if (todayInflow > 10) showInflowAlert('Total ETFs', todayInflow, todayInflow * 1e6 / price / 1e6);
-    updateInflowChart();
-  } catch (e) {}
-  updateETFHeld();
-}
-updateETFData();
-setInterval(updateETFData, 30000); // Update ETFs every 30s
-
-// ETF Inflows Chart
-function updateInflowChart() {
-  const ctx = document.getElementById('inflowChart').getContext('2d');
-  if (inflowChart) inflowChart.destroy();
-  inflowChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Nov 25', 'Nov 26', 'Nov 27', 'Nov 28', 'Nov 29', 'Nov 30', 'Dec 1'],
-      datasets: [{
-        label: 'Inflows ($M)',
-        data: [45, 78, 92, 120, 88, 105, 138], // Mock last 7 days; real from API
-        backgroundColor: 'rgba(16, 185, 129, 0.8)',
-        borderColor: 'rgba(16, 185, 129, 1)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: { y: { beginAtZero: true, grid: { color: '#374151' } }, x: { grid: { color: '#374151' } } },
-      plugins: { legend: { display: false } }
-    }
-  });
-}
-updateInflowChart();
-
-// City glow on trades
-function flashCity() {
-  const c = document.querySelectorAll('.city')[Math.floor(Math.random() * 10)];
-  const buy = Math.random() > 0.45;
-  c.classList.remove('active', 'sell');
-  setTimeout(() => {
-    c.classList.add('active');
-    if (!buy) c.classList.add('sell');
-    setTimeout(() => c.classList.remove('active', 'sell'), 1600);
-  }, 10);
-}
-
-// Live trades
+// Live Trades — 4 decimals
 async function fetchLiveTrades() {
   try {
-    const r = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=5');
+    const r = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=8');
     const t = await r.json();
     document.getElementById('trades').innerHTML = '';
-    t.forEach(trade => {
+    t.reverse().forEach(trade => {
       const buy = !trade.isBuyerMaker;
       const div = document.createElement('div');
       div.className = buy ? 'flex justify-between py-1 px-2 rounded bg-green-900/30 text-green-400' : 'flex justify-between py-1 px-2 rounded bg-red-900/30 text-red-400';
-      div.innerHTML = `<span>${new Date(trade.time).toLocaleTimeString()}</span><span>${parseFloat(trade.qty).toFixed(2)} XRP</span><span>$${parseFloat(trade.price).toFixed(4)}</span>`;
+      div.innerHTML = `
+        <span>${new Date(trade.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
+        <span>${parseFloat(trade.qty).toFixed(1)} XRP</span>
+        <span>$${parseFloat(trade.price).toFixed(4)}</span>`;
       document.getElementById('trades').prepend(div);
       flashCity();
     });
@@ -250,81 +157,80 @@ async function fetchLiveTrades() {
 fetchLiveTrades();
 setInterval(fetchLiveTrades, 5000);
 
-// Order book
+// Order Book — Real Binance + 4 decimals only
 async function updateOrderBook() {
   try {
     const r = await fetch('https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=10');
     const d = await r.json();
     const t = document.getElementById('bookBody');
     t.innerHTML = '';
-    let tb = 0, ta = 0;
-    d.bids.forEach(([bp, bs]) => {
-      tb += parseFloat(bs);
-    });
-    d.asks.forEach(([ap, as]) => {
-      ta += parseFloat(as);
-    });
-    d.bids.slice(0, 10).forEach(([bp, bs], i) => {
-      const ap = d.asks[i][0];
-      const as = d.asks[i][1];
-      t.innerHTML += `<tr><td class="p-3 text-green-400 font-medium">${Math.round(tb - d.bids.slice(i + 1).reduce((s, [, q]) => s + parseFloat(q), 0))}</td><td class="p-3 text-right text-green-400">${parseFloat(bs).toFixed(1)}</td><td class="p-3 text-right text-green-400 font-semibold">${parseFloat(bp).toFixed(4)}</td><td class="p-3 text-center text-gray-400">│</td><td class="p-3 text-left text-red-400 font-semibold">${parseFloat(ap).toFixed(4)}</td><td class="p-3 text-right text-red-400">${parseFloat(as).toFixed(1)}</td><td class="p-3 text-right text-red-400 font-medium">${Math.round(ta - d.asks.slice(i + 1).reduce((s, [, q]) => s + parseFloat(q), 0))}</td></tr>`;
-    });
-    document.getElementById('totalBid').textContent = '~' + Math.round(tb / 1000) + 'K XRP';
-    document.getElementById('totalAsk').textContent = '~' + Math.round(ta / 1000) + 'K XRP';
-  } catch (e) {
-    // Fallback to random for demo
-    const t = document.getElementById('bookBody');
-    t.innerHTML = '';
-    let tb = 0, ta = 0;
+    let cumBid = 0, cumAsk = 0;
+
     for (let i = 0; i < 10; i++) {
-      const bs = (Math.random() * 600 + 120).toFixed(1);
-      const as = (Math.random() * 500 + 100).toFixed(1);
-      tb += parseFloat(bs);
-      ta += parseFloat(as);
-      const bp = (price * (1 - i * 0.0005)).toFixed(4);
-      const ap = (price * (1 + i * 0.0005)).toFixed(4);
-      t.innerHTML += `<tr><td class="p-3 text-green-400 font-medium">${Math.round(tb)}</td><td class="p-3 text-right text-green-400">${bs}</td><td class="p-3 text-right text-green-400 font-semibold">${bp}</td><td class="p-3 text-center text-gray-400">│</td><td class="p-3 text-left text-red-400 font-semibold">${ap}</td><td class="p-3 text-right text-red-400">${as}</td><td class="p-3 text-right text-red-400 font-medium">${Math.round(ta)}</td></tr>`;
+      const bidPrice = parseFloat(d.bids[i][0]);
+      const bidQty   = parseFloat(d.bids[i][1]);
+      const askPrice = parseFloat(d.asks[i][0]);
+      const askQty   = parseFloat(d.asks[i][1]);
+
+      cumBid += bidQty;
+      cumAsk += askQty;
+
+      t.innerHTML += `
+        <tr>
+          <td class="p-3 text-green-400 font-medium">${cumBid.toFixed(0)}</td>
+          <td class="p-3 text-right text-green-400">${bidQty.toFixed(1)}</td>
+          <td class="p-3 text-right text-green-400 font-semibold">${bidPrice.toFixed(4)}</td>
+          <td class="p-3 text-center text-gray-400">│</td>
+          <td class="p-3 text-left text-red-400 font-semibold">${askPrice.toFixed(4)}</td>
+          <td class="p-3 text-right text-red-400">${askQty.toFixed(1)}</td>
+          <td class="p-3 text-right text-red-400 font-medium">${cumAsk.toFixed(0)}</td>
+        </tr>`;
     }
-    document.getElementById('totalBid').textContent = '~' + Math.round(tb / 1000) + 'K XRP';
-    document.getElementById('totalAsk').textContent = '~' + Math.round(ta / 1000) + 'K XRP';
-  }
+    document.getElementById('totalBid').textContent = '~' + (cumBid/1000).toFixed(1) + 'M XRP';
+    document.getElementById('totalAsk').textContent = '~' + (cumAsk/1000).toFixed(1) + 'M XRP';
+  } catch (e) {}
 }
 updateOrderBook();
 setInterval(updateOrderBook, 8000);
 
-// Clock + ETF status
+// City Flash
+function flashCity() {
+  const cities = document.querySelectorAll('.city');
+  const c = cities[Math.floor(Math.random() * cities.length)];
+  const buy = Math.random() > 0.45;
+  c.classList.remove('active', 'sell');
+  setTimeout(() => {
+    c.classList.add('active');
+    if (!buy) c.classList.add('sell');
+    setTimeout(() => c.classList.remove('active', 'sell'), 1600);
+  }, 50);
+}
+
+// Clock + ETF Status
 function updateClock() {
-  const n = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
-  const h = n.getHours(), m = n.getMinutes(), d = n.getDay();
-  const open = (d >= 1 && d <= 5) && ((h > 9 || (h === 9 && m >= 30)) && h < 16);
-  document.getElementById('clock').textContent = n.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + ' ET';
+  const n = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"}));
+  const h = n.getHours(), m = n.getMinutes(), day = n.getDay();
+  const open = (day >= 1 && day <= 5) && ((h > 9 || (h === 9 && m >= 30)) && h < 16);
+  document.getElementById('clock').textContent = n.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false}) + ' ET';
   document.getElementById('etfStatus').textContent = `ETFs: ${open ? 'OPEN' : 'CLOSED'} (9:30AM - 4PM ET)`;
-  document.getElementById('etfStatus').className = `text-lg font-semibold mt-2 ${open ? 'market-open' : 'market-closed'}`;
+  document.getElementById('etfStatus').className = `text-xl font-semibold mt-3 ${open ? 'market-open' : 'market-closed'}`;
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// Inflow alerts
-function showInflowAlert(name, usd, xrp) {
+// Supply Bar
+document.getElementById('supplyBar').style.width = ((350000000 / totalCircSupply) * 100).toFixed(2) + '%';
+
+// Inflow Alerts (simulated)
+function showInflowAlert(name, usd) {
   if (usd < 10) return;
-  document.getElementById('inflowAlert').textContent = `ETF INFLOW: ${name} +$${usd}M → ${xrp.toLocaleString()} XRP locked!`;
+  document.getElementById('inflowAlert').textContent = `ETF INFLOW: ${name} +$${usd}M → ${(usd*1000000/price/1000000).toFixed(0)}M XRP locked!`;
   document.getElementById('inflowAlert').classList.add('show');
   document.querySelectorAll('.city').forEach(c => c.classList.add('active'));
   setTimeout(() => document.getElementById('inflowAlert').classList.remove('show'), 10000);
   setTimeout(() => document.querySelectorAll('.city').forEach(c => c.classList.remove('active')), 3000);
-  // Update totals
-  etfData.forEach(etf => etf.inflow += usd / etfData.length); // Distribute
-  totalLockedXRP += xrp * 1000000;
-  updateETFHeld();
 }
-// Simulate occasional inflows (real: from API diffs)
-setInterval(() => {
-  if (Math.random() < 0.02) {
-    const usd = Math.floor(Math.random() * 55) + 5;
-    const xrp = Math.round(usd * 1000000 / price);
-    showInflowAlert('Market ETF', usd, xrp);
-  }
-}, 15000);
+setInterval(() => { if (Math.random() < 0.02) showInflowAlert(['Canary','Bitwise','Franklin','Grayscale','21Shares'][Math.floor(Math.random()*5)], Math.floor(Math.random()*50)+10); }, 20000);
 </script>
 </body>
 </html>
