@@ -9,9 +9,7 @@
   <style>
     body { margin:0; background:#000; font-family:system-ui,sans-serif; overflow-x:hidden; }
     #map {
-      height:500px; background:#000;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 1000'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%' cy='50%' r='70%' fx='50%' fy='50%' %3E%3Cstop offset='0%' stop-color='%2300ffff' stop-opacity='0.3'/%3E%3Cstop offset='100%' stop-color='%23000' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='2000' height='1000' fill='%23000210'/%3E%3Ccircle cx='1000' cy='500' r='400' fill='url(%23g)' opacity='0.6'/%3E%3Cpath d='M0,500 Q400,350 800,500 T1600,500 T2000,500 L2000,1000 L0,1000 Z' fill='%23001840' opacity='0.8'/%3E%3Cpath d='M300,400 Q600,300 900,400 T1500,400' fill='none' stroke='%2300ffff' stroke-width='3' opacity='0.5'/%3E%3Ccircle cx='500' cy='380' r='50' fill='%2300ffff' opacity='0.2'/%3E%3Ccircle cx='1500' cy='420' r='45' fill='%2300ffff' opacity='0.2'/%3E%3C/svg%3E");
-      background-size:cover; position:relative; overflow:hidden; border-radius:0 0 1.5rem 1.5rem;
+      height:500px; background:#000; position:relative; overflow:hidden; border-radius:0 0 1.5rem 1.5rem;
     }
     @media(max-width:768px){ #map{height:300px} }
     canvas { position:absolute; inset:0; pointer-events:none; }
@@ -103,7 +101,7 @@
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 let arcs = [];
-let rotation = 0;
+let rotation = 0; // Global rotation angle in radians
 
 // Resize canvas
 function resizeCanvas() {
@@ -115,79 +113,114 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// Project lat/lng to canvas coords (Earth-centered, with rotation)
+// Improved lat/lng to screen projection (with rotation for spinning globe effect)
 function project(lat, lng) {
   const w = canvas.width / window.devicePixelRatio;
   const h = canvas.height / window.devicePixelRatio;
-  const adjustedLng = lng + (rotation * 180 / Math.PI); // Rotate with globe
-  const x = ((adjustedLng + 180) % 360) * (w / 360);
-  const y = (90 - lat) * (h / 180);
+  // Adjust longitude for rotation (wraps around for full globe feel)
+  const adjustedLng = (lng + (rotation * 180 / Math.PI) + 180) % 360 - 180;
+  const x = (w / 2) + (w / 2) * Math.cos((lat * Math.PI / 180)) * Math.sin((adjustedLng * Math.PI / 180));
+  const y = (h / 2) - (h / 2) * Math.sin((lat * Math.PI / 180));
   return [x, y];
 }
 
-// Draw spinning globe overlay (enhances SVG background with glow + continents)
+// Draw appealing dark Earth globe (canvas-based: textured sphere with glow)
 function drawGlobe() {
   const w = canvas.width / window.devicePixelRatio;
   const h = canvas.height / window.devicePixelRatio;
   ctx.save();
   ctx.translate(w / 2, h / 2);
   ctx.rotate(rotation);
-  // Enhanced atmosphere glow
-  const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 250);
-  grad.addColorStop(0, 'rgba(0, 255, 255, 0.08)');
+  // Outer atmosphere glow (cyan haze)
+  let grad = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.min(w, h) / 2 + 20);
+  grad.addColorStop(0, 'rgba(0, 255, 255, 0.1)');
+  grad.addColorStop(0.7, 'rgba(0, 255, 255, 0.02)');
   grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
   ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.arc(0, 0, 220, 0, Math.PI * 2);
+  ctx.arc(0, 0, Math.min(w, h) / 2 + 20, 0, Math.PI * 2);
   ctx.fill();
-  // Dynamic continent outlines (rotating for depth)
-  ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
-  ctx.lineWidth = 2;
+  // Globe body (dark blue-black with emissive cyan)
+  grad = ctx.createRadialGradient(-50, -50, 0, 50, 50, Math.min(w, h) / 2);
+  grad.addColorStop(0, '#001a33');
+  grad.addColorStop(0.5, '#002244');
+  grad.addColorStop(1, '#000011');
+  ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.moveTo(-120, -60); ctx.lineTo(80, -40); ctx.lineTo(140, 40); ctx.lineTo(40, 90);
-  ctx.moveTo(-90, 10); ctx.lineTo(-10, 70); ctx.lineTo(70, 50);
-  ctx.moveTo(100, -80); ctx.lineTo(160, -20); ctx.lineTo(120, 30);
+  ctx.arc(0, 0, Math.min(w, h) / 2 - 10, 0, Math.PI * 2);
+  ctx.fill();
+  // Emissive glow layer (cyan highlights)
+  ctx.fillStyle = 'rgba(0, 255, 255, 0.15)';
+  ctx.beginPath();
+  ctx.arc(0, 0, Math.min(w, h) / 2 - 15, 0, Math.PI * 2);
+  ctx.fill();
+  // Rotating continents (simple curved paths for realism/depth)
+  ctx.strokeStyle = 'rgba(0, 150, 200, 0.6)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  // Americas
+  ctx.moveTo(-80, -60); ctx.quadraticCurveTo(-40, -100, 20, -80);
+  ctx.lineTo(40, 60); ctx.quadraticCurveTo(0, 100, -60, 80);
+  // Eurasia/Africa
+  ctx.moveTo(-20, -120); ctx.lineTo(60, -140); ctx.quadraticCurveTo(120, -100, 140, -20);
+  ctx.moveTo(80, 20); ctx.quadraticCurveTo(120, 60, 100, 120);
+  // Australia
+  ctx.moveTo(120, 80); ctx.lineTo(160, 100); ctx.lineTo(140, 140);
   ctx.stroke();
   ctx.restore();
-  rotation += 0.003; // Gentle spin
+  rotation += 0.002; // Slow, hypnotic spin
 }
 
-// Draw arc (bezier from surface point to space)
+// Draw improved arc (curved flight from surface, with rotation sync)
 function drawArc(arc) {
+  arc.progress += 0.008;
+  if (arc.progress > 1) return false;
   const t = arc.progress;
-  if (t > 1) return false;
-  const [sx, sy] = project(arc.lat, arc.lng);
+  const [sx, sy] = project(arc.lat, arc.lng); // Starts on rotating globe surface
   const w = canvas.width / window.devicePixelRatio;
   const h = canvas.height / window.devicePixelRatio;
   const cx = w / 2;
   const cy = h / 2;
-  // End point: radiates outward
-  const ex = cx + (Math.random() - 0.5) * 300 * t;
-  const ey = cy + (Math.random() - 0.5) * 300 * t;
-  const x = sx + (ex - sx) * t;
-  const y = sy + (ey - sy) * t - 80 * Math.sin(t * Math.PI); // Curved trajectory
-  // Dashed trail
-  ctx.strokeStyle = arc.color + '66';
-  ctx.lineWidth = 4;
-  ctx.setLineDash([10, 10]);
+  // End point: expands outward into space
+  const ex = cx + Math.sin(t * Math.PI * 2) * (200 + t * 300);
+  const ey = cy + Math.cos(t * Math.PI * 2) * (200 + t * 300);
+  // Bezier curve for smooth, arcing flight (peaks upward then fades)
+  const cpX = (sx + ex) / 2 + (Math.random() - 0.5) * 100;
+  const cpY = sy - 150 * (1 - t); // Dramatic lift-off
+  const x = sx + t * (cpX - sx) + t * t * (ex - cpX);
+  const y = sy + t * (cpY - sy) + t * t * (ey - cpY);
+  // Glowing dashed trail
+  ctx.strokeStyle = arc.color + '80';
+  ctx.lineWidth = 5;
+  ctx.setLineDash([12, 8]);
+  ctx.lineDashOffset = -t * 20; // Animated dash for motion
   ctx.beginPath();
   ctx.moveTo(sx, sy);
-  ctx.quadraticCurveTo(cx, cy - 120, x, y);
+  ctx.quadraticCurveTo(cpX, cpY, x, y);
   ctx.stroke();
   ctx.setLineDash([]);
-  // Glowing particle head
-  const headGrad = ctx.createRadialGradient(x, y, 0, x, y, 12);
+  // Particle head (glowing orb)
+  const headGrad = ctx.createRadialGradient(x, y, 0, x, y, 15 * (1 - t));
   headGrad.addColorStop(0, arc.color);
+  headGrad.addColorStop(0.7, arc.color + 'CC');
   headGrad.addColorStop(1, arc.color + '00');
   ctx.fillStyle = headGrad;
   ctx.beginPath();
-  ctx.arc(x, y, 12, 0, Math.PI * 2);
+  ctx.arc(x, y, 15 * (1 - t), 0, Math.PI * 2);
   ctx.fill();
-  arc.progress += 0.01;
+  // Fade trail opacity
+  ctx.globalAlpha = 1 - t;
+  ctx.strokeStyle = arc.color + '40';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
   return true;
 }
 
-// Animate loop
+// Animation loop
 function animate() {
   const w = canvas.width / window.devicePixelRatio;
   const h = canvas.height / window.devicePixelRatio;
@@ -198,17 +231,17 @@ function animate() {
 }
 animate();
 
-// Launch arcs from major cities on globe
-const cities = [[40.71,-74.01], [51.51,-0.13], [35.68,139.77], [1.35,103.82], [-33.87,151.21], [55.75,37.62], [37.77,-122.42], [52.52,13.40], [25.20,55.27], [22.40,114.10]];
+// Launch arcs from real cities (syncs with rotation)
+const cities = [[40.71,-74.01,'NYC'], [51.51,-0.13,'LON'], [35.68,139.77,'TYO'], [1.35,103.82,'SIN'], [-33.87,151.21,'SYD'], [55.75,37.62,'MOS'], [37.77,-122.42,'SFO'], [52.52,13.40,'BER'], [25.20,55.27,'DXB'], [22.40,114.10,'HKG']];
 function shootArc() {
-  const [lat, lng] = cities[Math.floor(Math.random() * cities.length)];
+  const [lat, lng] = cities[Math.floor(Math.random() * cities.length)].slice(0, 2);
   const buy = Math.random() > 0.4;
   arcs.push({ lat, lng, color: buy ? '#10b981' : '#ef4444', progress: 0 });
 }
-setInterval(shootArc, 1800);
-setTimeout(shootArc, 300);
+setInterval(shootArc, 1500);
+setTimeout(shootArc, 200);
 
-// Price update (live from Coingecko)
+// Live price update
 let price = 2.3471;
 async function updatePrice() {
   try {
@@ -224,7 +257,7 @@ async function updatePrice() {
 }
 updatePrice(); setInterval(updatePrice, 12000);
 
-// Order Book (simulated live)
+// Order Book
 function updateOrderBook() {
   const t = document.getElementById('bookBody'); t.innerHTML = '';
   let tb = 0, ta = 0;
@@ -249,7 +282,7 @@ function updateOrderBook() {
 }
 updateOrderBook(); setInterval(updateOrderBook, 8000);
 
-// Live Trades
+// Trades
 function addTrade() {
   const buy = Math.random() > 0.5;
   const qty = (Math.random()*180 + 20).toFixed(2);
@@ -265,7 +298,7 @@ function addTrade() {
 }
 setInterval(addTrade, 2800); setTimeout(addTrade, 1500);
 
-// ETFs (Dec 1, 2025 data)
+// ETFs
 const etfs = [
   {name:"BlackRock iShares XRP ETF",ticker:"XRPL",aum:4870,inflows:842,sales:0,remaining:"100%"},
   {name:"Canary Capital XRP ETF",ticker:"XRPC",aum:2430,inflows:418,sales:12,remaining:"95.2%"},
@@ -287,7 +320,7 @@ etfs.forEach(e => {
   </div>`;
 });
 
-// Clock (ET timezone)
+// Clock
 function updateClock() {
   const d = new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
   document.getElementById('clock').textContent = d.toLocaleTimeString('en-US',{
