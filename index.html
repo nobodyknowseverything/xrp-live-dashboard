@@ -17,7 +17,8 @@
     canvas{position:absolute;inset:0;pointer-events:none}
   </style>
 </head>
-<body>
+<body class="min-h-screen">
+<!-- Your full header and layout — unchanged -->
 <div class="border-b border-gray-800">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
     <h1 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live Order Book</h1>
@@ -26,6 +27,7 @@
 </div>
 
 <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Stats, Map, Order Book, Trades — all your working code -->
   <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">XRP Price</div><div id="price" class="text-2xl font-bold mt-1">$2.2000</div><div id="change" class="text-sm mt-1">--</div></div>
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">24h Volume</div><div id="volume" class="text-xl font-semibold mt-1">$--B</div></div>
@@ -41,6 +43,7 @@
     <div id="map"><canvas id="arcs"></canvas></div>
   </div>
 
+  <!-- Live Order Book + Live Trades — unchanged -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Order Book</h2></div>
     <div class="overflow-x-auto max-h-96">
@@ -61,14 +64,10 @@
     <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <!-- FULLY RESTORED & LIVE-UPDATING ETF SECTION -->
+  <!-- YOUR ORIGINAL ETF SECTION — FULLY RESTORED + LIVE UPDATING -->
   <div class="lg:col-span-3">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP Spot ETFs (Dec 1, 2025)</h2></div>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4" id="etfContainer"></div>
-    <div class="mt-6 text-center text-sm text-gray-500">
-      Daily Sales: <span id="dailySales" class="text-2xl font-bold text-cyan-400">$0M</span> | 
-      Remaining XRP: <span id="remainingXRP" class="text-2xl font-bold text-green-400">1,000,000,000</span>
-    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-6" id="etfContainer"></div>
   </div>
 
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-6">
@@ -78,7 +77,7 @@
 </div>
 
 <script>
-  // Arcs + Price + Order Book + Trades (your working code)
+  // Arcs, Price, Order Book, Trades — your working code (unchanged)
   const canvas=document.getElementById('arcs'),ctx=canvas.getContext('2d');let arcs=[];
   function resizeCanvas(){const r=canvas.parentElement.getBoundingClientRect();canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);}resizeCanvas();window.addEventListener('resize',resizeCanvas);
   const cities=[[40.71,-74.01],[51.51,-0.13],[35.68,139.77],[1.35,103.82],[-33.87,151.21],[55.75,37.62],[37.77,-122.42],[52.52,13.40],[25.20,55.27],[22.40,114.10]];
@@ -97,53 +96,45 @@
   function addTrade(){const buy=Math.random()>0.5,qty=(Math.random()*100+10).toFixed(1),tp=(price*(1+(Math.random()-0.5)*0.002)).toFixed(4);const el=document.createElement('div');el.className=buy?'flex justify-between py-1 px-2 rounded bg-green-900/30 text-green-400':'flex justify-between py-1 px-2 rounded bg-red-900/30 text-red-400';el.innerHTML=`<span>${new Date().toLocaleTimeString()}</span><span>${qty} XRP</span><span>$${tp}</span>`;document.getElementById('trades').prepend(el);if(document.getElementById('trades').children.length>20)document.getElementById('trades').lastChild.remove();shootArc();}
   setInterval(addTrade,3000);setTimeout(addTrade,1000);
 
-  // ETFs + Live Daily Sales & Remaining XRP
-  let dailySales = 0;
-  let remainingXRP = 1000000000; // 1 billion
-  let lastDay = null;
-
+  // ORIGINAL ETF SECTION — EACH HAS ITS OWN INFLOWS, SALES, REMAINING XRP
   const etfs = [
-    {name:'Canary XRP ETF',ticker:'XRPC',inflows:0,aum:231},
-    {name:'Bitwise XRP ETF',ticker:'XRPT',inflows:0,aum:183},
-    {name:'Franklin XRP ETF',ticker:'EZRP',inflows:0,aum:154},
-    {name:'Grayscale XRP Trust',ticker:'GXRP',inflows:0,aum:88},
-    {name:'21Shares XRP ETP',ticker:'AXRP',inflows:0,aum:19}
+    {name:'Canary XRP ETF',ticker:'XRPC',aum:231,inflows:243,sales:0,xrp:231000000},
+    {name:'Bitwise XRP ETF',ticker:'XRPT',aum:183,inflows:135,sales:0,xrp:183000000},
+    {name:'Franklin XRP ETF',ticker:'EZRP',aum:154,inflows:63,sales:0,xrp:154000000},
+    {name:'Grayscale XRP Trust',ticker:'GXRP',aum:88,inflows:67,sales:0,xrp:88000000},
+    {name:'21Shares XRP ETP',ticker:'AXRP',aum:19,inflows:5,sales:0,xrp:19000000}
   ];
 
-  function updateETFs() {
+  function updateETFs(){
     const now = new Date();
-    const today = now.toLocaleDateString('en-US', {timeZone:'America/New_York', year:'numeric', month:'numeric', day:'numeric'});
-    if (lastDay !== today) {
-      dailySales = 0;
-      remainingXRP = 1000000000;
-      lastDay = today;
+    const today = now.toLocaleDateString('en-US',{timeZone:'America/New_York'});
+    if (localStorage.getItem('etfDay') !== today) {
+      etfs.forEach(e=>e.sales=0);
+      localStorage.setItem('etfDay',today);
     }
 
-    // Random daily inflows + sales
-    etfs.forEach(e => {
-      const inflow = Math.floor(Math.random() * 50) + 10;
-      e.inflows += inflow;
-      dailySales += inflow;
+    etfs.forEach(e=>{
+      const sale = Math.floor(Math.random()*500000);
+      e.sales += sale;
+      e.xrp = Math.max(0, e.xrp - sale);
     });
-    remainingXRP = Math.max(0, 1000000000 - dailySales);
-
-    document.getElementById('dailySales').textContent = '$' + dailySales.toLocaleString() + 'M';
-    document.getElementById('remainingXRP').textContent = remainingXRP.toLocaleString();
 
     document.getElementById('etfContainer').innerHTML = '';
-    etfs.forEach(e => {
-      const d = document.createElement('div');
-      d.className = 'bg-gray-900 rounded-xl p-6 border border-gray-800 space-y-3';
-      d.innerHTML = `
-        <div class="font-semibold">${e.name} (${e.ticker})</div>
-        <div class="text-2xl font-bold text-cyan-300">+$${e.inflows}M</div>
-        <div class="text-sm text-gray-400">AUM: $${e.aum + e.inflows}M</div>
+    etfs.forEach(e=>{
+      const d=document.createElement('div');
+      d.className='bg-gray-900 rounded-xl p-6 border border-gray-800 space-y-3 text-left';
+      d.innerHTML=`
+        <div class="font-bold text-lg">${e.name} <span class="text-cyan-400">(${e.ticker})</span></div>
+        <div class="text-2xl font-bold text-green-400">+$${e.inflows}M Inflows</div>
+        <div class="text-sm text-gray-400">Daily Sales: <span class="text-red-400">$${ (e.sales/1000000).toFixed(1) }M</span></div>
+        <div class="text-sm text-gray-400">Remaining XRP: <span class="text-yellow-400">${e.xrp.toLocaleString()}</span></div>
+        <div class="text-xs text-gray-500">AUM: $${e.aum}M</div>
       `;
       document.getElementById('etfContainer').appendChild(d);
     });
   }
   updateETFs();
-  setInterval(updateETFs, 15000); // Updates every 15 seconds
+  setInterval(updateETFs,15000);
 
   function updateClock(){const d=new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));document.getElementById('clock').textContent=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})+' ET';document.getElementById('status').textContent='LIVE';document.getElementById('status').className='text-3xl font-bold text-green-400';}
   setInterval(updateClock,1000);updateClock();
