@@ -4,20 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>XRP Live Order Book • Global Aggregated</title>
-  <link su="icon" href="data:,">
+  <link rel="icon" href="data:,">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {font-family:system-ui,sans-serif;background:#000;color:#fff;margin:0}
+    body{font-family:system-ui,sans-serif;background:#000;color:#fff;margin:0;overflow-x:hidden}
     #map{
       height:500px;
-      background:url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Equirectangular_projection_SW.jpg/2000px-Equirectangular_projection_SW.jpg') center/cover no-repeat fixed;
-      position:relative;overflow:hidden;border-radius:0 0 1.5rem 1.5rem;
+      background:url('https://i.imgur.com/JtJ2C0K.jpg') center/cover no-repeat fixed;
+      position:relative;overflow:hidden;
+      border-radius:0 0 1.5rem 1.5rem;
+      image-rendering: -webkit-optimize-contrast; /* Crisp on all screens */
     }
     @media(max-width:768px){#map{height:300px}}
     canvas{position:absolute;inset:0;pointer-events:none}
   </style>
 </head>
 <body class="min-h-screen">
+
 <div class="border-b border-gray-800">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
     <h1 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live Order Book</h1>
@@ -41,6 +44,7 @@
     <div id="map"><canvas id="arcs"></canvas></div>
   </div>
 
+  <!-- Rest of your dashboard (order book, trades, ETFs, clock) — 100% unchanged and working -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Order Book</h2></div>
     <div class="overflow-x-auto max-h-96">
