@@ -10,11 +10,9 @@
     body { margin:0; background:#000; font-family:system-ui,sans-serif; overflow-x:hidden; }
     #map { 
       height:500px; 
-      background:#000; 
-      position:relative; 
-      overflow:hidden; 
-      border-radius:0 0 1.5rem 1.5rem;
-      display:flex; align-items:center; justify-content:center;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 500'%3E%3Crect width='1000' height='500' fill='%23000108'/%3E%3Cpath d='M300 250 Q350 200 400 250 T500 250 T600 250 L600 500 L300 500 Z' fill='none' stroke='%2300cccc' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M450 150 Q500 100 550 150 T650 150 L650 300 L450 300 Z' fill='none' stroke='%2300cccc' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M550 250 Q600 200 650 250 T700 250 L700 350 L550 350 Z' fill='none' stroke='%2300cccc' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M200 300 Q250 250 300 300 T400 300 L400 400 L200 400 Z' fill='none' stroke='%2300cccc' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M100 200 Q150 150 200 200 T300 200 L300 250 L100 250 Z' fill='none' stroke='%2300cccc' stroke-width='1.5' opacity='0.4'/%3E%3Ccircle cx='500' cy='250' r='200' fill='none' stroke='%2300ffff' stroke-width='0.5' opacity='0.2'/%3E%3C/svg%3E");
+      background-size: contain; background-position: center; background-repeat: no-repeat;
+      position:relative; overflow:hidden; border-radius:0 0 1.5rem 1.5rem;
     }
     @media(max-width:768px){ #map{height:300px} }
     canvas { position:absolute; inset:0; pointer-events:none; }
@@ -106,23 +104,7 @@ let ctx = canvas.getContext('2d');
 let arcs = [];
 let rotation = 0;
 
-// Inline faint world map SVG (real country outlines, dark theme)
-const worldMap = document.createElement('svg');
-worldMap.setAttribute('viewBox', '0 0 360 180');
-worldMap.setAttribute('width', '100%');
-worldMap.setAttribute('height', '100%');
-worldMap.innerHTML = `
-  <rect width="360" height="180" fill="#000011"/>
-  <path d="M100,90 Q120,70 140,90 T200,90 T260,90 L260,180 L100,180 Z" fill="none" stroke="#003366" stroke-width="0.5" opacity="0.3"/> <!-- Americas -->
-  <path d="M180,60 Q200,40 220,60 T280,60 T320,60 L320,120 L180,120 Z" fill="none" stroke="#003366" stroke-width="0.5" opacity="0.3"/> <!-- Eurasia -->
-  <path d="M240,100 Q260,80 280,100 T300,100 L300,130 L240,130 Z" fill="none" stroke="#003366" stroke-width="0.5" opacity="0.3"/> <!-- Australia -->
-  <path d="M150,40 Q170,20 190,40 T210,40 L210,60 L150,60 Z" fill="none" stroke="#003366" stroke-width="0.5" opacity="0.3"/> <!-- Europe -->
-  <circle cx="300" cy="70" r="8" fill="#00ffff" opacity="0.1"/> <!-- Asia glow -->
-  <circle cx="120" cy="100" r="6" fill="#00ffff" opacity="0.1"/> <!-- Africa glow -->
-`;
-document.getElementById('map').appendChild(worldMap); // Static faint map, centered
-
-// Resize & center canvas overlay
+// Resize canvas
 function resizeCanvas() {
   const rect = canvas.parentElement.getBoundingClientRect();
   canvas.width = rect.width * window.devicePixelRatio;
@@ -132,58 +114,55 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// Project city to centered map coords
+// Project city to map coords (centered, with gentle rotation)
 function project(lat, lng) {
   const w = canvas.width / window.devicePixelRatio;
   const h = canvas.height / window.devicePixelRatio;
-  const mapRadius = Math.min(w, h) * 0.4;
-  const adjustedLng = lng + rotation * 20; // Gentle rotation sync
-  const x = (w / 2) + (adjustedLng / 360) * mapRadius * 2;
-  const y = (h / 2) + ((lat / 180) * mapRadius * -1.2);
+  const adjustedLng = lng + rotation * 10;
+  const x = (w / 2) + (adjustedLng / 360) * w * 0.6;
+  const y = (h / 2) + (lat / 180) * h * 0.5;
   return [x, y];
 }
 
-// Draw subtle shine (atmosphere + glow)
+// Draw shine overlay
 function drawShine() {
   const w = canvas.width / window.devicePixelRatio;
   const h = canvas.height / window.devicePixelRatio;
-  const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.min(w, h)/1.5);
-  grad.addColorStop(0, 'rgba(0, 255, 255, 0.05)');
+  const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.min(w, h));
+  grad.addColorStop(0, 'rgba(0, 255, 255, 0.03)');
   grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, w, h);
-  rotation += 0.001; // Subtle spin
+  rotation += 0.002;
 }
 
-// Draw trade arc (from country origin, curved to space)
+// Draw arc
 function drawArc(arc) {
   const t = arc.progress;
   if (t > 1) return false;
   const [sx, sy] = project(arc.lat, arc.lng);
   const w = canvas.width / window.devicePixelRatio;
   const h = canvas.height / window.devicePixelRatio;
-  const ex = w / 2 + (Math.random() - 0.5) * w * 0.8;
-  const ey = h / 2 + (Math.random() - 0.5) * h * 0.8 - 100 * Math.sin(t * Math.PI); // Shine curve
+  const ex = w / 2 + (Math.random() - 0.5) * w * 0.7;
+  const ey = h / 2 + (Math.random() - 0.5) * h * 0.7 - 80 * Math.sin(t * Math.PI);
   const x = sx + (ex - sx) * t;
   const y = sy + (ey - sy) * t;
-  // Glowing trail
-  ctx.strokeStyle = arc.color + '80';
+  ctx.strokeStyle = arc.color + '99';
   ctx.lineWidth = 3;
-  ctx.setLineDash([8, 8]);
+  ctx.setLineDash([6, 6]);
   ctx.beginPath();
   ctx.moveTo(sx, sy);
-  ctx.quadraticCurveTo(w/2, h/2 - 80, x, y);
+  ctx.quadraticCurveTo(w/2, h/2 - 60, x, y);
   ctx.stroke();
   ctx.setLineDash([]);
-  // Shining head
-  const headGrad = ctx.createRadialGradient(x, y, 0, x, y, 10);
+  const headGrad = ctx.createRadialGradient(x, y, 0, x, y, 8);
   headGrad.addColorStop(0, arc.color);
   headGrad.addColorStop(1, arc.color + '00');
   ctx.fillStyle = headGrad;
   ctx.beginPath();
-  ctx.arc(x, y, 10, 0, Math.PI * 2);
+  ctx.arc(x, y, 8, 0, Math.PI * 2);
   ctx.fill();
-  arc.progress += 0.015;
+  arc.progress += 0.012;
   return true;
 }
 
@@ -196,28 +175,28 @@ function animate() {
 }
 animate();
 
-// Cities/countries for real trades
+// Cities for trades
 const cities = [
-  {lat: 40.71, lng: -74.01, country: 'USA'}, // NYC
-  {lat: 51.51, lng: -0.13, country: 'UK'},   // London
-  {lat: 35.68, lng: 139.77, country: 'Japan'}, // Tokyo
+  {lat: 40.71, lng: -74.01, country: 'USA'},
+  {lat: 51.51, lng: -0.13, country: 'UK'},
+  {lat: 35.68, lng: 139.77, country: 'Japan'},
   {lat: 1.35, lng: 103.82, country: 'Singapore'},
-  {lat: -33.87, lng: 151.21, country: 'Australia'}, // Sydney
-  {lat: 55.75, lng: 37.62, country: 'Russia'}, // Moscow
-  {lat: 37.77, lng: -122.42, country: 'USA'}, // SFO
-  {lat: 52.52, lng: 13.40, country: 'Germany'}, // Berlin
-  {lat: 25.20, lng: 55.27, country: 'UAE'}, // Dubai
-  {lat: 22.40, lng: 114.10, country: 'China'}  // Hong Kong
+  {lat: -33.87, lng: 151.21, country: 'Australia'},
+  {lat: 55.75, lng: 37.62, country: 'Russia'},
+  {lat: 37.77, lng: -122.42, country: 'USA'},
+  {lat: 52.52, lng: 13.40, country: 'Germany'},
+  {lat: 25.20, lng: 55.27, country: 'UAE'},
+  {lat: 22.40, lng: 114.10, country: 'China'}
 ];
 function shootArc() {
   const city = cities[Math.floor(Math.random() * cities.length)];
   const buy = Math.random() > 0.45;
   arcs.push({ lat: city.lat, lng: city.lng, color: buy ? '#10b981' : '#ef4444', progress: 0 });
 }
-setInterval(shootArc, 2000);
-setTimeout(shootArc, 500);
+setInterval(shootArc, 1800);
+setTimeout(shootArc, 400);
 
-// Price, book, trades, ETFs, clock (unchanged, live)
+// Price, book, trades, ETFs, clock (live)
 let price = 2.3471;
 async function updatePrice() {
   try {
@@ -258,7 +237,7 @@ function addTrade() {
   div.innerHTML = `<span>${new Date().toLocaleTimeString()}</span><span>${qty} XRP</span><span>$${tp}</span>`;
   document.getElementById('trades').prepend(div);
   if (document.getElementById('trades').children.length > 30) document.getElementById('trades').lastChild.remove();
-  if (Math.random() > 0.3) shootArc(); // Sync arcs to trades
+  if (Math.random() > 0.3) shootArc();
 }
 setInterval(addTrade, 2800); setTimeout(addTrade, 1500);
 
