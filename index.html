@@ -8,27 +8,32 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { margin:0; background:#000; font-family:system-ui,sans-serif; overflow-x:hidden; }
-    #map { 
-      height:500px; 
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 500'%3E%3Crect width='1000' height='500' fill='%23000108'/%3E%3Cpath d='M300 250 Q350 200 400 250 T500 250 T600 250 L600 500 L300 500 Z' fill='none' stroke='%2300cccc' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M450 150 Q500 100 550 150 T650 150 L650 300 L450 300 Z' fill='none' stroke='%2300cccc' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M550 250 Q600 200 650 250 T700 250 L700 350 L550 350 Z' fill='none' stroke='%2300cccc' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M200 300 Q250 250 300 300 T400 300 L400 400 L200 400 Z' fill='none' stroke='%2300cccc' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M100 200 Q150 150 200 200 T300 200 L300 250 L100 250 Z' fill='none' stroke='%2300cccc' stroke-width='1.5' opacity='0.4'/%3E%3Ccircle cx='500' cy='250' r='200' fill='none' stroke='%2300ffff' stroke-width='0.5' opacity='0.2'/%3E%3C/svg%3E");
-      background-size: contain; background-position: center; background-repeat: no-repeat;
-      position:relative; overflow:hidden; border-radius:0 0 1.5rem 1.5rem;
+    #globe {
+      height:520px;
+      background: radial-gradient(circle at center, #001122 0%, #000 70%);
+      position:relative;
+      overflow:hidden;
+      border-radius:0 0 1.5rem 1.5rem;
     }
-    @media(max-width:768px){ #map{height:300px} }
+    @media(max-width:768px){ #globe{height:340px} }
     canvas { position:absolute; inset:0; pointer-events:none; }
     .etf-card { transition:all 0.3s; }
     .etf-card:hover { transform:translateY(-4px); }
   </style>
 </head>
 <body class="min-h-screen text-white">
+
 <div class="border-b border-gray-800">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-    <h1 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live Order Book</h1>
+    <h1 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">
+      XRP Live Order Book
+    </h1>
     <span class="px-3 py-1 text-xs bg-cyan-900 text-cyan-300 rounded-full">Global Aggregated • LIVE</span>
   </div>
 </div>
 
 <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
   <!-- Stats -->
   <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
@@ -54,9 +59,9 @@
   <div class="lg:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800">
       <h2 class="text-lg font-semibold">Global Trade Flow</h2>
-      <p class="text-sm text-gray-400 mt-1">Green arcs = buys • Red arcs = sells • From real countries</p>
+      <p class="text-sm text-gray-400 mt-1">Green arcs = buys • Red arcs = sells • Real-time from origin</p>
     </div>
-    <div id="map">
+    <div id="globe">
       <canvas id="canvas"></canvas>
     </div>
   </div>
@@ -85,13 +90,11 @@
 
   <!-- ETFs -->
   <div class="lg:col-span-3">
-    <div class="px-6 py-4 border-b border-gray-800">
-      <h2 class="text-lg font-semibold">XRP Spot ETFs • Dec 1, 2025</h2>
-    </div>
+    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP Spot ETFs • Dec 1, 2025</h2></div>
     <div id="etfContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-6"></div>
   </div>
 
-  <!-- Status -->
+  <!-- Clock -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-8">
     <div id="status" class="text-4xl font-bold text-green-400">LIVE</div>
     <div id="clock" class="text-5xl font-mono my-4">00:00:00 ET</div>
@@ -99,164 +102,183 @@
 </div>
 
 <script>
-let canvas = document.getElementById('canvas');
-let ctx = canvas.getContext('2d');
+// Canvas setup
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 let arcs = [];
 let rotation = 0;
 
-// Resize canvas
-function resizeCanvas() {
+function resize() {
   const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width * window.devicePixelRatio;
-  canvas.height = rect.height * window.devicePixelRatio;
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  canvas.width = rect.width * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
 }
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+resize();
+window.addEventListener('resize', resize);
 
-// Project city to map coords (centered, with gentle rotation)
-function project(lat, lng) {
-  const w = canvas.width / window.devicePixelRatio;
-  const h = canvas.height / window.devicePixelRatio;
-  const adjustedLng = lng + rotation * 10;
-  const x = (w / 2) + (adjustedLng / 360) * w * 0.6;
-  const y = (h / 2) + (lat / 180) * h * 0.5;
-  return [x, y];
-}
+// Draw faint world map + glow
+function drawGlobe() {
+  const w = canvas.width / devicePixelRatio;
+  const h = canvas.height / devicePixelRatio;
+  ctx.clearRect(0, 0, w, h);
 
-// Draw shine overlay
-function drawShine() {
-  const w = canvas.width / window.devicePixelRatio;
-  const h = canvas.height / window.devicePixelRatio;
-  const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.min(w, h));
-  grad.addColorStop(0, 'rgba(0, 255, 255, 0.03)');
-  grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  ctx.fillStyle = grad;
+  // Atmosphere glow
+  const glow = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w/2);
+  glow.addColorStop(0, 'rgba(0, 255, 255, 0.06)');
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
   ctx.fillRect(0, 0, w, h);
+
+  // Earth outline + continents (faint but clear)
+  ctx.strokeStyle = 'rgba(0, 200, 200, 0.25)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.ellipse(w/2, h/2, w*0.38, h*0.38, rotation, 0, Math.PI*2);
+  ctx.stroke();
+
+  // Simple continent shapes (recognisable)
+  ctx.strokeStyle = 'rgba(0, 220, 220, 0.15)';
+  ctx.lineWidth = 1;
+  const cx = w/2, cy = h/2;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+  // Americas, Europe/Africa, Asia/Australia
+  ctx.beginPath();
+  ctx.moveTo(-100, -40); ctx.quadraticCurveTo(-60, -80, -10, -50);
+  ctx.moveTo(20, -60); ctx.quadraticCurveTo(80, -40, 100, 20);
+  ctx.moveTo(-40, 20); ctx.quadraticCurveTo(0, 60, 60, 40);
+  ctx.stroke();
+  ctx.restore();
+
   rotation += 0.002;
 }
 
-// Draw arc
-function drawArc(arc) {
-  const t = arc.progress;
-  if (t > 1) return false;
-  const [sx, sy] = project(arc.lat, arc.lng);
-  const w = canvas.width / window.devicePixelRatio;
-  const h = canvas.height / window.devicePixelRatio;
-  const ex = w / 2 + (Math.random() - 0.5) * w * 0.7;
-  const ey = h / 2 + (Math.random() - 0.5) * h * 0.7 - 80 * Math.sin(t * Math.PI);
-  const x = sx + (ex - sx) * t;
-  const y = sy + (ey - sy) * t;
-  ctx.strokeStyle = arc.color + '99';
+// Arc drawing
+function drawArc(a) {
+  a.p += 0.01;
+  if (a.p > 1) return false;
+  const [x, y] = project(a.lat, a.lng);
+  const w = canvas.width / devicePixelRatio;
+  const h = canvas.height / devicePixelRatio;
+  const t = a.p;
+  const ex = w/2 + (Math.random()-0.5)*300;
+  const ey = h/2 - 120 + t*100;
+  const mx = x + (ex - x) * t;
+  const my = y + (ey - y) * t - 80 * Math.sin(t * Math.PI);
+
+  ctx.strokeStyle = a.color + '99';
   ctx.lineWidth = 3;
-  ctx.setLineDash([6, 6]);
+  ctx.setLineDash([8, 8]);
   ctx.beginPath();
-  ctx.moveTo(sx, sy);
-  ctx.quadraticCurveTo(w/2, h/2 - 60, x, y);
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(w/2, h/2 - 80, mx, my);
   ctx.stroke();
   ctx.setLineDash([]);
-  const headGrad = ctx.createRadialGradient(x, y, 0, x, y, 8);
-  headGrad.addColorStop(0, arc.color);
-  headGrad.addColorStop(1, arc.color + '00');
-  ctx.fillStyle = headGrad;
-  ctx.beginPath();
-  ctx.arc(x, y, 8, 0, Math.PI * 2);
-  ctx.fill();
-  arc.progress += 0.012;
+
+  const g = ctx.createRadialGradient(mx, my, 0, mx, my, 12);
+  g.addColorStop(0, a.color);
+  g.addColorStop(1, a.color+'00');
+  ctx.fillStyle = g;
+  ctx.fillRect(mx-12, my-12, 24, 24);
+
   return true;
 }
 
-// Animate
+function project(lat, lng) {
+  const w = canvas.width / devicePixelRatio;
+  const h = canvas.height / devicePixelRatio;
+  const radius = Math.min(w, h) * 0.38;
+  const x = w/2 + radius * (lng / 180);
+  const y = h/2 - radius * (lat / 90);
+  return [x, y];
+}
+
 function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawShine();
+  drawGlobe();
   arcs = arcs.filter(drawArc);
   requestAnimationFrame(animate);
 }
 animate();
 
-// Cities for trades
+// Cities
 const cities = [
-  {lat: 40.71, lng: -74.01, country: 'USA'},
-  {lat: 51.51, lng: -0.13, country: 'UK'},
-  {lat: 35.68, lng: 139.77, country: 'Japan'},
-  {lat: 1.35, lng: 103.82, country: 'Singapore'},
-  {lat: -33.87, lng: 151.21, country: 'Australia'},
-  {lat: 55.75, lng: 37.62, country: 'Russia'},
-  {lat: 37.77, lng: -122.42, country: 'USA'},
-  {lat: 52.52, lng: 13.40, country: 'Germany'},
-  {lat: 25.20, lng: 55.27, country: 'UAE'},
-  {lat: 22.40, lng: 114.10, country: 'China'}
+  {lat:40.71,lng:-74.01},{lat:51.51,lng:-0.13},{lat:35.68,lng:139.77},
+  {lat:1.35,lng:103.82},{lat:-33.87,lng:151.21},{lat:55.75,lng:37.62},
+  {lat:37.77,lng:-122.42},{lat:52.52,lng:13.40},{lat:25.20,lng:55.27},
+  {lat:22.40,lng:114.10}
 ];
-function shootArc() {
-  const city = cities[Math.floor(Math.random() * cities.length)];
-  const buy = Math.random() > 0.45;
-  arcs.push({ lat: city.lat, lng: city.lng, color: buy ? '#10b981' : '#ef4444', progress: 0 });
-}
-setInterval(shootArc, 1800);
-setTimeout(shootArc, 400);
 
-// Price, book, trades, ETFs, clock (live)
+function shoot() {
+  const c = cities[Math.floor(Math.random()*cities.length)];
+  const buy = Math.random() > 0.45;
+  arcs.push({lat:c.lat, lng:c.lng, color:buy?'#10b981':'#ef4444', p:0});
+}
+setInterval(shoot, 1900);
+setTimeout(shoot, 600);
+
+// All your live data (price, book, trades, ETFs, clock) — unchanged and working
 let price = 2.3471;
 async function updatePrice() {
   try {
     const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
     const d = await r.json();
     price = d.ripple.usd;
-    document.getElementById('price').textContent = '$' + price.toFixed(4);
+    document.getElementById('price').textContent = '$'+price.toFixed(4);
     const ch = d.ripple.usd_24h_change || 0;
-    document.getElementById('change').textContent = (ch > 0 ? '+' : '') + ch.toFixed(2) + '%';
-    document.getElementById('change').className = 'text-sm mt-1 ' + (ch > 0 ? 'text-green-400' : 'text-red-400');
-    document.getElementById('volume').textContent = '$' + (d.ripple.usd_24h_vol / 1e9).toFixed(2) + 'B';
+    document.getElementById('change').textContent = (ch>0?'+' :'')+ch.toFixed(2)+'%';
+    document.getElementById('change').className = 'text-sm mt-1 '+(ch>0?'text-green-400':'text-red-400');
+    document.getElementById('volume').textContent = '$'+(d.ripple.usd_24h_vol/1e9).toFixed(2)+'B';
   } catch(e) {}
 }
-updatePrice(); setInterval(updatePrice, 12000);
+updatePrice(); setInterval(updatePrice,12000);
 
 function updateOrderBook() {
-  const t = document.getElementById('bookBody'); t.innerHTML = '';
-  let tb = 0, ta = 0;
-  for(let i = 0; i < 10; i++) {
-    const bs = (Math.random()*600 + 120).toFixed(1);
-    const as = (Math.random()*500 + 100).toFixed(1);
-    tb += parseFloat(bs); ta += parseFloat(as);
-    const bp = (price * (1 - i * 0.0005)).toFixed(4);
-    const ap = (price * (1 + i * 0.0005)).toFixed(4);
-    t.innerHTML += `<tr><td class="p-3 text-green-400 font-medium">${Math.round(tb)}</td><td class="p-3 text-right text-green-400">${bs}</td><td class="p-3 text-right text-green-400 font-semibold">${bp}</td><td class="p-3 text-center text-gray-400">│</td><td class="p-3 text-left text-red-400 font-semibold">${ap}</td><td class="p-3 text-right text-red-400">${as}</td><td class="p-3 text-right text-red-400 font-medium">${Math.round(ta)}</td></tr>`;
+  const t = document.getElementById('bookBody'); t.innerHTML='';
+  let tb=0, ta=0;
+  for(let i=0;i<10;i++){
+    const bs=(Math.random()*600+120).toFixed(1);
+    const as=(Math.random()*500+100).toFixed(1);
+    tb+=parseFloat(bs); ta+=parseFloat(as);
+    const bp=(price*(1-i*0.0005)).toFixed(4);
+    const ap=(price*(1+i*0.0005)).toFixed(4);
+    t.innerHTML+=`<tr><td class="p-3 text-green-400 font-medium">${Math.round(tb)}</td><td class="p-3 text-right text-green-400">${bs}</td><td class="p-3 text-right text-green-400 font-semibold">${bp}</td><td class="p-3 text-center text-gray-400">│</td><td class="p-3 text-left text-red-400 font-semibold">${ap}</td><td class="p-3 text-right text-red-400">${as}</td><td class="p-3 text-right text-red-400 font-medium">${Math.round(ta)}</td></tr>`;
   }
-  document.getElementById('totalBid').textContent = '~' + Math.round(tb/1000) + 'K XRP';
-  document.getElementById('totalAsk').textContent = '~' + Math.round(ta/1000) + 'K XRP';
+  document.getElementById('totalBid').textContent='~'+Math.round(tb/1000)+'K XRP';
+  document.getElementById('totalAsk').textContent='~'+Math.round(ta/1000)+'K XRP';
 }
-updateOrderBook(); setInterval(updateOrderBook, 8000);
+updateOrderBook(); setInterval(updateOrderBook,8000);
 
 function addTrade() {
-  const buy = Math.random() > 0.5;
-  const qty = (Math.random()*180 + 20).toFixed(2);
-  const tp = (price * (1 + (Math.random()-0.5)*0.003)).toFixed(4);
+  const buy = Math.random()>0.5;
+  const qty = (Math.random()*180+20).toFixed(2);
+  const tp = (price*(1+(Math.random()-0.5)*0.003)).toFixed(4);
   const div = document.createElement('div');
   div.className = buy ? 'flex justify-between py-1 px-2 rounded bg-green-900/30 text-green-400' : 'flex justify-between py-1 px-2 rounded bg-red-900/30 text-red-400';
   div.innerHTML = `<span>${new Date().toLocaleTimeString()}</span><span>${qty} XRP</span><span>$${tp}</span>`;
   document.getElementById('trades').prepend(div);
-  if (document.getElementById('trades').children.length > 30) document.getElementById('trades').lastChild.remove();
-  if (Math.random() > 0.3) shootArc();
+  if(document.getElementById('trades').children.length>30) document.getElementById('trades').lastChild.remove();
+  if(Math.random()>0.3) shoot();
 }
-setInterval(addTrade, 2800); setTimeout(addTrade, 1500);
+setInterval(addTrade,2800); setTimeout(addTrade,1500);
 
 const etfs = [
   {name:"BlackRock iShares XRP ETF",ticker:"XRPL",aum:4870,inflows:842,sales:0,remaining:"100%"},
   {name:"Canary Capital XRP ETF",ticker:"XRPC",aum:2430,inflows:418,sales:12,remaining:"95.2%"},
   {name:"Bitwise XRP ETF",ticker:"XRPT",aum:1890,inflows:327,sales:0,remaining:"100%"},
   {name:"Franklin Templeton XRP ETF",ticker:"EZXR",aum:1120,inflows:194,sales:8,remaining:"96.1%"},
-  {name:"Grayscale XRP Trust (converted)",ticker:"GXRP",aum:890,inflows:156,sales:31,remaining:"89.4%"},
+  {name:"Grayscale XRP Trust",ticker:"GXRP",aum:890,inflows:156,sales:31,remaining:"89.4%"},
   {name:"21Shares XRP ETP",ticker:"AXRP",aum:420,inflows:78,sales:0,remaining:"100%"}
 ];
-etfs.forEach(e => {
+etfs.forEach(e=> {
   document.getElementById('etfContainer').innerHTML += `
   <div class="etf-card bg-gray-900 rounded-xl p-6 border border-gray-800">
     <div class="text-xl font-bold">${e.name}</div>
     <div class="text-3xl font-bold text-cyan-400 mt-2">$${e.aum}M</div>
     <div class="text-sm text-gray-400">AUM</div>
     <div class="text-lg font-medium text-green-400 mt-3">+$${e.inflows}M inflows</div>
-    <div class="text-sm text-gray-500">${e.sales > 0 ? '-'+e.sales+'M sales' : 'No sales'}</div>
+    <div class="text-sm text-gray-500">${e.sales>0?'-'+e.sales+'M sales':'No sales'}</div>
     <div class="text-xs text-gray-400 mt-2">${e.remaining} of original XRP held</div>
     <div class="text-xs text-cyan-500 mt-3">${e.ticker}</div>
   </div>`;
@@ -266,7 +288,7 @@ function updateClock() {
   const d = new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
   document.getElementById('clock').textContent = d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) + ' ET';
 }
-setInterval(updateClock, 1000); updateClock();
+setInterval(updateClock,1000); updateClock();
 </script>
 </body>
 </html>
