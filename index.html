@@ -65,6 +65,8 @@
       background: linear-gradient(135deg, #001122 0%, #000 100%);
       border: 1px solid #00ffff20;
     }
+    .otc-warning { color: #ff6b35; font-weight: bold; }
+    .ranking-badge { background: #00ffff20; color: #00ffff; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
   </style>
 </head>
 <body class="min-h-screen text-white">
@@ -141,17 +143,19 @@
     <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <!-- ETFs with Supply Shock -->
+  <!-- ETFs with Ranking & Supply Shock -->
   <div class="lg:col-span-3">
     <div class="px-6 py-4 border-b border-gray-800">
-      <h2 class="text-lg font-semibold">XRP Spot ETFs • Dec 1, 2025</h2>
+      <h2 class="text-lg font-semibold">XRP Spot ETFs • Dec 1, 2025 <span class="ranking-badge">#1 Pressure: Canary ($250M inflows)</span></h2>
     </div>
     <div id="etfContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-6"></div>
     <div id="supplyShock" class="bg-gray-900 rounded-xl p-4 border border-gray-800 mt-4">
       <h3 class="text-md font-semibold text-cyan-400">Supply Shock Tracker</h3>
-      <div class="text-sm text-gray-400 mt-2">Total ETF XRP Locked: <span id="totalLocked" class="text-cyan-400 font-bold">350.2M</span> (~0.58% of circ supply)</div>
-      <div class="text-sm text-gray-400">Effective Circ Supply: <span id="effectiveCirc" class="text-green-400 font-bold">59.98B</span></div>
+      <div class="text-sm text-gray-400 mt-2">Total ETF XRP Locked: <span id="totalLocked" class="text-cyan-400 font-bold">350.2M</span> (~0.58% of 60.3B circ supply)</div>
+      <div class="text-sm text-gray-400">Effective Circ Supply: <span id="effectiveCirc" class="text-green-400 font-bold">59.95B</span></div>
       <div class="text-sm text-gray-400">YTD Inflows: <span id="totalInflows" class="text-green-400 font-bold">$666M</span> (locking ~325M XRP)</div>
+      <div class="text-sm otc-warning mt-2">OTC Desks: <span class="font-bold">80% Dry</span> — Next buys on exchanges (5% reserves drained, +$100M/day pressure)</div>
+      <div class="text-xs text-gray-500 mt-1">Countdown: At $66M/day inflows, full exchange drain in ~14 months</div>
     </div>
   </div>
 
@@ -231,7 +235,7 @@ async function updatePriceAndSupply() {
     // Update supply shock display
     const pctLocked = ((totalLockedXRP / totalCircSupply) * 100).toFixed(2);
     const effectiveCirc = (totalCircSupply - totalLockedXRP).toLocaleString();
-    document.getElementById('totalLocked').textContent = totalLockedXRP.toLocaleString();
+    document.getElementById('totalLocked').textContent = (totalLockedXRP / 1000000).toFixed(1) + 'M';
     document.getElementById('effectiveCirc').textContent = effectiveCirc;
     document.getElementById('totalInflows').textContent = '$666M'; // YTD static for now; fetch real if API avail
   } catch (e) {}
@@ -242,7 +246,7 @@ updatePriceAndSupply(); setInterval(updatePriceAndSupply, 60000); // 60s for sup
 function simulateInflows() {
   const dailyInflowXRP = Math.floor(325000 * (1 + Math.random()*0.2)); // ~$66M / $2.05
   totalLockedXRP += dailyInflowXRP;
-  document.getElementById('totalLocked').textContent = totalLockedXRP.toLocaleString();
+  document.getElementById('totalLocked').textContent = (totalLockedXRP / 1000000).toFixed(1) + 'M';
 }
 setInterval(simulateInflows, 86400000); // Daily sim
 
@@ -263,23 +267,26 @@ function updateOrderBook() {
 }
 updateOrderBook(); setInterval(updateOrderBook, 8000);
 
-// ETFs with XRP held calc
+// ETFs with XRP held calc & ranking (sorted by inflows)
 const etfs = [
-  {name: "Bitwise XRP ETF", ticker: "XRPT", aum: 183, inflows: 135, xrpHeld: Math.round(183000000 / price)},
-  {name: "Canary Capital XRP ETF", ticker: "XRPC", aum: 245, inflows: 250, xrpHeld: Math.round(245000000 / price)},
-  {name: "Franklin Templeton XRP ETF", ticker: "EZRP", aum: 154, inflows: 63, xrpHeld: Math.round(154000000 / price)},
-  {name: "Grayscale XRP Trust", ticker: "GXRP", aum: 88, inflows: 67, xrpHeld: Math.round(88000000 / price)},
-  {name: "21Shares XRP ETP", ticker: "TOXR", aum: 19, inflows: 5, xrpHeld: Math.round(19000000 / price)} // Launches today
+  {name: "Canary Capital XRP ETF", ticker: "XRPC", aum: 245, inflows: 250, sales: 0, xrpHeld: Math.round(245000000 / price)},
+  {name: "Bitwise XRP ETF", ticker: "XRPT", aum: 183, inflows: 135, sales: 0, xrpHeld: Math.round(183000000 / price)},
+  {name: "Franklin Templeton XRP ETF", ticker: "EZRP", aum: 154, inflows: 63, sales: 0, xrpHeld: Math.round(154000000 / price)},
+  {name: "Grayscale XRP Trust", ticker: "GXRP", aum: 88, inflows: 67, sales: 0, xrpHeld: Math.round(88000000 / price)},
+  {name: "21Shares XRP ETP", ticker: "TOXR", aum: 19, inflows: 5, sales: 0, xrpHeld: Math.round(19000000 / price)}
 ];
-etfs.forEach(e => {
+etfs.sort((a, b) => b.inflows - a.inflows); // Rank by inflows
+etfs.forEach((e, index) => {
+  const rank = index + 1;
+  const pctShock = ((e.xrpHeld / totalLockedXRP) * 100).toFixed(1);
   document.getElementById('etfContainer').innerHTML += `
     <div class="etf-card bg-gray-900 rounded-xl p-6 border border-gray-800">
-      <div class="text-xl font-bold">${e.name}</div>
+      <div class="flex justify-between"><span class="text-xl font-bold">${e.name}</span><span class="ranking-badge">Rank #${rank}</span></div>
       <div class="text-3xl font-bold text-cyan-400 mt-2">$${e.aum}M</div>
       <div class="text-sm text-gray-400">AUM</div>
       <div class="text-lg font-medium text-green-400 mt-3">+$${e.inflows}M inflows</div>
       <div class="text-sm text-gray-500">No sales</div>
-      <div class="text-xs text-gray-400 mt-2">XRP Held: ${e.xrpHeld.toLocaleString()} (100% remaining)</div>
+      <div class="text-xs text-gray-400 mt-2">XRP Held: ${e.xrpHeld.toLocaleString()} (${pctShock}% of total shock)</div>
       <div class="text-xs text-cyan-500 mt-3">${e.ticker}</div>
     </div>`;
 });
