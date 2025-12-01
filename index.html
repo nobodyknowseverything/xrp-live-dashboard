@@ -175,7 +175,7 @@ async function updateOrderBook() {
       const ap = parseFloat(binanceD.asks[i]?.[0] || 0), aq = parseFloat(binanceD.asks[i]?.[1] || 0);
       cumBid += bq; cumAsk += aq;
       tbody.innerHTML += `<tr>
-        <td class="p-3 text-green-400 font-medium">${cumBid.toFixed(0)}</td>
+        <td class="p-3 text-green-400 font-medium">${(cumBid/1000000).toFixed(2)}M</td>
         <td class="p-3 text-right text-green-400">${bq.toFixed(1)}</td>
         <td class="p-3 text-right text-green-400 font-semibold">${bp.toFixed(4)}</td>
         <td class="p-3 text-center text-gray-400">│</td>
@@ -287,3 +287,4 @@ setInterval(updateClock, 1000); updateClock();
 </script>
 </body>
 </html>
+
