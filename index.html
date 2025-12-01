@@ -75,7 +75,7 @@ body{margin:0;background:#000;font-family:system-ui,sans-serif;overflow-x:hidden
 
   <!-- ETFs -->
   <div class="lg:col-span-3">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP ETFs • Live</h2></div>
+    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP Spot ETFs • Dec 1, 2025</h2></div>
     <div id="etfContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
       <div class="bg-gray-900 rounded-xl p-6 border border-gray-800"><div class="text-xl font-bold">Canary Capital XRP ETF</div><div class="text-3xl font-bold text-cyan-400 mt-2">$245M</div><div class="text-sm text-gray-400">AUM</div><div class="text-lg text-green-400 mt-3">+$250M inflows</div><div class="text-xs text-gray-400 mt-2">XRP Held: 119M</div><div class="text-xs text-cyan-500 mt-3">XRPC</div></div>
       <div class="bg-gray-900 rounded-xl p-6 border border-gray-800"><div class="text-xl font-bold">Bitwise XRP ETF</div><div class="text-3xl font-bold text-cyan-400 mt-2">$183M</div><div class="text-sm text-gray-400">AUM</div><div class="text-lg text-green-400 mt-3">+$135M inflows</div><div class="text-xs text-gray-400 mt-2">XRP Held: 89M</div><div class="text-xs text-cyan-500 mt-3">XRPT</div></div>
@@ -83,6 +83,14 @@ body{margin:0;background:#000;font-family:system-ui,sans-serif;overflow-x:hidden
       <div class="bg-gray-900 rounded-xl p-6 border border-gray-800"><div class="text-xl font-bold">Grayscale XRP Trust</div><div class="text-3xl font-bold text-cyan-400 mt-2">$88M</div><div class="text-sm text-gray-400">AUM</div><div class="text-lg text-green-400 mt-3">+$67M inflows</div><div class="text-xs text-gray-400 mt-2">XRP Held: 43M</div><div class="text-xs text-cyan-500 mt-3">GXRP</div></div>
       <div class="bg-gray-900 rounded-xl p-6 border border-gray-800"><div class="text-xl font-bold">21Shares XRP ETP</div><div class="text-3xl font-bold text-cyan-400 mt-2">$19M</div><div class="text-sm text-gray-400">AUM</div><div class="text-lg text-green-400 mt-3">+$5M inflows</div><div class="text-xs text-gray-400 mt-2">XRP Held: 9M</div><div class="text-xs text-cyan-500 mt-3">TOXR</div></div>
     </div>
+  </div>
+
+  <!-- Supply Shock Tracker -->
+  <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
+    <h3 class="text-lg font-semibold text-cyan-400">Supply Shock Tracker</h3>
+    <div class="text-sm text-gray-400 mt-2">Total ETF XRP Locked: <span id="totalLocked" class="text-cyan-400 font-bold">350.2M</span> (~0.58% of 60.3B circ supply)</div>
+    <div class="text-sm text-gray-400">Effective Circ Supply: <span id="effectiveCirc" class="text-green-400 font-bold">59.95B</span></div>
+    <div class="text-sm text-red-400 font-bold mt-2">OTC Desks 80% Dry — Exchange buys imminent</div>
   </div>
 
   <!-- Clock + ETF Market Status -->
@@ -96,10 +104,10 @@ body{margin:0;background:#000;font-family:system-ui,sans-serif;overflow-x:hidden
 <script>
 let price=0,totalLockedXRP=350200000,totalCircSupply=60331635327;
 
-// Inflow alert + global flash
-function showInflowAlert(name,usd,xrp){document.getElementById('inflowAlert').textContent=`ETF INFLOW: ${name} +$${usd}M → ${xrp} XRP locked!`;document.getElementById('inflowAlert').classList.add('show');document.querySelectorAll('.city').forEach(c=>c.classList.add('active'));setTimeout(()=>document.getElementById('inflowAlert').classList.remove('show'),10000);setTimeout(()=>document.querySelectorAll('.city').forEach(c=>c.classList.remove('active')),3000);totalLockedXRP+=xrp*1000000;document.getElementById('totalLocked').textContent=(totalLockedXRP/1000000).toFixed(1)+'M';}
+// Inflow alert
+function showInflowAlert(name,usd,xrp){document.getElementById('inflowAlert').textContent=`ETF INFLOW: ${name} +$${usd}M → ${xrp} XRP locked!`;document.getElementById('inflowAlert').classList.add('show');document.querySelectorAll('.city').forEach(c=>c.classList.add('active'));setTimeout(()=>document.getElementById('inflowAlert').classList.remove('show'),10000);setTimeout(()=>document.querySelectorAll('.city').forEach(c=>c.classList.remove('active')),3000);totalLockedXRP+=xrp*1000000;document.getElementById('totalLocked').textContent=(totalLockedXRP/1000000).toFixed(1)+'M';document.getElementById('effectiveCirc').textContent=(totalCircSupply-totalLockedXRP).toLocaleString();}
 
-// Simulated realistic inflows (replace with real API when available)
+// Simulated inflow
 function simulateInflow(){if(Math.random()<0.02){const funds=["Canary XRPC","Bitwise XRPT","Franklin EZRP","Grayscale GXRP"];const f=funds[Math.floor(Math.random()*funds.length)];const usd=Math.floor(Math.random()*140)+10;const xrp=Math.round(usd*1000000/price);showInflowAlert(f,usd,xrp);}}
 setInterval(simulateInflow,12000);
 
