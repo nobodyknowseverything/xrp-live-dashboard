@@ -33,63 +33,7 @@ body{margin:0;background:#000;font-family:system-ui,sans-serif;overflow-x:hidden
     <span class="px-3 py-1 text-xs bg-cyan-900 text-cyan-300 rounded-full">100% LIVE</span>
   </div>
 </div>
-<!-- HOW TO USE THIS DASHBOARD – Add this block -->
-<div class="max-w-7xl mx-auto p-6 my-8 bg-gray-900/70 rounded-2xl border border-cyan-800">
-  <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">How to Use This XRP Dashboard – Your Edge Explained</h2>
-  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
 
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
-      <h3 class="font-bold text-green-400 mb-2">Global Trade Flow (Glowing Cities)</h3>
-      <p>Every real trade on Binance triggers a city to light up:</p>
-      <ul class="list-disc ml-5 mt-2 space-y-1 text-gray-300">
-        <li><span class="text-green-400">Green flash</span> → someone just BOUGHT XRP</li>
-        <li><span class="text-red-400">Red flash</span> → someone just SOLD XRP</li>
-        <li>More flashes = hotter volume right now</li>
-      </ul>
-    </div>
-
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
-      <h3 class="font-bold text-cyan-400 mb-2">Live Order Book (Aggregated)</h3>
-      <p>Shows the real buy/sell walls across Binance + OKX + Bybit + Kraken</p>
-      <ul class="list-disc ml-5 mt-2 space-y-1 text-gray-300">
-        <li><strong>Green Total much bigger</strong> → strong support → price likely rises</li>
-        <li><strong>Red Total much bigger</strong> → heavy resistance → price likely drops</li>
-        <li>Look for sudden huge Size rows → whales defending or capping price</li>
-      </ul>
-    </div>
-
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
-      <h3 class="font-bold text-yellow-400 mb-2">ETF Inflow Alerts (Top Banner)</h3>
-      <p>Whenever an ETF buys $10M+ in one day → big green banner + all cities flash</p>
-      <ul class="list-disc ml-5 mt-2 space-y-1 text-gray-300">
-        <li>Each alert removes that XRP from circulation forever</li>
-        <li>More alerts = faster supply shock = higher price pressure</li>
-        <li>Real data (or realistic simulation until full API is public)</li>
-      </ul>
-    </div>
-
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
-      <h3 class="font-bold text-red-400 mb-2">Supply Shock Tracker (Bottom)</h3>
-      <p>The most important box on the page</p>
-      <ul class="list-disc ml-5 mt-2 space-y-1 text-gray-300">
-        <li><strong>Total ETF XRP Locked</strong> → XRP permanently removed from exchanges</li>
-        <li><strong>Effective Circulating Supply</strong> → real XRP left to trade (watch it fall below 59B)</li>
-        <li><strong>OTC Desks 80% Dry</strong> → next big buys must hit exchanges → price moons</li>
-        <li>When locked hits 1–2% → historic squeeze begins</li>
-      </ul>
-    </div>
-
-  </div>
-
-  <div class="mt-8 text-center">
-    <p class="text-lg font-bold text-cyan-300">Quick Trading Rules Used by the Pros on This Page:</p>
-    <ol class="inline-block text-left mt-4 space-y-2 text-gray-300">
-      <li>1. Green city flashes + growing green Total in order book → <strong>buy the dip</strong></li>
-      <li>2. Inflow alert appears → <strong>hold or add</strong> (supply just got tighter)</li>
-      <li>3. Red Total suddenly huge → <strong>take profits or wait</strong></li>
-      <li>4. Locked XRP > 500M and OTC warning red → <strong>price about to explode</strong></li>
-    </ol>
-  </div>
 </div>
 <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -184,6 +128,64 @@ function updateOrderBook(){const t=document.getElementById('bookBody');t.innerHT
 // Clock + ETF market status
 function updateClock(){const n=new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));const h=n.getHours(),m=n.getMinutes(),d=n.getDay();const open=(d>=1&&d<=5)&&((h>9||(h===9&&m>=30))&&h<16);document.getElementById('clock').textContent=n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})+' ET';document.getElementById('etfStatus').textContent=`ETFs: ${open?'OPEN':'CLOSED'} (9:30AM - 4PM ET)`;document.getElementById('etfStatus').className=`text-lg font-semibold mt-2 ${open?'market-open':'market-closed'}`}setInterval(updateClock,1000);updateClock();
 </script>
+  <!-- HOW TO USE THIS DASHBOARD – Add this block -->
+<div class="max-w-7xl mx-auto p-6 my-8 bg-gray-900/70 rounded-2xl border border-cyan-800">
+  <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">How to Use This XRP Dashboard – Your Edge Explained</h2>
+  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
+      <h3 class="font-bold text-green-400 mb-2">Global Trade Flow (Glowing Cities)</h3>
+      <p>Every real trade on Binance triggers a city to light up:</p>
+      <ul class="list-disc ml-5 mt-2 space-y-1 text-gray-300">
+        <li><span class="text-green-400">Green flash</span> → someone just BOUGHT XRP</li>
+        <li><span class="text-red-400">Red flash</span> → someone just SOLD XRP</li>
+        <li>More flashes = hotter volume right now</li>
+      </ul>
+    </div>
+
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
+      <h3 class="font-bold text-cyan-400 mb-2">Live Order Book (Aggregated)</h3>
+      <p>Shows the real buy/sell walls across Binance + OKX + Bybit + Kraken</p>
+      <ul class="list-disc ml-5 mt-2 space-y-1 text-gray-300">
+        <li><strong>Green Total much bigger</strong> → strong support → price likely rises</li>
+        <li><strong>Red Total much bigger</strong> → heavy resistance → price likely drops</li>
+        <li>Look for sudden huge Size rows → whales defending or capping price</li>
+      </ul>
+    </div>
+
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
+      <h3 class="font-bold text-yellow-400 mb-2">ETF Inflow Alerts (Top Banner)</h3>
+      <p>Whenever an ETF buys $10M+ in one day → big green banner + all cities flash</p>
+      <ul class="list-disc ml-5 mt-2 space-y-1 text-gray-300">
+        <li>Each alert removes that XRP from circulation forever</li>
+        <li>More alerts = faster supply shock = higher price pressure</li>
+        <li>Real data (or realistic simulation until full API is public)</li>
+      </ul>
+    </div>
+
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700">
+      <h3 class="font-bold text-red-400 mb-2">Supply Shock Tracker (Bottom)</h3>
+      <p>The most important box on the page</p>
+      <ul class="list-disc ml-5 mt-2 space-y-1 text-gray-300">
+        <li><strong>Total ETF XRP Locked</strong> → XRP permanently removed from exchanges</li>
+        <li><strong>Effective Circulating Supply</strong> → real XRP left to trade (watch it fall below 59B)</li>
+        <li><strong>OTC Desks 80% Dry</strong> → next big buys must hit exchanges → price moons</li>
+        <li>When locked hits 1–2% → historic squeeze begins</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="mt-8 text-center">
+    <p class="text-lg font-bold text-cyan-300">Quick Trading Rules Used by the Pros on This Page:</p>
+    <ol class="inline-block text-left mt-4 space-y-2 text-gray-300">
+      <li>1. Green city flashes + growing green Total in order book → <strong>buy the dip</strong></li>
+      <li>2. Inflow alert appears → <strong>hold or add</strong> (supply just got tighter)</li>
+      <li>3. Red Total suddenly huge → <strong>take profits or wait</strong></li>
+      <li>4. Locked XRP > 500M and OTC warning red → <strong>price about to explode</strong></li>
+    </ol>
+  </div>
 </body>
 </html>
+
 
