@@ -7,96 +7,255 @@
   <link rel="icon" href="data:,">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body{font-family:system-ui,sans-serif;background:#000;color:#fff;margin:0;overflow:hidden}
-    #map{
-      height:500px;
-      background:url('https://f000.backblazeb2.com/file/xrp-dashboard/earth-dark-perfect.jpg') center/cover no-repeat fixed;
-      position:relative;overflow:hidden;
-      border-radius:0 0 1.5rem 1.5rem;
-      background-size:cover;
+    body { font-family: system-ui, sans-serif; background: #000; color: #fff; margin: 0; overflow-x: hidden; }
+    #map { 
+      height: 500px; 
+      background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Equirectangular_projection_SW.jpg/1280px-Equirectangular_projection_SW.jpg') center/cover no-repeat;
+      background-color: #001122; /* Dark fallback */
+      position: relative; overflow: hidden; border-radius: 0 0 1.5rem 1.5rem; 
     }
-    @media(max-width:768px){#map{height:300px}}
-    canvas{position:absolute;inset:0;pointer-events:none}
+    @media (max-width: 768px) { #map { height: 300px; } }
+    canvas { position: absolute; inset: 0; pointer-events: none; }
   </style>
 </head>
 <body class="min-h-screen">
-<!-- Your full working dashboard below — unchanged -->
-<div class="border-b border-gray-800">
-  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-    <h1 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live Order Book</h1>
-    <span class="px-3 py-1 text-xs bg-cyan-900 text-cyan-300 rounded-full">Global Aggregated • LIVE</span>
-  </div>
-</div>
-
-<div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">XRP Price</div><div id="price" class="text-2xl font-bold mt-1">$2.2000</div><div id="change" class="text-sm mt-1">--</div></div>
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">24h Volume</div><div id="volume" class="text-xl font-semibold mt-1">$--B</div></div>
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Bid Depth (10)</div><div id="totalBid" class="text-xl font-semibold text-green-400 mt-1">-- XRP</div></div>
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Ask Depth (10)</div><div id="totalAsk" class="text-xl font-semibold text-red-400 mt-1">-- XRP</div></div>
-  </div>
-
-  <div class="lg:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800">
-      <h2 class="text-lg font-semibold">Global Trade Flow</h2>
-      <p class="text-sm text-gray-400 mt-1">Green arcs = buys • Red arcs = sells • From major hubs</p>
-    </div>
-    <div id="map"><canvas id="arcs"></canvas></div>
-  </div>
-
-  <!-- Order book, trades, ETFs, clock — all your working code here -->
-  <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Order Book</h2></div>
-    <div class="overflow-x-auto max-h-96">
-      <table class="w-full text-sm"><thead class="sticky top-0 bg-gray-800"><tr>
-        <th class="text-left p-3 font-medium text-green-400">Total</th>
-        <th class="text-right p-3 font-medium text-green-400">Size</th>
-        <th class="text-right p-3 font-medium text-green-400">Bid</th>
-        <th class="text-left p-3 text-gray-400">│</th>
-        <th class="text-left p-3 font-medium text-red-400">Ask</th>
-        <th class="text-right p-3 font-medium text-red-400">Size</th>
-        <th class="text-right p-3 font-medium text-red-400">Total</th>
-      </tr></thead><tbody id="bookBody" class="divide-y divide-gray-800"></tbody></table>
+  <div class="border-b border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <h1 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live Order Book</h1>
+      <span class="px-3 py-1 text-xs bg-cyan-900 text-cyan-300 rounded-full">Global Aggregated • LIVE</span>
     </div>
   </div>
 
-  <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Trades</h2></div>
-    <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
+  <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
+        <div class="text-sm text-gray-400">XRP Price</div>
+        <div id="price" class="text-2xl font-bold mt-1">$2.2000</div>
+        <div id="change" class="text-sm mt-1">--</div>
+      </div>
+      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
+        <div class="text-sm text-gray-400">24h Volume</div>
+        <div id="volume" class="text-xl font-semibold mt-1">$--B</div>
+      </div>
+      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
+        <div class="text-sm text-gray-400">Bid Depth (10)</div>
+        <div id="totalBid" class="text-xl font-semibold text-green-400 mt-1">-- XRP</div>
+      </div>
+      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
+        <div class="text-sm text-gray-400">Ask Depth (10)</div>
+        <div id="totalAsk" class="text-xl font-semibold text-red-400 mt-1">-- XRP</div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-800">
+        <h2 class="text-lg font-semibold">Global Trade Flow</h2>
+        <p class="text-sm text-gray-400 mt-1">Green arcs = buys • Red arcs = sells • From major hubs</p>
+      </div>
+      <div id="map"><canvas id="arcs"></canvas></div>
+    </div>
+
+    <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-800">
+        <h2 class="text-lg font-semibold">Live Order Book</h2>
+      </div>
+      <div class="overflow-x-auto max-h-96">
+        <table class="w-full text-sm">
+          <thead class="sticky top-0 bg-gray-800">
+            <tr>
+              <th class="text-left p-3 font-medium text-green-400">Total</th>
+              <th class="text-right p-3 font-medium text-green-400">Size</th>
+              <th class="text-right p-3 font-medium text-green-400">Bid</th>
+              <th class="text-left p-3 text-gray-400">│</th>
+              <th class="text-left p-3 font-medium text-red-400">Ask</th>
+              <th class="text-right p-3 font-medium text-red-400">Size</th>
+              <th class="text-right p-3 font-medium text-red-400">Total</th>
+            </tr>
+          </thead>
+          <tbody id="bookBody" class="divide-y divide-gray-800"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-800">
+        <h2 class="text-lg font-semibold">Live Trades</h2>
+      </div>
+      <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
+    </div>
+
+    <div class="lg:col-span-3">
+      <div class="px-6 py-4 border-b border-gray-800">
+        <h2 class="text-lg font-semibold">XRP Spot ETFs (Dec 1, 2025)</h2>
+      </div>
+      <div id="etfContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4"></div>
+    </div>
+
+    <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-6">
+      <div id="status" class="text-3xl font-bold text-green-400">LIVE</div>
+      <div id="clock" class="text-4xl font-mono my-4">00:00:00 ET</div>
+    </div>
   </div>
 
-  <div class="lg:col-span-3"><div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP Spot ETFs (Dec 1, 2025)</h2></div><div id="etfContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4"></div></div>
+  <script>
+    // Map Arcs
+    const canvas = document.getElementById('arcs');
+    const ctx = canvas.getContext('2d');
+    let arcs = [];
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-  <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-6">
-    <div id="status" class="text-3xl font-bold text-green-400">LIVE</div>
-    <div id="clock" class="text-4xl font-mono my-4">00:00:00 ET</div>
-  </div>
-</div>
+    const cities = [[40.71,-74.01],[51.51,-0.13],[35.68,139.77],[1.35,103.82],[-33.87,151.21],[55.75,37.62],[37.77,-122.42],[52.52,13.40],[25.20,55.27],[22.40,114.10]];
+    function project(lat, lng) {
+      const w = canvas.width / window.devicePixelRatio, h = canvas.height / window.devicePixelRatio;
+      return [(lng + 180) * (w / 360), (90 - lat) * (h / 180)];
+    }
+    function shootArc() {
+      const [lat, lng] = cities[Math.floor(Math.random() * cities.length)];
+      const buy = Math.random() > 0.45;
+      const [x1, y1] = project(lat, lng);
+      const x2 = canvas.width / (2 * window.devicePixelRatio);
+      const y2 = canvas.height / (2 * window.devicePixelRatio);
+      arcs.push({x1, y1, x2, y2, color: buy ? '#10b981' : '#ef4444', progress: 0});
+    }
+    function animateArcs() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      arcs = arcs.filter(arc => {
+        arc.progress += 0.02;
+        if (arc.progress > 1) return false;
+        const t = arc.progress;
+        const x = arc.x1 + (arc.x2 - arc.x1) * t;
+        const y = arc.y1 + (arc.y2 - arc.y1) * t - 180 * Math.sin(t * Math.PI);
+        ctx.strokeStyle = arc.color + '66';
+        ctx.lineWidth = 4;
+        ctx.setLineDash([10, 10]);
+        ctx.beginPath();
+        for (let i = 0; i <= t * 50; i++) {
+          const p = i / 50;
+          const px = arc.x1 + (arc.x2 - arc.x1) * p;
+          const py = arc.y1 + (arc.y2 - arc.y1) * p - 180 * Math.sin(p * Math.PI);
+          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = arc.color;
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        return true;
+      });
+      requestAnimationFrame(animateArcs);
+    }
+    animateArcs();
+    setInterval(shootArc, 1600);
+    shootArc();
 
-<script>
-  const canvas=document.getElementById('arcs'),ctx=canvas.getContext('2d');let arcs=[];
-  function resizeCanvas(){const r=canvas.parentElement.getBoundingClientRect();canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);}resizeCanvas();window.addEventListener('resize',resizeCanvas);
-  const cities=[[40.71,-74.01],[51.51,-0.13],[35.68,139.77],[1.35,103.82],[-33.87,151.21],[55.75,37.62],[37.77,-122.42],[52.52,13.40],[25.20,55.27],[22.40,114.10]];
-  function project(lat,lng){const w=canvas.width/devicePixelRatio,h=canvas.height/devicePixelRatio;return[(lng+180)*(w/360),(90-lat)*(h/180)];}
-  function shootArc(){const[lat,lng]=cities[Math.floor(Math.random()*cities.length)];const buy=Math.random()>0.45;const[x1,y1]=project(lat,lng);const x2=canvas.width/(2*devicePixelRatio),y2=canvas.height/(2*devicePixelRatio);arcs.push({x1,y1,x2,y2,color:buy?'#10b981':'#ef4444',progress:0});}
-  function animateArcs(){ctx.clearRect(0,0,canvas.width,canvas.height);arcs=arcs.filter(a=>{a.progress+=0.02;if(a.progress>1)return false;const t=a.progress,x=a.x1+(a.x2-a.x1)*t,y=a.y1+(a.y2-a.y1)*t-180*Math.sin(t*Math.PI);ctx.strokeStyle=a.color+'66';ctx.lineWidth=4;ctx.setLineDash([10,10]);ctx.beginPath();for(let i=0;i<=t*50;i++){const p=i/50,px=a.x1+(a.x2-a.x1)*p,py=a.y1+(a.y2-a.y1)*p-180*Math.sin(p*Math.PI);i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=a.color;ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.fill();return true;});requestAnimationFrame(animateArcs);}
-  animateArcs();setInterval(shootArc,1600);shootArc();
+    // Live Price & Volume
+    let price = 2.20;
+    async function updatePrice() {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
+        if (!response.ok) return;
+        const data = await response.json();
+        price = data.ripple.usd;
+        document.getElementById('price').textContent = '$' + price.toFixed(4);
+        const change = data.ripple.usd_24h_change || 0;
+        document.getElementById('change').textContent = (change > 0 ? '+' : '') + change.toFixed(2) + '%';
+        document.getElementById('change').className = 'text-sm mt-1 ' + (change > 0 ? 'text-green-400' : 'text-red-400');
+        document.getElementById('volume').textContent = '$' + (data.ripple.usd_24h_vol / 1e9).toFixed(2) + 'B';
+      } catch (e) {
+        console.warn('Price update failed:', e);
+      }
+    }
+    updatePrice();
+    setInterval(updatePrice, 10000);
 
-  let price=2.20;
-  async function updatePrice(){try{const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');const d=await r.json();price=d.ripple.usd;document.getElementById('price').textContent='$'+price.toFixed(4);const ch=d.ripple.usd_24h_change||0;document.getElementById('change').textContent=(ch>0?'+' :'')+ch.toFixed(2)+'%';document.getElementById('change').className='text-sm mt-1 '+(ch>0?'text-green-400':'text-red-400');document.getElementById('volume').textContent='$'+(d.ripple.usd_24h_vol/1e9).toFixed(2)+'B';}catch(e){}}
-  updatePrice();setInterval(updatePrice,10000);
+    // Order Book
+    function updateOrderBook() {
+      const tbody = document.getElementById('bookBody');
+      tbody.innerHTML = '';
+      let totalBid = 0, totalAsk = 0;
+      for (let i = 0; i < 10; i++) {
+        const bidSize = (Math.random() * 600 + 120).toFixed(1);
+        const askSize = (Math.random() * 500 + 100).toFixed(1);
+        totalBid += parseFloat(bidSize);
+        totalAsk += parseFloat(askSize);
+        const bidPrice = (price * (1 - i * 0.0005)).toFixed(4);
+        const askPrice = (price * (1 + i * 0.0005)).toFixed(4);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="p-3 text-green-400 font-medium">${Math.round(totalBid)}</td>
+          <td class="p-3 text-right text-green-400">${bidSize}</td>
+          <td class="p-3 text-right text-green-400 font-semibold">${bidPrice}</td>
+          <td class="p-3 text-center text-gray-400">│</td>
+          <td class="p-3 text-left text-red-400 font-semibold">${askPrice}</td>
+          <td class="p-3 text-right text-red-400">${askSize}</td>
+          <td class="p-3 text-right text-red-400 font-medium">${Math.round(totalAsk)}</td>
+        `;
+        tbody.appendChild(row);
+      }
+      document.getElementById('totalBid').textContent = Math.round(totalBid) + ' XRP';
+      document.getElementById('totalAsk').textContent = Math.round(totalAsk) + ' XRP';
+    }
+    updateOrderBook();
+    setInterval(updateOrderBook, 10000);
 
-  function updateOrderBook(){const t=document.getElementById('bookBody');t.innerHTML='';let tb=0,ta=0;for(let i=0;i<10;i++){const bs=(Math.random()*600+120).toFixed(1),as=(Math.random()*500+100).toFixed(1);tb+=parseFloat(bs);ta+=parseFloat(as);const bp=(price*(1-i*0.0005)).toFixed(4),ap=(price*(1+i*0.0005)).toFixed(4);t.innerHTML+=`<tr><td class="p-3 text-green-400 font-medium">${Math.round(tb)}</td><td class="p-3 text-right text-green-400">${bs}</td><td class="p-3 text-right text-green-400 font-semibold">${bp}</td><td class="p-3 text-center text-gray-400">│</td><td class="p-3 text-left text-red-400 font-semibold">${ap}</td><td class="p-3 text-right text-red-400">${as}</td><td class="p-3 text-right text-red-400 font-medium">${Math.round(ta)}</td></tr>`;}document.getElementById('totalBid').textContent=Math.round(tb)+' XRP';document.getElementById('totalAsk').textContent=Math.round(ta)+' XRP';}
-  updateOrderBook();setInterval(updateOrderBook,10000);
+    // Live Trades
+    function addTrade() {
+      const buy = Math.random() > 0.5;
+      const qty = (Math.random() * 100 + 10).toFixed(1);
+      const tradePrice = (price * (1 + (Math.random() - 0.5) * 0.002)).toFixed(4);
+      const el = document.createElement('div');
+      el.className = buy ? 'flex justify-between py-1 px-2 rounded bg-green-900/30 text-green-400' : 'flex justify-between py-1 px-2 rounded bg-red-900/30 text-red-400';
+      el.innerHTML = `<span>${new Date().toLocaleTimeString()}</span><span>${qty} XRP</span><span>$${tradePrice}</span>`;
+      document.getElementById('trades').prepend(el);
+      if (document.getElementById('trades').children.length > 20) document.getElementById('trades').lastChild.remove();
+      shootArc();
+    }
+    setInterval(addTrade, 3000);
+    setTimeout(addTrade, 1000);
 
-  function addTrade(){const buy=Math.random()>0.5,qty=(Math.random()*100+10).toFixed(1),tp=(price*(1+(Math.random()-0.5)*0.002)).toFixed(4);const el=document.createElement('div');el.className=buy?'flex justify-between py-1 px-2 rounded bg-green-900/30 text-green-400':'flex justify-between py-1 px-2 rounded bg-red-900/30 text-red-400';el.innerHTML=`<span>${new Date().toLocaleTimeString()}</span><span>${qty} XRP</span><span>$${tp}</span>`;document.getElementById('trades').prepend(el);if(document.getElementById('trades').children.length>20)document.getElementById('trades').lastChild.remove();shootArc();}
-  setInterval(addTrade,3000);setTimeout(addTrade,1000);
+    // ETFs
+    const etfs = [
+      {name: 'Canary XRP ETF', ticker: 'XRPC', inflows: 243, aum: 231},
+      {name: 'Bitwise XRP ETF', ticker: 'XRPT', inflows: 135, aum: 183},
+      {name: 'Franklin XRP ETF', ticker: 'EZRP', inflows: 63, aum: 154},
+      {name: 'Grayscale XRP Trust', ticker: 'GXRP', inflows: 67, aum: 88},
+      {name: '21Shares XRP ETP', ticker: 'AXRP', inflows: 5, aum: 19}
+    ];
+    etfs.forEach(etf => {
+      const d = document.createElement('div');
+      d.className = 'bg-gray-900 rounded-xl p-6 border border-gray-800 space-y-3';
+      d.innerHTML = `
+        <div class="font-semibold">${etf.name} (${etf.ticker})</div>
+        <div class="text-2xl font-bold text-cyan-300">$${etf.inflows}M Inflows</div>
+        <div class="text-sm text-gray-400">AUM: $${etf.aum}M</div>
+      `;
+      document.getElementById('etfContainer').appendChild(d);
+    });
 
-  const etfs=[{name:'Canary XRP ETF',ticker:'XRPC',inflows:243,aum:231},{name:'Bitwise XRP ETF',ticker:'XRPT',inflows:135,aum:183},{name:'Franklin XRP ETF',ticker:'EZRP',inflows:63,aum:154},{name:'Grayscale XRP Trust',ticker:'GXRP',inflows:67,aum:88},{name:'21Shares XRP ETP',ticker:'AXRP',inflows:5,aum:19}];
-  etfs.forEach(e=>{document.getElementById('etfContainer').innerHTML+=`<div class="bg-gray-900 rounded-xl p-6 border border-gray-800 space-y-3"><div class="font-semibold">${e.name} (${e.ticker})</div><div class="text-2xl font-bold text-cyan-300">$${e.inflows}M Inflows</div><div class="text-sm text-gray-400">AUM: $${e.aum}M</div></div>`;});
-
-  function updateClock(){const d=new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));document.getElementById('clock').textContent=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})+' ET';document.getElementById('status').textContent='LIVE';document.getElementById('status').className='text-3xl font-bold text-green-400';}
-  setInterval(updateClock,1000);updateClock();
-</script>
+    // Clock (always LIVE for crypto)
+    function updateClock() {
+      const now = new Date();
+      const nyTime = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).format(now);
+      document.getElementById('clock').textContent = nyTime + ' ET';
+      document.getElementById('status').textContent = 'LIVE';
+      document.getElementById('status').className = 'text-3xl font-bold text-green-400';
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
 </body>
 </html>
