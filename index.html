@@ -7,17 +7,17 @@
   <link rel="icon" href="data:,">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body{font-family:system-ui,sans-serif;background:#000;color:#fff;margin:0;overflow:hidden}
+    body{font-family:system-ui,sans-serif;background:#000;color:#fff;margin:0;overflow-x:hidden}
     #map{
       height:500px;
-      background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 1000'%3E%3Crect width='2000' height='1000' fill='%23000120'/%3E%3Ccircle cx='1000' cy='500' r='460' fill='none' stroke='%23005588' stroke-width='8' opacity='0.8'/%3E%3Ccircle cx='1000' cy='500' r='440' fill='none' stroke='%2300aaff' stroke-width='4' opacity='0.6'/%3E%3Ccircle cx='1000' cy='500' r='400' fill='url(%23glow)' opacity='0.3'/%3E%3Cdefs%3E%3CradialGradient id='glow'%3E%3Cstop offset='0%' stop-color='%2300ffff'/%3E%3Cstop offset='100%' stop-color='%23000840'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M200,400 Q600,300 1000,400 T1800,400' fill='none' stroke='%2300ff88' stroke-width='6' opacity='0.7'/%3E%3Cpath d='M100,450 Q700,250 1300,450 T1900,450' fill='none' stroke='%2300ffaa' stroke-width='5' opacity='0.6'/%3E%3Ccircle cx='400' cy='380' r='80' fill='%2300ffff' opacity='0.4'/%3E%3Ccircle cx='1000' cy='350' r='100' fill='%2300ffff' opacity='0.4'/%3E%3Ccircle cx='1600' cy='420' r='90' fill='%2300ffff' opacity='0.4'/%3E%3C/svg%3E") center/cover no-repeat;
+      background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 1000'%3E%3Crect width='2000' height='1000' fill='%23000f2b'/%3E%3Cellipse cx='1000' cy='500' rx='480' ry='240' fill='url(%23g)'/%3E%3Cdefs%3E%3CradialGradient id='g'%3E%3Cstop offset='0%25' stop-color='%230066ff' stop-opacity='0.8'/%3E%3Cstop offset='100%25' stop-color='%23000f2b'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M0,500 Q400,350 800,500 T1600,500 T2000,500 L2000,1000 L0,1000 Z' fill='%23003388' opacity='0.9'/%3E%3Cpath d='M200,400 Q500,300 800,400 T1400,400 T1800,400' fill='none' stroke='%2300ffff' stroke-width='6' opacity='0.8'/%3E%3Cpath d='M100,450 Q600,250 1100,450 T1900,450' fill='none' stroke='%2300ffaa' stroke-width='5' opacity='0.7'/%3E%3Ccircle cx='400' cy='380' r='80' fill='%2300ffff' opacity='0.4'/%3E%3Ccircle cx='1000' cy='350' r='100' fill='%2300ffff' opacity='0.4'/%3E%3Ccircle cx='1600' cy='420' r='90' fill='%2300ffff' opacity='0.4'/%3E%3C/svg%3E") center/cover no-repeat;
       position:relative;overflow:hidden;border-radius:0 0 1.5rem 1.5rem;
     }
     @media(max-width:768px){#map{height:300px}}
     canvas{position:absolute;inset:0;pointer-events:none}
   </style>
 </head>
-<body>
+<body class="min-h-screen">
 <div class="border-b border-gray-800">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
     <h1 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live Order Book</h1>
@@ -41,7 +41,6 @@
     <div id="map"><canvas id="arcs"></canvas></div>
   </div>
 
-  <!-- Live Order Book -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Order Book</h2></div>
     <div class="overflow-x-auto max-h-96">
@@ -57,13 +56,11 @@
     </div>
   </div>
 
-  <!-- Live Trades -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Trades</h2></div>
     <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <!-- ORIGINAL ETFs — EACH HAS OWN INFLOWS, SALES, REMAINING XRP -->
   <div class="lg:col-span-3">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP Spot ETFs (Dec 1, 2025)</h2></div>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-6" id="etfContainer"></div>
@@ -76,16 +73,15 @@
 </div>
 
 <script>
-  // Fixed Arcs — now start from globe edge
+  // Fixed Arcs — now start from globe surface, not outside
   const canvas=document.getElementById('arcs'),ctx=canvas.getContext('2d');let arcs=[];
   function resizeCanvas(){const r=canvas.parentElement.getBoundingClientRect();canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);}resizeCanvas();window.addEventListener('resize',resizeCanvas);
   const cities=[[40.71,-74.01],[51.51,-0.13],[35.68,139.77],[1.35,103.82],[-33.87,151.21],[55.75,37.62],[37.77,-122.42],[52.52,13.40],[25.20,55.27],[22.40,114.10]];
-  function project(lat,lng){const w=canvas.width/devicePixelRatio,h=canvas.height/devicePixelRatio;const radius=Math.min(w,h)*0.45;return [(lng+180)*(w/360),(90-lat)*(h/180)];}
+  function project(lat,lng){const w=canvas.width/devicePixelRatio,h=canvas.height/devicePixelRatio;const radius=Math.min(w,h)*0.45;const x=(lng+180)*(w/360),y=(90-lat)*(h/180);const dist=Math.sqrt((x-w/2)**2+(y-h/2)**2);if(dist>radius)return [w/2+radius*(x-w/2)/dist,h/2+radius*(y-h/2)/dist];return [x,y];}
   function shootArc(){const[lat,lng]=cities[Math.floor(Math.random()*cities.length)];const buy=Math.random()>0.45;const[x1,y1]=project(lat,lng);const x2=canvas.width/(2*devicePixelRatio),y2=canvas.height/(2*devicePixelRatio);arcs.push({x1,y1,x2,y2,color:buy?'#10b981':'#ef4444',progress:0});}
   function animateArcs(){ctx.clearRect(0,0,canvas.width,canvas.height);arcs=arcs.filter(a=>{a.progress+=0.02;if(a.progress>1)return false;const t=a.progress,x=a.x1+(a.x2-a.x1)*t,y=a.y1+(a.y2-a.y1)*t-180*Math.sin(t*Math.PI);ctx.strokeStyle=a.color+'66';ctx.lineWidth=4;ctx.setLineDash([10,10]);ctx.beginPath();for(let i=0;i<=t*50;i++){const p=i/50,px=a.x1+(a.x2-a.x1)*p,py=a.y1+(a.y2-a.y1)*p-180*Math.sin(p*Math.PI);i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=a.color;ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.fill();return true;});requestAnimationFrame(animateArcs);}
   animateArcs();setInterval(shootArc,1600);shootArc();
 
-  // Price, Order Book, Trades, ETFs — all 100% your original working version
   let price=2.20;
   async function updatePrice(){try{const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');const d=await r.json();price=d.ripple.usd;document.getElementById('price').textContent='$'+price.toFixed(4);const ch=d.ripple.usd_24h_change||0;document.getElementById('change').textContent=(ch>0?'+' :'')+ch.toFixed(2)+'%';document.getElementById('change').className='text-sm mt-1 '+(ch>0?'text-green-400':'text-red-400');document.getElementById('volume').textContent='$'+(d.ripple.usd_24h_vol/1e9).toFixed(2)+'B';}catch(e){}}
   updatePrice();setInterval(updatePrice,10000);
@@ -96,9 +92,8 @@
   function addTrade(){const buy=Math.random()>0.5,qty=(Math.random()*100+10).toFixed(1),tp=(price*(1+(Math.random()-0.5)*0.002)).toFixed(4);const el=document.createElement('div');el.className=buy?'flex justify-between py-1 px-2 rounded bg-green-900/30 text-green-400':'flex justify-between py-1 px-2 rounded bg-red-900/30 text-red-400';el.innerHTML=`<span>${new Date().toLocaleTimeString()}</span><span>${qty} XRP</span><span>$${tp}</span>`;document.getElementById('trades').prepend(el);if(document.getElementById('trades').children.length>20)document.getElementById('trades').lastChild.remove();shootArc();}
   setInterval(addTrade,3000);setTimeout(addTrade,1000);
 
-  // ORIGINAL ETFs — each has own inflows, sales, remaining XRP
   const etfs=[{name:'Canary XRP ETF',ticker:'XRPC',inflows:243,sales:0,xrp:231000000},{name:'Bitwise XRP ETF',ticker:'XRPT',inflows:135,sales:0,xrp:183000000},{name:'Franklin XRP ETF',ticker:'EZRP',inflows:63,sales:0,xrp:154000000},{name:'Grayscale XRP Trust',ticker:'GXRP',inflows:67,sales:0,xrp:88000000},{name:'21Shares XRP ETP',ticker:'AXRP',inflows:5,sales:0,xrp:19000000}];
-  function updateETFs(){const now=new Date();const today=now.toLocaleDateString('en-US',{timeZone:'America/New_York'});if(localStorage.getItem('etfDay')!==today){etfs.forEach(e=>e.sales=0);localStorage.setItem('etfDay',today);}etfs.forEach(e=>{const sale=Math.floor(Math.random()*300000);e.sales+=sale;e.xrp=Math.max(0,e.xrp-sale);});document.getElementById('etfContainer').innerHTML='';etfs.forEach(e=>{const d=document.createElement('div');d.className='bg-gray-900 rounded-xl p-6 border border-gray-800 space-y-3';d.innerHTML=`<div class="font-semibold">${e.name} (${e.ticker})</div><div class="text-2xl font-bold text-cyan-300">$${e.inflows}M Inflows</div><div class="text-sm text-gray-400">Daily Sales: <span class="text-red-400">$${ (e.sales/1000000).toFixed(1) }M</span></div><div class="text-sm text-gray-400">Remaining XRP: <span class="text-yellow-400">${e.xrp.toLocaleString()}</span></div>`;document.getElementById('etfContainer').appendChild(d);});}
+  function updateETFs(){const now=new Date();const today=now.toLocaleDateString('en-US',{timeZone:'America/New_York'});if(localStorage.getItem('etfDay')!==today){etfs.forEach(e=>e.sales=0);localStorage.setItem('etfDay',today);}etfs.forEach(e=>{const sale=Math.floor(Math.random()*300000);e.sales+=sale;e.xrp=Math.max(0,e.xrp-sale);});document.getElementById('etfContainer').innerHTML='';etfs.forEach(e=>{const d=document.createElement('div');d.className='bg-gray-900 rounded-xl p-6 border border-gray-800 space-y-3';d.innerHTML=`<div class="font-semibold">${e.name} (${e.ticker})</div><div class="text-2xl font-bold text-cyan-300">$${e.inflows}M Inflows</div><div class="text-sm text-gray-400">Daily Sales: <span class="text-red-400">$${ (e.sales/1000000).toFixed(1) }M</span></div><div class="text-sm text-gray-400">Remaining XRP: <span class="text-yellow-400">${e.xrp.toLocaleString()}</span></div>`;document.getElementById('dashboard').appendChild(d);});}
   updateETFs();setInterval(updateETFs,15000);
 
   function updateClock(){const d=new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));document.getElementById('clock').textContent=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})+' ET';document.getElementById('status').textContent='LIVE';document.getElementById('status').className='text-3xl font-bold text-green-400';}
