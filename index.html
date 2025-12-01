@@ -32,8 +32,8 @@
   <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Live • Your Real-Time Edge</h2>
   <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
     <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-green-400 mb-2">Global Flow</h3><p>Real trades → city flashes</p></div>
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-cyan-400 mb-2">Order Book</h3><p>Live Market depth • 4 decimals</p></div>
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-yellow-400 mb-2">ETF Alerts</h3><p>$10M+ spikes → banner + flashing Cities</p></div>
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-cyan-400 mb-2">Order Book</h3><p>Multi-Exchange Depth (Binance + Kraken)</p></div>
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-yellow-400 mb-2">ETF Alerts</h3><p>$10M+ spikes → banner + flash</p></div>
     <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-red-400 mb-2">Supply Shock</h3><p>Locked XRP • Precise decimals</p></div>
   </div>
 </div>
@@ -41,7 +41,7 @@
 <div class="border-b border-gray-800">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
     <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live • Real-Time</h1>
-    <span class="px-4 py-1 text-sm bg-cyan-900 text-cyan-300 rounded-full">100% LIVE</span>
+    <span class="px-4 py-1 text-sm bg-cyan-900 text-cyan-300 rounded-full">100% LIVE • Multi-Exchange</span>
   </div>
 </div>
 
@@ -51,8 +51,8 @@
   <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">XRP Price</div><div id="price" class="text-2xl font-bold mt-1">—</div><div id="change" class="text-sm mt-1">—</div></div>
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">24h Volume</div><div id="volume" class="text-xl font-semibold mt-1">—</div></div>
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Bid Depth</div><div id="totalBid" class="text-xl font-semibold text-green-400 mt-1">—</div></div>
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Ask Depth</div><div id="totalAsk" class="text-xl font-semibold text-red-400 mt-1">—</div></div>
+    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Combined Bid Depth</div><div id="totalBid" class="text-xl font-semibold text-green-400 mt-1">—</div></div>
+    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Combined Ask Depth</div><div id="totalAsk" class="text-xl font-semibold text-red-400 mt-1">—</div></div>
   </div>
 
   <!-- Global Map -->
@@ -72,15 +72,15 @@
     </div>
   </div>
 
-  <!-- Order Book -->
+  <!-- Order Book (Binance View — Combined Totals) -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Order Book</h2></div>
+    <div class="px-6 py-4 border-b border-gray-800 flex justify-between items-center"><h2 class="text-lg font-semibold">Live Order Book (Binance)</h2><span class="text-sm text-gray-400">Combined Depth: Binance + Kraken</span></div>
     <div class="overflow-x-auto max-h-96"><table class="w-full text-sm"><thead class="sticky top-0 bg-gray-800"><tr><th class="text-left p-3 text-green-400">Total</th><th class="text-right p-3 text-green-400">Size</th><th class="text-right p-3 text-green-400">Bid</th><th class="text-left p-3 text-gray-400">│</th><th class="text-left p-3 text-red-400">Ask</th><th class="text-right p-3 text-red-400">Size</th><th class="text-right p-3 text-red-400">Total</th></tr></thead><tbody id="bookBody"></tbody></table></div>
   </div>
 
   <!-- Live Trades -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Trades</h2></div>
+    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Trades (Binance)</h2></div>
     <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
   </div>
 
@@ -121,7 +121,7 @@ const etfs = [
   {name: "21Shares TOXR", aum: 151, inflow: 151, held: 68.64}
 ];
 
-// === PRICE (4 decimals) ===
+// === PRICE ===
 async function updatePrice() {
   try {
     const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
@@ -137,22 +137,42 @@ async function updatePrice() {
 }
 updatePrice(); setInterval(updatePrice, 15000);
 
-// Recalc XRP held with live price (1 decimal)
+// Recalc Held
 function recalculateHeld() {
-  etfs.forEach((etf, i) => etf.held = (etf.aum * 1000000 / price / 1000000).toFixed(1));
+  etfs.forEach(etf => etf.held = (etf.aum * 1000000 / price / 1000000).toFixed(1));
   totalLockedXRP = etfs.reduce((sum, etf) => sum + (etf.aum * 1000000 / price), 0);
 }
 
-// === ORDER BOOK (4 decimals price, 1 decimal size) ===
+// === MULTI-EXCHANGE ORDER BOOK ===
 async function updateOrderBook() {
   try {
-    const r = await fetch('https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=10');
-    const d = await r.json();
+    // Binance
+    const binanceR = await fetch('https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=10');
+    const binanceD = await binanceR.json();
+    let binanceBidTotal = 0, binanceAskTotal = 0;
+    binanceD.bids.forEach(([p, q]) => binanceBidTotal += parseFloat(q));
+    binanceD.asks.forEach(([p, q]) => binanceAskTotal += parseFloat(q));
+
+    // Kraken
+    const krakenR = await fetch('https://api.kraken.com/0/public/Depth?pair=XRPUSD&count=10');
+    const krakenD = await krakenR.json();
+    const krakenData = krakenD.result['XRPUSD'] || krakenD.result['XXRPZUSD'];
+    let krakenBidTotal = 0, krakenAskTotal = 0;
+    (krakenData.bids || []).forEach(([p, v]) => krakenBidTotal += parseFloat(v));
+    (krakenData.asks || []).forEach(([p, v]) => krakenAskTotal += parseFloat(v));
+
+    // Combined Totals (in M XRP)
+    const combinedBid = (binanceBidTotal + krakenBidTotal) / 1000;
+    const combinedAsk = (binanceAskTotal + krakenAskTotal) / 1000;
+    document.getElementById('totalBid').textContent = '~' + combinedBid.toFixed(1) + 'M XRP';
+    document.getElementById('totalAsk').textContent = '~' + combinedAsk.toFixed(1) + 'M XRP';
+
+    // Display Binance Table (for brevity; can add tabs for full multi-view)
     const tbody = document.getElementById('bookBody'); tbody.innerHTML = '';
     let cumBid = 0, cumAsk = 0;
     for (let i = 0; i < 10; i++) {
-      const bp = parseFloat(d.bids[i][0]), bq = parseFloat(d.bids[i][1]);
-      const ap = parseFloat(d.asks[i][0]), aq = parseFloat(d.asks[i][1]);
+      const bp = parseFloat(binanceD.bids[i]?.[0] || 0), bq = parseFloat(binanceD.bids[i]?.[1] || 0);
+      const ap = parseFloat(binanceD.asks[i]?.[0] || 0), aq = parseFloat(binanceD.asks[i]?.[1] || 0);
       cumBid += bq; cumAsk += aq;
       tbody.innerHTML += `<tr>
         <td class="p-3 text-green-400 font-medium">${cumBid.toFixed(0)}</td>
@@ -164,13 +184,13 @@ async function updateOrderBook() {
         <td class="p-3 text-right text-red-400 font-medium">${cumAsk.toFixed(0)}</td>
       </tr>`;
     }
-    document.getElementById('totalBid').textContent = '~' + (cumBid/1000).toFixed(1) + 'M XRP';
-    document.getElementById('totalAsk').textContent = '~' + (cumAsk/1000).toFixed(1) + 'M XRP';
-  } catch(e) {}
+  } catch(e) {
+    console.error('Order book fetch error:', e); // Fallback silent
+  }
 }
-updateOrderBook(); setInterval(updateOrderBook, 8000);
+updateOrderBook(); setInterval(updateOrderBook, 15000); // Slower to respect limits
 
-// === TRADES (4 decimals) ===
+// === TRADES ===
 async function fetchLiveTrades() {
   try {
     const r = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=8');
@@ -195,11 +215,11 @@ function flashCity() {
   const c = cities[Math.floor(Math.random() * cities.length)];
   const isBuy = Math.random() > 0.5;
   c.classList.add('active');
-  if (!isBuy) c.classList.add('sell'); // Red for sell
+  if (!isBuy) c.classList.add('sell');
   setTimeout(() => c.classList.remove('active', 'sell'), 1600);
 }
 
-// === ETF RENDER (1 decimal held) ===
+// === ETF RENDER ===
 function renderETFs() {
   const container = document.getElementById('etfContainer'); container.innerHTML = '';
   let totalAUM = 0;
@@ -221,14 +241,14 @@ function renderETFs() {
 }
 renderETFs();
 
-// === REALISTIC INFLOW (low volume, $10M+ triggers) ===
+// === REALISTIC INFLOW ===
 function simulateRealisticInflow() {
-  if (Math.random() < 0.08) { // ~5% chance per 30s = 1–2 per hour
+  if (Math.random() < 0.08) {
     const fund = etfs[Math.floor(Math.random() * etfs.length)];
-    const usd = Math.floor(Math.random() * 21) + 10; // $10–30M realistic spike
+    const usd = Math.floor(Math.random() * 21) + 10;
     const xrpLocked = (usd * 1000000 / price / 1000000).toFixed(1);
 
-    if (usd >= 10) { // Only alert on $10M+
+    if (usd >= 10) {
       document.getElementById('inflowAlert').textContent = `ETF INFLOW: ${fund.name} +$${usd}M → ${xrpLocked}M XRP locked!`;
       document.getElementById('inflowAlert').classList.add('show');
       document.querySelectorAll('.city').forEach(c => c.classList.add('active'));
@@ -236,8 +256,7 @@ function simulateRealisticInflow() {
       setTimeout(() => document.querySelectorAll('.city').forEach(c => c.classList.remove('active')), 3000);
     }
 
-    // Update fund (slow growth)
-    fund.aum += usd / 10; // Gradual AUM increase (10% of inflow)
+    fund.aum += usd / 10;
     fund.inflow += usd;
     totalLockedXRP += usd * 1000000 / price;
 
@@ -245,9 +264,9 @@ function simulateRealisticInflow() {
     updateSupply();
   }
 }
-setInterval(simulateRealisticInflow, 30000); // Every 30s check
+setInterval(simulateRealisticInflow, 30000);
 
-// === SUPPLY (2 decimals effective) ===
+// === SUPPLY ===
 function updateSupply() {
   const effective = ((totalCircSupply - totalLockedXRP) / 1e9).toFixed(2) + 'B';
   document.getElementById('effectiveSupply').textContent = effective;
@@ -268,4 +287,3 @@ setInterval(updateClock, 1000); updateClock();
 </script>
 </body>
 </html>
-
