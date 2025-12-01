@@ -7,10 +7,12 @@
   <link rel="icon" href="data:,">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {font-family:system-ui,sans-serif;background:#000;color:#fff;margin:0}
+    body{font-family:system-ui,sans-serif;background:#000;color:#fff;margin:0}
     #map{
       height:500px;
-      background:url('https://f000.backblazeb2.com/file/grok-images/xrp-globe-final.jpg') center/cover no-repeat fixed;
+      background:#000;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 1000'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%' cy='50%' r='70%' fx='50%' fy='50%' %3E%3Cstop offset='0%' stop-color='%2300ffff' stop-opacity='0.4'/%3E%3Cstop offset='100%' stop-color='%23000' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='2000' height='1000' fill='%23000318'/%3E%3Cellipse cx='1000' cy='500' rx='480' ry='240' fill='url(%23g)'/%3E%3Cpath d='M0,500 Q400,350 800,500 T1600,500 T2000,500 L2000,1000 L0,1000 Z' fill='%23001840' opacity='0.7'/%3E%3Cpath d='M300,400 Q600,300 900,400 T1500,400' fill='none' stroke='%2300ffff' stroke-width='4' opacity='0.6'/%3E%3Cpath d='M200,450 Q700,250 1200,450 T1800,450' fill='none' stroke='%2300ffff' stroke-width='3' opacity='0.4'/%3E%3Ccircle cx='500' cy='380' r='60' fill='%2300ffff' opacity='0.3'/%3E%3Ccircle cx='1500' cy='420' r='55' fill='%2300ffff' opacity='0.3'/%3E%3C/svg%3E");
+      background-size:cover;
       position:relative;overflow:hidden;border-radius:0 0 1.5rem 1.5rem;
     }
     @media(max-width:768px){#map{height:300px}}
@@ -18,8 +20,6 @@
   </style>
 </head>
 <body class="min-h-screen">
-
-<!-- Your full dashboard HTML and script below — unchanged, 100% working -->
 <div class="border-b border-gray-800">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
     <h1 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live Order Book</h1>
@@ -43,7 +43,6 @@
     <div id="map"><canvas id="arcs"></canvas></div>
   </div>
 
-  <!-- Rest of your dashboard (order book, trades, ETFs, clock) — exactly as before -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Order Book</h2></div>
     <div class="overflow-x-auto max-h-96">
@@ -64,10 +63,7 @@
     <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <div class="lg:col-span-3">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP Spot ETFs (Dec 1, 2025)</h2></div>
-    <div id="etfContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4"></div>
-  </div>
+  <div class="lg:col-span-3"><div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP Spot ETFs (Dec 1, 2025)</h2></div><div id="etfContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4"></div></div>
 
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-6">
     <div id="status" class="text-3xl font-bold text-green-400">LIVE</div>
