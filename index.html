@@ -194,7 +194,7 @@ function renderETFs() {
     `;
     c.appendChild(card);
   });
-  document.getElementBy C('totalAUM').textContent = Math.round(totalAUM);
+  document.getElementById('totalAUM').textContent = Math.round(totalAUM);
   document.getElementById('totalLocked').textContent = Math.round(totalLocked);
 }
 renderETFs();
@@ -203,3 +203,4 @@ renderETFs();
 </script>
 </body>
 </html>
+
