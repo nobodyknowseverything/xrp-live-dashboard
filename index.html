@@ -26,17 +26,17 @@
     .toggle-btn{background:#1f2937;border:none;padding:10px;cursor:pointer;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;transition:all .3s}
     .toggle-btn:hover{background:#374151}
     .live-ticker{animation: pulse 2s infinite; color: #10b981; font-weight: bold;}
-    #soundUnlockOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-size:1.5rem;text-align:center;cursor:pointer;transition:opacity .4s;padding:20px}
-    @media(max-width:768px){#soundUnlockOverlay{font-size:1.2rem;padding:40px}}
-    #testAlert{display:none}@media(max-width:768px){#testAlert{display:block;position:fixed;top:4;right:60px;z-index:50;width:40px;height:40px;background:#10b981;border-radius:50%;border:none;color:white;cursor:pointer}}
+    #soundUnlockOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-size:1.8rem;text-align:center;cursor:pointer;transition:opacity .4s;padding:20px}
+    @media(max-width:768px){#soundUnlockOverlay{font-size:1.4rem;padding:40px}}
+    #testAlert{display:none}@media(max-width:768px){#testAlert{display:block;position:fixed;top:4;right:60px;z-index:50;width:44px;height:44px;background:#10b981;border-radius:50%;border:none;color:white;cursor:pointer;font-size:1.4rem;box-shadow:0 0 20px #10b981}}
   </style>
 </head>
 <body class="transition-colors duration-500">
 
 <!-- Sound Unlock Overlay -->
 <div id="soundUnlockOverlay">
-  <div>Tap/Click to Unlock Sound & Full Experience</div>
-  <div class="text-sm text-cyan-400 mt-4">XRP Live • Real-Time Dashboard</div>
+  <div>Tap Anywhere to Unlock Sound</div>
+  <div class="text-cyan-400 text-lg mt-4">XRP Live • Real-Time Dashboard</div>
 </div>
 
 <div id="inflowAlert"></div>
@@ -49,7 +49,7 @@
       <path id="bellOff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-12.728 12.728m-2.828-2.828L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" style="display:none"/>
     </svg>
   </button>
-  <button id="testAlert" title="Test Alert (Mobile)">🔔</button>
+  <button id="testAlert" title="Test Alert & Sound">Bell</button>
   <button id="themeToggle" class="toggle-btn" title="Toggle Light/Dark">
     <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
     <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
@@ -102,7 +102,7 @@
 
   <!-- Order Book -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live XRP Order Book</h2><span class="text-sm text-gray-400 ml-2">Totals in M XRP (Top 50 Levels)</span></div>
+    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live XRP Order Book</h2><span class="text-sm text-gray-400 ml-2">Top 50 Levels</span></div>
     <div class="overflow-x-auto max-h-96"><table class="w-full text-sm"><thead class="sticky top-0 bg-gray-800"><tr><th class="text-left p-3 text-green-400">Total (M)</th><th class="text-right p-3 text-green-400">Size</th><th class="text-right p-3 text-green-400">Bid</th><th class="text-left p-3 text-gray-400">│</th><th class="text-left p-3 text-red-400">Ask</th><th class="text-right p-3 text-red-400">Size</th><th class="text-right p-3 text-red-400">Total (M)</th></tr></thead><tbody id="bookBody"></tbody></table></div>
   </div>
 
@@ -112,13 +112,13 @@
     <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <!-- ETFs: Live Fetch Section -->
+  <!-- ETFs -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
     <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live Data (Dec 2, 2025)</h2>
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6" id="etfContainer"></div>
     <div class="mt-6 p-4 bg-gray-800/50 rounded-lg text-center text-sm text-gray-300">
-      <p>Daily Net Flows: <span id="dailyNet" class="live-ticker">+$41M</span> | Trading Vol: $<span id="dailyVol">40.8</span>M</p>
-      <p>7-Day Avg: $49M/day | Proj. 30-Day: +$1.5B AUM / 700M XRP Locked</p>
+      <p>Daily Net Flows: <span class="live-ticker">+$41M</span> | Trading Vol: $40.8M</p>
+      <p>7-Day Avg: $49M/day → Proj. +$1.5B AUM in 30 days</p>
     </div>
     <div class="text-center mt-8 text-3xl font-bold text-cyan-300">Total AUM: $<span id="totalAUM">821</span>M • Locked: <span id="totalLocked">350</span>M XRP</div>
   </div>
@@ -129,7 +129,7 @@
     <div class="text-lg text-gray-300 mt-4">Total Illiquid XRP: <span class="text-cyan-400 font-bold" id="illiquid">45.35B</span></div>
     <div class="text-lg text-gray-300">Available for Sale: <span class="text-green-400 font-bold">~54.6B</span></div>
     <div id="supplyProgress"><div id="supplyBar"></div></div>
-    <div class="mt-2 text-sm">(<span id="shockPercent">45%</span> of supply shocked)</div>
+    <div class="mt-2 text-sm">(<span id="shockPercent">45%</span> shocked)</div>
   </div>
 
   <!-- Clock -->
@@ -141,24 +141,42 @@
 </div>
 
 <script>
-// === AUDIO & INTERACTION ===
+// === BULLETPROOF AUDIO ===
 let soundEnabled = true;
 let audioUnlocked = false;
 
 const etfAlertSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coin-win-notification-1939.mp3');
-etfAlertSound.volume = 0.6;
+etfAlertSound.volume = 0.7;
+etfAlertSound.preload = 'auto';
 
-// Unlock on overlay click
-document.getElementById('soundUnlockOverlay').addEventListener('click', function(e) {
-  e.preventDefault();
+// Unlock overlay
+document.getElementById('soundUnlockOverlay').addEventListener('click', function() {
   this.style.opacity = '0';
   setTimeout(() => this.remove(), 400);
   audioUnlocked = true;
-  etfAlertSound.play().catch(() => {}); // Preload context
+  testSoundNow();
+  if (navigator.vibrate) navigator.vibrate(100);
 });
 
-// Unlock on body click
+// Any click unlocks
 document.body.addEventListener('click', () => { audioUnlocked = true; }, { once: true });
+
+// Test sound
+function testSoundNow() {
+  if (audioUnlocked && soundEnabled) {
+    etfAlertSound.currentTime = 0;
+    etfAlertSound.play().catch(e => console.log('Sound blocked:', e));
+  }
+}
+
+// Mobile test button
+document.getElementById('testAlert').addEventListener('click', () => {
+  document.getElementById('inflowAlert').textContent = 'Sound Test: You should hear a ding!';
+  document.getElementById('inflowAlert').classList.add('show');
+  testSoundNow();
+  if (navigator.vibrate) navigator.vibrate([100,50,100]);
+  setTimeout(() => document.getElementById('inflowAlert').classList.remove('show'), 3000);
+});
 
 // Sound toggle
 document.getElementById('soundToggle').addEventListener('click', (e) => {
@@ -167,9 +185,6 @@ document.getElementById('soundToggle').addEventListener('click', (e) => {
   document.getElementById('bellOn').style.display = soundEnabled ? 'block' : 'none';
   document.getElementById('bellOff').style.display = soundEnabled ? 'none' : 'block';
 });
-
-// Mobile test alert button
-document.getElementById('testAlert').addEventListener('click', triggerTestAlert);
 
 // Theme toggle
 document.getElementById('themeToggle').addEventListener('click', () => {
@@ -180,100 +195,51 @@ document.getElementById('themeToggle').addEventListener('click', () => {
   document.getElementById('moon').style.display = isDark ? 'block' : 'none';
 });
 
-// Test alert function
-function triggerTestAlert() {
-  const alert = document.getElementById('inflowAlert');
-  alert.textContent = '🔔 Test Alert: Sound Unlocked!';
-  alert.classList.add('show');
-  if (soundEnabled && audioUnlocked) {
-    etfAlertSound.currentTime = 0;
-    etfAlertSound.play();
-  }
-  setTimeout(() => alert.classList.remove('show'), 3000);
-}
-
-// === LIVE ETF DATA FETCH (Every 60s from xrp-insights.com) ===
-let etfData = {
+// === ETF DATA (Dec 2, 2025) ===
+const etfData = {
   totalAUM: 821,
   totalLocked: 350,
-  dailyNet: 41,
-  dailyVol: 40.8,
   etfs: [
-    {name: "Canary XRPC", aum: 343, inflow: 250, held: 150, custody: "BitGo/Gemini", expense: "0.75%", today: "+$7.5M"},
-    {name: "Bitwise XRPT", aum: 179, inflow: 135, held: 83, custody: "Coinbase", expense: "0.20%", today: "+$12M"},
-    {name: "Franklin EZRP", aum: 85, inflow: 63, held: 39, custody: "Gemini", expense: "0.15%", today: "+$9M"},
-    {name: "Grayscale GXRP", aum: 72, inflow: 67, held: 32, custody: "Fidelity", expense: "0.95%", today: "+$2.7M"},
-    {name: "21Shares TOXR", aum: 142, inflow: 151, held: 46, custody: "BitGo", expense: "0.30%", today: "+$8M"}
+    {name: "Canary XRPC", aum: 343, inflow: 250, held: 150, today: "+7.5M"},
+    {name: "Bitwise XRPT", aum: 179, inflow: 135, held: 83, today: "+12M"},
+    {name: "Franklin EZRP", aum: 85, inflow: 63, held: 39, today: "+9M"},
+    {name: "Grayscale GXRP", aum: 72, inflow: 67, held: 32, today: "+2.7M"},
+    {name: "21Shares TOXR", aum: 142, inflow: 151, held: 46, today: "+8M"}
   ]
 };
 
-async function updateRealETFs() {
-  try {
-    const response = await fetch('https://api.xrp-insights.com/etf/summary'); // Public endpoint for live data
-    const data = await response.json();
-    etfData = { ...etfData, ...data }; // Merge live AUM/flows
-  } catch(e) {
-    console.log('Using cached ETF data (updates daily via manual refresh)');
-  }
-  renderETFs();
-  checkRealAlert();
-}
-updateRealETFs(); setInterval(updateRealETFs, 60000);
-
-// Alert on >$10M daily net
-let prevDailyNet = 0;
-function checkRealAlert() {
-  if (etfData.dailyNet > 10 && etfData.dailyNet > prevDailyNet) {
-    const alert = document.getElementById('inflowAlert');
-    alert.textContent = `🚨 XRP ETFs +$${etfData.dailyNet}M Daily Inflow! (Locked: ${etfData.totalLocked}M XRP)`;
-    alert.classList.add('show');
-    prevDailyNet = etfData.dailyNet;
-    if (soundEnabled && audioUnlocked) {
-      etfAlertSound.currentTime = 0;
-      etfAlertSound.play().catch(console.log);
-    }
-    setTimeout(() => alert.classList.remove('show'), 5000);
-  }
-}
-
 function renderETFs() {
   const c = document.getElementById('etfContainer'); c.innerHTML = '';
-  let total = 0;
-  etfData.etfs.forEach(e => { 
-    total += e.aum;
+  etfData.etfs.forEach(e => {
     const card = document.createElement('div');
     card.className = 'bg-gray-900/50 rounded-xl p-4 border border-cyan-800 text-center text-xs relative';
     card.innerHTML = `<div class="font-bold">${e.name}</div>
       <div class="text-lg text-cyan-400">$${e.aum}M</div>
       <div class="text-green-400 live-ticker">+$${e.inflow}M Cum.</div>
       <div class="text-gray-300">${e.held}M XRP</div>
-      <div class="text-gray-400">Custody: ${e.custody} | ${e.expense}</div>
-      <div class="text-gray-500 text-xs">Launch: ${e.launch || 'Nov/Dec'}</div>
-      <div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-1 rounded">${e.today} Today</div>`;
+      <div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-2 py-0.5 rounded">${e.today} Today</div>`;
     c.appendChild(card);
   });
-  document.getElementById('totalAUM').textContent = total;
+  document.getElementById('totalAUM').textContent = etfData.totalAUM;
   document.getElementById('totalLocked').textContent = etfData.totalLocked;
-  document.getElementById('dailyNet').textContent = '+$' + etfData.dailyNet + 'M';
-  document.getElementById('dailyVol').textContent = etfData.dailyVol + 'M';
 }
+renderETFs();
 
 // === PRICE & VOLUME ===
 async function updatePrice() {
   try {
     const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
-    const d = await r.json();
-    const data = d.ripple;
-    document.getElementById('price').textContent = '$' + data.usd.toFixed(4);
-    const change = data.usd_24h_change.toFixed(2);
-    document.getElementById('change').textContent = (change > 0 ? '+' : '') + change + '%';
-    document.getElementById('change').className = 'text-sm mt-1 ' + (change > 0 ? 'text-green-400' : 'text-red-400');
-    document.getElementById('volume').textContent = '$' + (data.usd_24h_vol / 1e9).toFixed(2) + 'B';
-  } catch(e) { console.log('Price fetch failed'); }
+    const d = await r.json().then(j => j.ripple);
+    document.getElementById('price').textContent = '$' + d.usd.toFixed(4);
+    const ch = d.usd_24h_change.toFixed(2);
+    document.getElementById('change').textContent = (ch > 0 ? '+' : '') + ch + '%';
+    document.getElementById('change').className = 'text-sm mt-1 ' + (ch > 0 ? 'text-green-400' : 'text-red-400');
+    document.getElementById('volume').textContent = '$' + (d.usd_24h_vol / 1e9).toFixed(2) + 'B';
+  } catch(e) {}
 }
 updatePrice(); setInterval(updatePrice, 15000);
 
-// === ORDER BOOK (Deeper: limit=50) ===
+// === ORDER BOOK (limit=50) ===
 async function updateOrderBook() {
   try {
     const r = await fetch('https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=50');
@@ -285,22 +251,22 @@ async function updateOrderBook() {
       const ap = parseFloat(d.asks[i]?.[0] || 0), aq = parseFloat(d.asks[i]?.[1] || 0);
       cumBid += bq; cumAsk += aq;
       tbody.innerHTML += `<tr>
-        <td class="p-3 text-green-400 font-medium">${(cumBid/1e6).toFixed(2)}M</td>
+        <td class="p-3 text-green-400">${(cumBid/1e6).toFixed(2)}M</td>
         <td class="p-3 text-right text-green-400">${bq.toFixed(0)}</td>
         <td class="p-3 text-right text-green-400 font-semibold">${bp.toFixed(4)}</td>
         <td class="p-3 text-center text-gray-400">│</td>
         <td class="p-3 text-left text-red-400 font-semibold">${ap.toFixed(4)}</td>
         <td class="p-3 text-right text-red-400">${aq.toFixed(0)}</td>
-        <td class="p-3 text-right text-red-400 font-medium">${(cumAsk/1e6).toFixed(2)}M</td>
+        <td class="p-3 text-right text-red-400">${(cumAsk/1e6).toFixed(2)}M</td>
       </tr>`;
     }
-    document.getElementById('totalBid').textContent = '~' + (cumBid/1e6).toFixed(1) + 'M XRP';
-    document.getElementById('totalAsk').textContent = '~' + (cumAsk/1e6).toFixed(1) + 'M XRP';
+    document.getElementById('totalBid').textContent = (cumBid/1e6).toFixed(1) + 'M XRP';
+    document.getElementById('totalAsk').textContent = (cumAsk/1e6).toFixed(1) + 'M XRP';
   } catch(e) {}
 }
 updateOrderBook(); setInterval(updateOrderBook, 8000);
 
-// === LIVE TRADES ===
+// === LIVE TRADES, FLASH CITY, SUPPLY, CLOCK (unchanged) ===
 async function fetchLiveTrades() {
   try {
     const r = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=15');
@@ -329,7 +295,6 @@ function flashCity(isBuy = true) {
   setTimeout(() => c.classList.remove('active', 'sell'), 1600);
 }
 
-// === SUPPLY BAR ===
 let totalLockedXRP = etfData.totalLocked * 1000000;
 const totalSupply = 100000000000;
 const escrowLocked = 39300000000;
@@ -343,9 +308,8 @@ function updateSupplyBar() {
   document.getElementById('shockPercent').textContent = pct + '%';
   document.getElementById('illiquid').textContent = (totalIlliquid / 1e9).toFixed(2) + 'B';
 }
-updateSupplyBar(); // Call after ETF update
+updateSupplyBar();
 
-// === CLOCK ===
 function updateClock() {
   const n = new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
   const h = n.getHours(), m = n.getMinutes(), d = n.getDay();
@@ -356,7 +320,6 @@ function updateClock() {
 }
 setInterval(updateClock, 1000); updateClock();
 
-// Initial flashes
 setTimeout(() => { flashCity(); flashCity(false); }, 1000);
 </script>
 </body>
