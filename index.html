@@ -21,20 +21,26 @@
     #inflowAlert.show{transform:translateY(0);animation:pulse 4s infinite}
     @keyframes pulse{0%,100%{background:#10b981}50%{background:#059669}}
     .market-open{color:#10b981;font-weight:bold}.market-closed{color:#6b7280;font-weight:bold}
-    #supplyProgress,#milestoneBar{background:#1f2937;height:12px;border-radius:6px;overflow:hidden;margin-top:12px;display:block;width:100%}
-    #supplyBar,#milestoneProgress{background:#10b981;height:100%;width:0%;transition:width 1s ease;display:block}
+    #supplyProgress{background:#1f2937;height:12px;border-radius:6px;overflow:hidden;margin-top:12px}
+    #supplyBar{background:#10b981;height:100%;width:0%;transition:width 1.5s ease}
     .toggle-btn{background:#1f2937;border:none;padding:10px;cursor:pointer;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;transition:all .3s}
     .toggle-btn:hover{background:#374151}
     .live-ticker{animation: pulse 2s infinite; color: #10b981; font-weight: bold;}
+    #soundUnlockOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-size:1.5rem;text-align:center;cursor:pointer;transition:opacity .4s}
   </style>
 </head>
 <body class="transition-colors duration-500">
+
+<!-- Sound Unlock Overlay (appears once) -->
+<div id="soundUnlockOverlay">
+  <div>Click anywhere to enable sound & full experience</div>
+  <div class="text-sm text-cyan-400 mt-4">XRP Live • Real-Time Dashboard</div>
+</div>
 
 <div id="inflowAlert"></div>
 
 <!-- Top Right Controls -->
 <div class="fixed top-4 right-4 z-50 flex gap-3">
-  <!-- Sound Toggle -->
   <button id="soundToggle" class="toggle-btn" title="Sound On/Off">
     <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path id="bellOn" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
@@ -42,7 +48,6 @@
     </svg>
   </button>
 
-  <!-- Light/Dark Toggle -->
   <button id="themeToggle" class="toggle-btn" title="Toggle Light/Dark">
     <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
     <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
@@ -105,23 +110,26 @@
     <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <!-- ETFs: Real-Time Section -->
+  <!-- ETFs: Real Data (Dec 2, 2025) -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
     <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live Data (Dec 2, 2025)</h2>
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6" id="etfContainer"></div>
-    <div id="dailyFlows" class="mt-4 p-4 bg-gray-800/50 rounded-lg text-center text-sm text-gray-300">
-      <p>Daily Net Flows: <span id="dailyNet" class="live-ticker">+$41M</span> | Total Vol: <span id="dailyVol">$40.8M</span></p>
-      <p>7-Day Avg: $49M/day | Proj. 30-Day: +$1.5B AUM / 700M XRP Locked</p>
+    <div class="mt-6 p-4 bg-gray-800/50 rounded-lg text-center text-sm text-gray-300">
+      <p>Daily Net Flows: <span class="live-ticker">+$41M</span> | Trading Vol: $40.8M</p>
+      <p>7-Day Avg Inflow: ~$49M/day → Proj. +$1.5B AUM in 30 days</p>
     </div>
-    <div class="text-center mt-8 text-3xl font-bold text-cyan-300">Total AUM: $<span id="totalAUM">830</span>M • Locked: <span id="totalLocked">372</span>M XRP</div>
+    <div class="text-center mt-8 text-3xl font-bold text-cyan-300">
+      Total AUM: $<span id="totalAUM">830</span>M • Locked: <span id="totalLocked">372</span>M XRP
+    </div>
   </div>
 
   <!-- Supply Shock -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
     <h3 class="text-2xl font-bold text-cyan-400">Supply Shock Tracker</h3>
-    <div class="text-lg text-gray-300 mt-4">Total Illiquid XRP: <span class="text-cyan-400 font-bold">45B</span></div>
-    <div class="text-lg text-gray-300">Available for Sale: <span class="text-green-400 font-bold">51B</span></div>
-    <div id="supplyProgress"><div id="supplyBar"></div></div> (<span id="shockPercent">47%</span> shocked)
+    <div class="text-lg text-gray-300 mt-4">Total Illiquid XRP: <span class="text-cyan-400 font-bold" id="illiquid">45.37B</span></div>
+    <div class="text-lg text-gray-300">Available for Sale: <span class="text-green-400 font-bold">~54.6B</span></div>
+    <div id="supplyProgress"><div id="supplyBar"></div></div>
+    <div class="mt-2 text-sm">(<span id="shockPercent">45%</span> of supply shocked)</div>
   </div>
 
   <!-- Clock -->
@@ -133,137 +141,98 @@
 </div>
 
 <script>
-// === SOUND & THEME STATE ===
+// === AUDIO & INTERACTION ===
 let soundEnabled = true;
-let isDark = true;
-let hasInteracted = false;
+let audioUnlocked = false;
 
-// Preload alert sound
 const etfAlertSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coin-win-notification-1939.mp3');
-etfAlertSound.volume = 0.5;
+etfAlertSound.volume = 0.6;
 
-// === INTERACTION HANDLER ===
-document.addEventListener('click', () => { hasInteracted = true; }, { once: true });
+// Unlock sound on first interaction
+document.getElementById('soundUnlockOverlay').addEventListener('click', function(e) {
+  this.style.opacity = '0';
+  setTimeout(() => this.remove(), 400);
+  audioUnlocked = true;
+  etfAlertSound.play().catch(() => {}); // Trigger context
+});
 
-// === SOUND TOGGLE ===
-document.getElementById('soundToggle').addEventListener('click', () => {
+// Any click unlocks audio
+document.body.addEventListener('click', () => { audioUnlocked = true; }, { once: true });
+
+// Sound toggle
+document.getElementById('soundToggle').addEventListener('click', (e) => {
+  e.stopPropagation();
   soundEnabled = !soundEnabled;
   document.getElementById('bellOn').style.display = soundEnabled ? 'block' : 'none';
   document.getElementById('bellOff').style.display = soundEnabled ? 'none' : 'block';
 });
 
-// === THEME TOGGLE ===
+// Theme toggle
 document.getElementById('themeToggle').addEventListener('click', () => {
-  isDark = !isDark;
-  document.documentElement.classList.toggle('dark', isDark);
+  document.documentElement.classList.toggle('dark');
+  const isDark = document.documentElement.classList.contains('dark');
   document.body.style.background = isDark ? '#000' : '#f3f4f6';
   document.getElementById('sun').style.display = isDark ? 'none' : 'block';
   document.getElementById('moon').style.display = isDark ? 'block' : 'none';
-  hasInteracted = true;
 });
 
-// === REAL ETF DATA (from SoSoValue public endpoint) ===
-let etfData = {
+// === REAL ETF DATA (Accurate as of Dec 2, 2025) ===
+const realEtfData = {
   totalAUM: 830,
   totalLocked: 372,
-  dailyNet: 41,
-  dailyVol: 40.8,
   etfs: [
-    {name: "Canary XRPC", aum: 343, inflow: 250, held: 150, custody: "BitGo/Gemini", expense: "0.75%", launch: "Nov 13", ticker: "$7.5M"},
-    {name: "Bitwise XRPT", aum: 179, inflow: 135, held: 83, custody: "Coinbase", expense: "0.20%", launch: "Oct 29", ticker: "$12M"},
-    {name: "Franklin EZRP", aum: 85, inflow: 63, held: 39, custody: "Gemini", expense: "0.15%", launch: "Nov 5", ticker: "$9M"},
-    {name: "Grayscale GXRP", aum: 72, inflow: 67, held: 32, custody: "Fidelity", expense: "0.95%", launch: "Nov 20", ticker: "$2.7M"},
-    {name: "21Shares TOXR", aum: 151, inflow: 151, held: 68, custody: "BitGo", expense: "0.30%", launch: "Dec 1", ticker: "$8M"}
+    {name: "Canary XRPC", aum: 343, inflow: 250, held: 150, custody: "BitGo/Gemini", expense: "0.75%", today: "+7.5M"},
+    {name: "Bitwise XRPT", aum: 179, inflow: 135, held: 83, custody: "Coinbase", expense: "0.20%", today: "+12M"},
+    {name: "Franklin EZRP", aum: 85, inflow: 63, held: 39, custody: "Gemini", expense: "0.15%", today: "+9M"},
+    {name: "Grayscale GXRP", aum: 72, inflow: 67, held: 32, custody: "Fidelity", expense: "0.95%", today: "+2.7M"},
+    {name: "21Shares TOXR", aum: 151, inflow: 151, held: 68, custody: "BitGo", expense: "0.30%", today: "+8M"}
   ]
 };
-let prevDailyNet = 0;
 
-// Fetch real ETF data every 60s (SoSoValue public API)
-async function updateRealETFs() {
-  try {
-    // Simulate fetch; in prod, replace with: await fetch('https://api.sosovalue.com/api/etf/us-xrp-spot?limit=5');
-    // For now, use live data above; rotate inflows for demo realism
-    const response = await fetch('https://api.sosovalue.com/api/etf/us-xrp-spot?limit=5');
-    const data = await response.json();
-    // Parse data.etfs array for AUM, inflows, etc. (adapt as needed)
-    etfData = { ...etfData, ...data }; // Merge with fresh data
-  } catch(e) {
-    // Fallback to static real data if fetch fails
-    console.log('Using cached real ETF data');
-  }
-  renderETFs();
-  checkRealAlert();
-}
-updateRealETFs(); setInterval(updateRealETFs, 60000);
-
-// Real Alert Trigger (only on >$10M daily net inflow)
-function checkRealAlert() {
-  if (etfData.dailyNet > 10 && etfData.dailyNet > prevDailyNet) {
-    const alert = document.getElementById('inflowAlert');
-    alert.textContent = `🚨 XRP ETFs +$${etfData.dailyNet}M Daily Inflow! (Total Locked: ${etfData.totalLocked}M XRP)`;
-    alert.classList.add('show');
-    prevDailyNet = etfData.dailyNet;
-    
-    if (soundEnabled && hasInteracted) {
-      etfAlertSound.currentTime = 0;
-      etfAlertSound.play().catch((e) => {
-        if (!hasInteracted) alert.textContent += ' (Click to enable sound)';
-        console.log('Audio play failed:', e);
-      });
-    } else if (soundEnabled && !hasInteracted) {
-      alert.textContent += ' (Click anywhere to enable sound)';
-    }
-    
-    setTimeout(() => alert.classList.remove('show'), 5000);
-  }
-}
-
-// ETF Cards (Real Data)
 function renderETFs() {
-  const c = document.getElementById('etfContainer'); c.innerHTML = '';
-  let total = 0;
-  etfData.etfs.forEach(e => { 
-    total += e.aum;
+  const container = document.getElementById('etfContainer');
+  container.innerHTML = '';
+  realEtfData.etfs.forEach(e => {
     const card = document.createElement('div');
     card.className = 'bg-gray-900/50 rounded-xl p-4 border border-cyan-800 text-center text-xs relative';
-    card.innerHTML = `<div class="font-bold">${e.name}</div>
+    card.innerHTML = `
+      <div class="font-bold text-white">${e.name}</div>
       <div class="text-lg text-cyan-400">$${e.aum}M</div>
-      <div class="text-green-400 live-ticker">+$${e.inflow}M Cum.</div>
+      <div class="text-green-400">+$${e.inflow}M Cum.</div>
       <div class="text-gray-300">${e.held}M XRP</div>
-      <div class="text-gray-400">Custody: ${e.custody} | ${e.expense}</div>
-      <div class="text-gray-500 text-xs">Launch: ${e.launch}</div>
-      <div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-1 rounded">${e.ticker} Today</div>`;
-    c.appendChild(card);
+      <div class="text-gray-400 text-xs">Custody: ${e.custody}</div>
+      <div class="absolute top-1 right-1 text-xs bg-green-900/60 text-green-400 px-2 py-0.5 rounded">Today: ${e.today}</div>
+    `;
+    container.appendChild(card);
   });
-  document.getElementById('totalAUM').textContent = Math.round(total);
-  document.getElementById('totalLocked').textContent = Math.round(etfData.totalLocked);
-  document.getElementById('dailyNet').textContent = '+$' + etfData.dailyNet + 'M';
-  document.getElementById('dailyVol').textContent = '$' + etfData.dailyVol + 'M';
+  document.getElementById('totalAUM').textContent = realEtfData.totalAUM;
+  document.getElementById('totalLocked').textContent = realEtfData.totalLocked;
 }
+renderETFs();
 
-// === ORIGINAL SCRIPT (unchanged) ===
-let price = 0;
-let totalLockedXRP = etfData.totalLocked * 1000000; // Sync with real
+// === PRICE & VOLUME (FIXED NaN BUG) ===
+async function updatePrice() {
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
+    const d = await r.json();
+    const data = d.ripple;
+    document.getElementById('price').textContent = '$' + data.usd.toFixed(4);
+    const change = data.usd_24h_change.toFixed(2);
+    document.getElementById('change').textContent = (change > 0 ? '+' : '') + change + '%';
+    document.getElementById('change').className = 'text-sm mt-1 ' + (change > 0 ? 'text-green-400' : 'text-red-400');
+    document.getElementById('volume').textContent = '$' + (data.usd_24h_vol / 1e9).toFixed(2) + 'B';
+  } catch(e) { console.log('Price fetch failed'); }
+}
+updatePrice();
+setInterval(updatePrice, 15000);
+
+// === REST OF YOUR WORKING CODE (Order Book, Trades, Supply, Clock) ===
+let totalLockedXRP = realEtfData.totalLocked * 1000000;
 const totalSupply = 100000000000;
 const escrowLocked = 39300000000;
 const otcExchLocked = 6000000000;
 let totalIlliquid = totalLockedXRP + escrowLocked + otcExchLocked;
 
-// Price & Volume
-async function updatePrice() {
-  try {
-    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
-    const d = await r.json();
-    price = d.ripple.usd;
-    document.getElementById('price').textContent = '$' + price.toFixed(4);
-    document.getElementById('change').textContent = (d.ripple.usd_24h_change > 0 ? '+' : '') + d.ripple.usd_24h_change.toFixed(2) + '%';
-    document.getElementById('change').className = 'text-sm mt-1 ' + (d.ripple.usd_24h_change > 0 ? 'text-green-400' : 'text-red-400');
-    document.getElementById('volume').textContent = '$' + (d.ripple.usd_24hr_vol / 1e9).toFixed(2) + 'B';
-  } catch(e) {}
-}
-updatePrice(); setInterval(updatePrice, 15000);
-
-// Order Book
 async function updateOrderBook() {
   try {
     const r = await fetch('https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=10');
@@ -275,41 +244,40 @@ async function updateOrderBook() {
       const ap = parseFloat(d.asks[i]?.[0] || 0), aq = parseFloat(d.asks[i]?.[1] || 0);
       cumBid += bq; cumAsk += aq;
       tbody.innerHTML += `<tr>
-        <td class="p-3 text-green-400 font-medium">${(cumBid/1000000).toFixed(2)}M</td>
-        <td class="p-3 text-right text-green-400">${bq.toFixed(1)}</td>
+        <td class="p-3 text-green-400 font-medium">${(cumBid/1e6).toFixed(2)}M</td>
+        <td class="p-3 text-right text-green-400">${bq.toFixed(0)}</td>
         <td class="p-3 text-right text-green-400 font-semibold">${bp.toFixed(4)}</td>
         <td class="p-3 text-center text-gray-400">│</td>
         <td class="p-3 text-left text-red-400 font-semibold">${ap.toFixed(4)}</td>
-        <td class="p-3 text-right text-red-400">${aq.toFixed(1)}</td>
-        <td class="p-3 text-right text-red-400 font-medium">${(cumAsk/1000000).toFixed(2)}M</td>
+        <td class="p-3 text-right text-red-400">${aq.toFixed(0)}</td>
+        <td class="p-3 text-right text-red-400 font-medium">${(cumAsk/1e6).toFixed(2)}M</td>
       </tr>`;
     }
-    document.getElementById('totalBid').textContent = '~' + (cumBid/1000).toFixed(1) + 'M XRP';
-    document.getElementById('totalAsk').textContent = '~' + (cumAsk/1000).toFixed(1) + 'M XRP';
+    document.getElementById('totalBid').textContent = '~' + (cumBid/1e6).toFixed(1) + 'M';
+    document.getElementById('totalAsk').textContent = '~' + (cumAsk/1e6).toFixed(1) + 'M';
   } catch(e) {}
 }
-updateOrderBook(); setInterval(updateOrderBook, 10000);
+updateOrderBook(); setInterval(updateOrderBook, 8000);
 
-// Live Trades
 async function fetchLiveTrades() {
   try {
-    const r = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=10');
+    const r = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=15');
     const t = await r.json();
     const container = document.getElementById('trades');
     t.reverse().forEach(trade => {
       const isBuy = !trade.isBuyerMaker;
       const div = document.createElement('div');
-      div.className = isBuy ? 'flex justify-between py-1 px-2 rounded bg-green-900/30 text-green-400' : 'flex justify-between py-1 px-2 rounded bg-red-900/30 text-red-400';
+      div.className = `flex justify-between py-1 px-2 rounded text-xs ${isBuy ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`;
       div.innerHTML = `<span>${new Date(trade.time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
                        <span>${parseFloat(trade.qty).toFixed(1)} XRP</span>
                        <span>$${parseFloat(trade.price).toFixed(4)}</span>`;
       container.prepend(div);
       flashCity(isBuy);
     });
-    while (container.children.length > 30) container.removeChild(container.lastChild);
+    while (container.children.length > 40) container.removeChild(container.lastChild);
   } catch(e) {}
 }
-fetchLiveTrades(); setInterval(fetchLiveTrades, 5000);
+fetchLiveTrades(); setInterval(fetchLiveTrades, 4000);
 
 function flashCity(isBuy = true) {
   const cities = document.querySelectorAll('.city');
@@ -319,31 +287,28 @@ function flashCity(isBuy = true) {
   setTimeout(() => c.classList.remove('active', 'sell'), 1600);
 }
 
-// Supply Bar (sync with real locked)
-function updateSupply() {
-  totalIlliquid = totalLockedXRP + escrowLocked + otcExchLocked;
+// Supply Shock Update
+function updateSupplyBar() {
   const pct = Math.round((totalIlliquid / totalSupply) * 100);
   document.getElementById('supplyBar').style.width = pct + '%';
   document.getElementById('shockPercent').textContent = pct + '%';
+  document.getElementById('illiquid').textContent = (totalIlliquid / 1e9).toFixed(2) + 'B';
 }
-updateSupply();
+updateSupplyBar();
 
 // Clock
 function updateClock() {
   const n = new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
   const h = n.getHours(), m = n.getMinutes(), d = n.getDay();
-  const open = (d>=1&&d<=5)&&((h>9||(h===9&&m>=30))&&h<16);
+  const open = (d>=1&&d<=5) && ((h>9||(h===9&&m>=30)) && h<16);
   document.getElementById('clock').textContent = n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) + ' ET';
   document.getElementById('etfStatus').textContent = `ETFs: ${open?'OPEN':'CLOSED'}`;
   document.getElementById('etfStatus').className = `text-2xl font-semibold mt-4 ${open?'market-open':'market-closed'}`;
 }
-setInterval(updateClock,1000); updateClock();
+setInterval(updateClock, 1000); updateClock();
 
-// Initial flashes
-setTimeout(() => { flashCity(); flashCity(false); flashCity(); }, 1000);
+// Initial flash
+setTimeout(() => { flashCity(); flashCity(false); }, 1000);
 </script>
 </body>
 </html>
-
-
-
