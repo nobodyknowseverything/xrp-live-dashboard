@@ -23,11 +23,30 @@
     .market-open{color:#10b981;font-weight:bold}.market-closed{color:#6b7280;font-weight:bold}
     #supplyProgress,#milestoneBar{background:#1f2937;height:12px;border-radius:6px;overflow:hidden;margin-top:12px;display:block;width:100%}
     #supplyBar,#milestoneProgress{background:#10b981;height:100%;width:0%;transition:width 1s ease;display:block}
+    .toggle-btn{background:#1f2937;border:none;padding:10px;cursor:pointer;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;transition:all .3s}
+    .toggle-btn:hover{background:#374151}
   </style>
 </head>
-<body>
+<body class="transition-colors duration-500">
 
 <div id="inflowAlert"></div>
+
+<!-- Top Right Controls -->
+<div class="fixed top-4 right-4 z-50 flex gap-3">
+  <!-- Sound Toggle -->
+  <button id="soundToggle" class="toggle-btn" title="Sound On/Off">
+    <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path id="bellOn" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+      <path id="bellOff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-12.728 12.728m-2.828-2.828L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" style="display:none"/>
+    </svg>
+  </button>
+
+  <!-- Light/Dark Toggle -->
+  <button id="themeToggle" class="toggle-btn" title="Toggle Light/Dark">
+    <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
+    <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+  </button>
+</div>
 
 <div class="max-w-7xl mx-auto p-6 my-8 bg-gray-900/70 rounded-2xl border border-cyan-800">
   <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Live • Your Real-Time Edge</h2>
@@ -39,6 +58,7 @@
   </div>
 </div>
 
+<!-- Rest of your HTML stays exactly the same until the script -->
 <div class="border-b border-gray-800">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
     <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live • Real-Time</h1>
@@ -109,7 +129,53 @@
 </div>
 
 <script>
-// Safe, reliable polling — no WebSockets, no CORS, no crashes
+// === SOUND & THEME STATE ===
+let soundEnabled = true;
+let isDark = true;
+
+// Preload alert sound (short cash register "cha-ching" style)
+const etfAlertSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coin-win-notification-1939.mp3');
+etfAlertSound.volume = 0.5;
+
+// === SOUND TOGGLE ===
+document.getElementById('soundToggle').addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  document.getElementById('bellOn').style.display = soundEnabled ? 'block' : 'none';
+  document.getElementById('bellOff').style.display = soundEnabled ? 'none' : 'block';
+});
+
+// === THEME TOGGLE ===
+document.getElementById('themeToggle').addEventListener('click', () => {
+  isDark = !isDark;
+  document.documentElement.classList.toggle('dark', isDark);
+  document.body.style.background = isDark ? '#000' : '#f3f4f6';
+  document.getElementById('sun').style.display = isDark ? 'none' : 'block';
+  document.getElementById('moon').style.display = isDark ? 'block' : 'none';
+});
+
+// === ETF SIMULATED INFLOW ALERT (demo every 15–40 sec) ===
+function triggerEtfAlert() {
+  const inflows = [12, 18, 25, 31, 15, 22, 28, 35, 41, 19];
+  const randomInflow = inflows[Math.floor(Math.random() * inflows.length)];
+  const etfNames = ["Canary XRPC", "Bitwise XRPT", "Franklin EZRP", "Grayscale GXRP", "21Shares TOXR"];
+  const randomEtf = etfNames[Math.floor(Math.random() * etfNames.length)];
+
+  const alert = document.getElementById('inflowAlert');
+  alert.textContent = `🚨 ${randomEtf} +$${randomInflow}M INFLOW DETECTED!`;
+  alert.classList.add('show');
+  
+  if (soundEnabled) {
+    etfAlertSound.currentTime = 0;
+    etfAlertSound.play().catch(() => {});
+  }
+
+  setTimeout(() => alert.classList.remove('show'), 5000);
+}
+
+// Simulate ETF inflow alerts (you can remove this in production and trigger from real data)
+setInterval(triggerEtfAlert, Math.random() * 25000 + 15000);
+
+// === REST OF YOUR ORIGINAL SCRIPT (unchanged except tiny fixes) ===
 let price = 0;
 let totalLockedXRP = 350000000;
 const totalSupply = 100000000000;
@@ -139,7 +205,7 @@ async function updatePrice() {
 }
 updatePrice(); setInterval(updatePrice, 15000);
 
-// Order Book (Binance only — 100% reliable)
+// Order Book
 async function updateOrderBook() {
   try {
     const r = await fetch('https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=10');
@@ -166,7 +232,7 @@ async function updateOrderBook() {
 }
 updateOrderBook(); setInterval(updateOrderBook, 10000);
 
-// Live Trades (Binance only — 100% reliable)
+// Live Trades
 async function fetchLiveTrades() {
   try {
     const r = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=10');
@@ -239,4 +305,3 @@ setTimeout(() => { flashCity(); flashCity(false); flashCity(); }, 1000);
 </script>
 </body>
 </html>
-
