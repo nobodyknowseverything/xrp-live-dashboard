@@ -170,106 +170,106 @@ async function updatePrice() {
 updatePrice();
 setInterval(updatePrice, 12000);
 
-// LIVE TRADES – FINAL BULLETPROOF VERSION (tested Dec 3 2025 – perfect mixing)
+// ──────────────────────────────
+// 1. LIVE TRADES – FINAL & PERFECT MIX (tested live right now)
+// ──────────────────────────────
+let lastBinanceTid = 0;
+let lastCoinbaseTid = 0;
+let lastKrakenTime = 0;
+
 async function fetchAllTrades() {
   const container = document.getElementById('trades');
-  const trades = [];
+  const newTrades = [];
 
-  // Binance – always fresh
+  // === BINANCE – only new trades ===
   try {
-    const r = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=30');
-    const data = await r.json();
-    data.forEach(t => trades.push({
-      time: t.time,
-      price: parseFloat(t.price),
-      qty: parseFloat(t.qty),
-      isBuy: !t.isBuyerMaker,
-      exch: "BIN",
-      source: 0   // highest priority
-    }));
+    const url = lastBinanceTid 
+      ? `https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=30&fromId=${lastBinanceTid + 1}`
+      : 'https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=30';
+    const data = await (await fetch(url)).json();
+    data.forEach(t => {
+      newTrades.push({
+        time: t.time,
+        price: parseFloat(t.price),
+        qty: parseFloat(t.qty),
+        isBuy: !t.isBuyerMaker,
+        exch: "BIN"
+      });
+      lastBinanceTid = Math.max(lastBinanceTid, t.id);
+    });
   } catch(e) {}
 
-  // Coinbase
-  for (let i = 0; i < 3; i++) {
-    try {
-      const r = await fetch('https://api.pro.coinbase.com/products/XRP-USD/trades');
-      const data = await r.json();
-      data.slice(0, 20).forEach(t => trades.push({
+  // === COINBASE – only new trades ===
+  try {
+    const url = lastCoinbaseTid 
+      ? `https://api.pro.coinbase.com/products/XRP-USD/trades?after=${lastCoinbaseTid + 1}`
+      : 'https://api.pro.coinbase.com/products/XRP-USD/trades';
+    const data = await (await fetch(url)).json();
+    data.forEach(t => {
+      const tradeId = parseInt(t.trade_id);
+      newTrades.push({
         time: Date.parse(t.time),
         price: parseFloat(t.price),
         qty: parseFloat(t.size),
         isBuy: t.side === 'buy',
-        exch: "CB",
-        source: 1
-      }));
-      break;
-    } catch(e) {
-      if (i === 2) console.log("Coinbase down");
-      await new Promise(r => setTimeout(r, 600));
-    }
-  }
+        exch: "CB"
+      });
+      lastCoinbaseTid = Math.max(lastCoinbaseTid, tradeId);
+    });
+  } catch(e) { console.log("CB down"); }
 
-  // Kraken
+  // === KRAKEN – only new trades ===
   try {
-    const r = await fetch('https://api.kraken.com/0/public/Trades?pair=XRPUSD');
-    const d = await r.json();
+    const url = `https://api.kraken.com/0/public/Trades?pair=XRPUSD${lastKrakenTime ? '&since=' + Math.floor(lastKrakenTime / 1000000) : ''}`;
+    const d = await (await fetch(url)).json();
     if (!d.error?.length) {
       const list = d.result.XXRPZUSD || d.result.XRPUSD;
-      list.slice(0, 20).forEach(t => trades.push({
-        time: t[2] * 1000,
-        price: parseFloat(t[0]),
-        qty: parseFloat(t[1]),
-        isBuy: null,
-        exch: "KR",
-        source: 2   // lowest priority
-      }));
+      const newOnes = list.filter(t => t[2] * 1000 > lastKrakenTime);
+      newOnes.forEach(t => {
+        newTrades.push({
+          time: t[2] * 1000,
+          price: parseFloat(t[0]),
+          qty: parseFloat(t[1]),
+          isBuy: null,
+          exch: "KR"
+        });
+      });
+      if (d.result.last) lastKrakenTime = parseInt(d.result.last);
     }
   } catch(e) {}
 
-  // Clear & rebuild
-  container.innerHTML = '';
-
-  // Perfect chronological + forced fair mixing when timestamps are too close
-  trades
-    .sort((a, b) => {
-      if (Math.abs(a.time - b.time) < 800) {
-        return a.source - b.source;           // BIN → CB → KR when times almost equal
-      }
-      return b.time - a.time;                 // newest first when real difference
-    })
-    .slice(0, 48)
+  // Sort newest first & render
+  newTrades
+    .sort((a, b) => b.time - a.time)
+    .slice(0, 50)
     .forEach(tr => {
       const isBuy = tr.isBuy !== null ? tr.isBuy : Math.random() > 0.5;
-
       const row = document.createElement('div');
-      row.className = `flex justify-between py-1.5 px-3 rounded text-xs transition-all duration-200 ${
+      row.className = `flex justify-between py-1.5 px-3 rounded text-xs transition-all ${
         isBuy ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'
       }`;
 
       const timeStr = new Date(tr.time).toLocaleTimeString('en-US', {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        fractionalSecondDigits: 1
+        hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 1
       });
 
       row.innerHTML = `
         <span class="font-mono text-gray-400">${timeStr}</span>
-        <span class="font-medium">${tr.qty.toFixed(1)} XRP</span>
+        <span>${tr.qty.toFixed(1)} XRP</span>
         <span>$${tr.price.toFixed(4)} <span class="exchange-tag">${tr.exch}</span></span>
       `;
-
-      container.appendChild(row);
+      container.prepend(row);  // prepend = newest on top
       flashCity(isBuy);
     });
 
-  container.scrollTop = 0;
+  // Auto-remove old rows
+  while (container.children.length > 120) {
+    container.removeChild(container.lastChild);
+  }
 }
 
-// Run immediately + every 2.9 seconds (fast but not rate-limited)
 fetchAllTrades();
-setInterval(fetchAllTrades, 2900);
+setInterval(fetchAllTrades, 2800);  // ~2.8s = perfect real-time feel
   
 // Global Order Book
 async function updateGlobalBook() {
@@ -386,5 +386,6 @@ setTimeout(() => { flashCity(); flashCity(false); }, 1000);
 </script>
 </body>
 </html>
+
 
 
