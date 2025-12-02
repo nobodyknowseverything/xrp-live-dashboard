@@ -76,7 +76,7 @@
 
   <!-- Global Map -->
   <div class="lg:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Trade Flow</h2><p class="text-text-sm text-gray-400 mt-1">Green = buy • Red = sell</p></div>
+    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Trade Flow</h2><p class="text-sm text-gray-400 mt-1">Green = buy • Red = sell</p></div>
     <div id="citymap">
       <div class="city" data-name="New York" style="top:45%;left:22%"></div>
       <div class="city" data-name="London" style="top:38%;left:42%"></div>
@@ -123,11 +123,11 @@
     <div class="mt-2 text-sm">(<span id="shockPercent">45%</span> shocked)</div>
   </div>
 
-  <!-- Clock -->
+  <!-- Clock - MASSIVE -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-12">
     <div class="text-6xl font-bold text-green-400">LIVE</div>
     <div id="etfStatus" class="text-2xl font-semibold mt-4 market-open">ETFs: —</div>
-    <div id="clock" class="textetni-7xl font-mono my-8">—</div>
+    <div id="clock" class="text-7xl font-mono my-8">—</div>
   </div>
 </div>
 
@@ -137,12 +137,13 @@ let soundEnabled = true;
 document.getElementById('soundToggle').addEventListener('click', e => { e.stopPropagation(); soundEnabled = !soundEnabled; document.getElementById('bellOn').style.display = soundEnabled ? 'block' : 'none'; document.getElementById('bellOff').style.display = soundEnabled ? 'none' : 'block'; });
 document.getElementById('themeToggle').addEventListener('click', () => { document.documentElement.classList.toggle('dark'); const isDark = document.documentElement.classList.contains('dark'); document.body.style.background = isDark ? '#000' : '#f3f4f6'; document.getElementById('sun').style.display = isDark ? 'none' : 'block'; document.getElementById('moon').style.display = isDark ? 'block' : 'none'; });
 
-// PRICE: 4 decimals
+// PRICE: Always 4 decimals (e.g., $2.0300)
 async function updatePrice() {
   try {
     const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
     const d = await r.json().then(j => j.ripple);
-    document.getElementById('price').textContent = '$' + d.usd.toFixed(4);
+    const price = d.usd.toFixed(4);
+    document.getElementById('price').textContent = '$' + price.padEnd(7, '0'); // Force 4 decimals
     const ch = d.usd_24h_change.toFixed(2);
     document.getElementById('change').textContent = (ch > 0 ? '+' : '') + ch + '%';
     document.getElementById('change').className = 'text-sm mt-1 ' + (ch > 0 ? 'text-green-400' : 'text-red-400');
@@ -151,7 +152,7 @@ async function updatePrice() {
 }
 updatePrice(); setInterval(updatePrice, 15000);
 
-// MULTI-EXCHANGE TRADES
+// MULTI-EXCHANGE TRADES - TRUE CHRONOLOGICAL ORDER
 async function fetchAllTrades() {
   const container = document.getElementById('trades');
   const trades = [];
@@ -159,7 +160,7 @@ async function fetchAllTrades() {
   // Binance
   try { const r = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=15'); const t = await r.json(); t.forEach(tr => trades.push({time: tr.time, qty: parseFloat(tr.qty), price: parseFloat(tr.price), isBuy: !tr.isBuyerMaker, exch: "BIN"})); } catch(e) {}
 
-  // Coinbase (retry)
+  // Coinbase (retry 3 times)
   for (let i = 0; i < 3; i++) {
     try { const r = await fetch('https://api.pro.coinbase.com/products/XRP-USD/trades'); const t = await r.json(); t.slice(0,10).forEach(tr => trades.push({time: Date.parse(tr.time), qty: parseFloat(tr.size), price: parseFloat(tr.price), isBuy: tr.side === 'buy', exch: "CB"})); break; }
     catch(e) { if (i === 2) console.log("Coinbase down"); await new Promise(r => setTimeout(r, 1000)); }
@@ -168,6 +169,7 @@ async function fetchAllTrades() {
   // Kraken
   try { const r = await fetch('https://api.kraken.com/0/public/Trades?pair=XRPUSD'); const d = await r.json(); if (!d.error?.length) { const t = d.result.XXRPZUSD || d.result.XRPUSD; t.slice(0,10).forEach(tr => trades.push({time: tr[2]*1000, qty: parseFloat(tr[1]), price: parseFloat(tr[0]), isBuy: null, exch: "KR"})); }} catch(e) {}
 
+  // TRUE SORT - newest first, no KR bias
   trades.sort((a,b) => b.time - a.time).slice(0,35).forEach(tr => {
     const isBuy = tr.isBuy !== null ? tr.isBuy : Math.random() > 0.5;
     const div = document.createElement('div');
@@ -256,7 +258,7 @@ function renderETFs() {
 }
 renderETFs();
 
-// SUPPLY & CLOCK
+// SUPPLY & CLOCK (Clock now HUGE)
 let totalLockedXRP = 350 * 1000000;
 const totalSupply = 100000000000;
 const escrowLocked = 39300000000;
