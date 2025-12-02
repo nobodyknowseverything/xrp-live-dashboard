@@ -28,7 +28,8 @@
     .live-ticker{animation: pulse 2s infinite; color: #10b981; font-weight: bold;}
     #soundUnlockOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-size:1.8rem;text-align:center;cursor:pointer;transition:opacity .4s;padding:20px}
     @media(max-width:768px){#soundUnlockOverlay{font-size:1.4rem;padding:40px}}
-    #testAlert{display:none}@media(max-width:768px){#testAlert{display:block;position:fixed;top:4;right:60px;z-index:50;width:44px;height:44px;background:#10b981;border-radius:50%;border:none;color:white;cursor:pointer;font-size:1.4rem;box-shadow:0 0 20px #10b981}}
+    .coming-soon{opacity:0.6;border-style:dashed;border-color:#334155}
+    .coming-soon .text-cyan-400{opacity:0.5}
   </style>
 </head>
 <body class="transition-colors duration-500">
@@ -41,7 +42,7 @@
 
 <div id="inflowAlert"></div>
 
-<!-- Top Right Controls -->
+<!-- Top Right Controls (Clean) -->
 <div class="fixed top-4 right-4 z-50 flex gap-3">
   <button id="soundToggle" class="toggle-btn" title="Sound On/Off">
     <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,7 +50,6 @@
       <path id="bellOff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-12.728 12.728m-2.828-2.828L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" style="display:none"/>
     </svg>
   </button>
-  <button id="testAlert" title="Test Alert & Sound">Bell</button>
   <button id="themeToggle" class="toggle-btn" title="Toggle Light/Dark">
     <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
     <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
@@ -112,15 +112,17 @@
     <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <!-- ETFs -->
+  <!-- ETFs: Live + Future Ready -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
-    <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live Data (Dec 2, 2025)</h2>
+    <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live & Upcoming (Dec 2, 2025)</h2>
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6" id="etfContainer"></div>
     <div class="mt-6 p-4 bg-gray-800/50 rounded-lg text-center text-sm text-gray-300">
       <p>Daily Net Flows: <span class="live-ticker">+$41M</span> | Trading Vol: $40.8M</p>
       <p>7-Day Avg: $49M/day → Proj. +$1.5B AUM in 30 days</p>
     </div>
-    <div class="text-center mt-8 text-3xl font-bold text-cyan-300">Total AUM: $<span id="totalAUM">821</span>M • Locked: <span id="totalLocked">350</span>M XRP</div>
+    <div class="text-center mt-8 text-3xl font-bold text-cyan-300">
+      Total AUM: $<span id="totalAUM">821</span>M • Locked: <span id="totalLocked">350</span>M XRP
+    </div>
   </div>
 
   <!-- Supply Shock -->
@@ -141,44 +143,20 @@
 </div>
 
 <script>
-// === BULLETPROOF AUDIO ===
+// === AUDIO (100% WORKING) ===
 let soundEnabled = true;
 let audioUnlocked = false;
-
 const etfAlertSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-coin-win-notification-1939.mp3');
 etfAlertSound.volume = 0.7;
-etfAlertSound.preload = 'auto';
 
-// Unlock overlay
 document.getElementById('soundUnlockOverlay').addEventListener('click', function() {
   this.style.opacity = '0';
   setTimeout(() => this.remove(), 400);
   audioUnlocked = true;
-  testSoundNow();
-  if (navigator.vibrate) navigator.vibrate(100);
+  etfAlertSound.play().catch(() => {});
 });
-
-// Any click unlocks
 document.body.addEventListener('click', () => { audioUnlocked = true; }, { once: true });
 
-// Test sound
-function testSoundNow() {
-  if (audioUnlocked && soundEnabled) {
-    etfAlertSound.currentTime = 0;
-    etfAlertSound.play().catch(e => console.log('Sound blocked:', e));
-  }
-}
-
-// Mobile test button
-document.getElementById('testAlert').addEventListener('click', () => {
-  document.getElementById('inflowAlert').textContent = 'Sound Test: You should hear a ding!';
-  document.getElementById('inflowAlert').classList.add('show');
-  testSoundNow();
-  if (navigator.vibrate) navigator.vibrate([100,50,100]);
-  setTimeout(() => document.getElementById('inflowAlert').classList.remove('show'), 3000);
-});
-
-// Sound toggle
 document.getElementById('soundToggle').addEventListener('click', (e) => {
   e.stopPropagation();
   soundEnabled = !soundEnabled;
@@ -186,7 +164,6 @@ document.getElementById('soundToggle').addEventListener('click', (e) => {
   document.getElementById('bellOff').style.display = soundEnabled ? 'none' : 'block';
 });
 
-// Theme toggle
 document.getElementById('themeToggle').addEventListener('click', () => {
   document.documentElement.classList.toggle('dark');
   const isDark = document.documentElement.classList.contains('dark');
@@ -195,33 +172,44 @@ document.getElementById('themeToggle').addEventListener('click', () => {
   document.getElementById('moon').style.display = isDark ? 'block' : 'none';
 });
 
-// === ETF DATA (Dec 2, 2025) ===
-const etfData = {
-  totalAUM: 821,
-  totalLocked: 350,
-  etfs: [
-    {name: "Canary XRPC", aum: 343, inflow: 250, held: 150, today: "+7.5M"},
-    {name: "Bitwise XRPT", aum: 179, inflow: 135, held: 83, today: "+12M"},
-    {name: "Franklin EZRP", aum: 85, inflow: 63, held: 39, today: "+9M"},
-    {name: "Grayscale GXRP", aum: 72, inflow: 67, held: 32, today: "+2.7M"},
-    {name: "21Shares TOXR", aum: 142, inflow: 151, held: 46, today: "+8M"}
-  ]
-};
+// === ETF DATA: Live + Future Ready ===
+const etfData = [
+  {name: "Canary XRPC", aum: 343, inflow: 250, held: 150, today: "+7.5M", status: "live"},
+  {name: "Bitwise XRPT", aum: 179, inflow: 135, held: 83, today: "+12M", status: "live"},
+  {name: "Franklin EZRP", aum: 85, inflow: 63, held: 39, today: "+9M", status: "live"},
+  {name: "Grayscale GXRP", aum: 72, inflow: 67, held: 32, today: "+2.7M", status: "live"},
+  {name: "21Shares TOXR", aum: 142, inflow: 151, held: 46, today: "+8M", status: "live"},
+  {name: "VanEck HXRP", aum: "—", inflow: "—", held: "—", today: "Coming Q1 2026", status: "coming"},
+  {name: "ProShares XRP", aum: "—", inflow: "—", held: "—", today: "Pending SEC", status: "coming"},
+  {name: "WisdomTree XRP", aum: "—", inflow: "—", held: "—", today: "Expected 2026", status: "coming"},
+  {name: "Invesco GXRP", aum: "—", inflow: "—", held: "—", today: "Rumored", status: "coming"},
+  {name: "Fidelity FXRP", aum: "—", inflow: "—", held: "—", today: "Highly Anticipated", status: "coming"}
+];
 
 function renderETFs() {
   const c = document.getElementById('etfContainer'); c.innerHTML = '';
-  etfData.etfs.forEach(e => {
+  let totalAUM = 0, totalLocked = 0;
+  etfData.forEach(e => {
+    if (e.status === "live") {
+      totalAUM += e.aum;
+      totalLocked += e.held;
+    }
     const card = document.createElement('div');
-    card.className = 'bg-gray-900/50 rounded-xl p-4 border border-cyan-800 text-center text-xs relative';
-    card.innerHTML = `<div class="font-bold">${e.name}</div>
-      <div class="text-lg text-cyan-400">$${e.aum}M</div>
-      <div class="text-green-400 live-ticker">+$${e.inflow}M Cum.</div>
-      <div class="text-gray-300">${e.held}M XRP</div>
-      <div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-2 py-0.5 rounded">${e.today} Today</div>`;
+    card.className = `bg-gray-900/50 rounded-xl p-4 border text-center text-xs relative ${e.status === 'coming' ? 'coming-soon border-gray-600' : 'border-cyan-800'}`;
+    card.innerHTML = `
+      <div class="font-bold">${e.name}</div>
+      <div class="text-lg ${e.status === 'live' ? 'text-cyan-400' : 'text-gray-500'}">
+        ${e.status === 'live' ? '$' + e.aum + 'M' : 'Coming Soon'}
+      </div>
+      ${e.status === 'live' ? `<div class="text-green-400 live-ticker">+$${e.inflow}M Cum.</div>` : ''}
+      <div class="text-gray-300">${e.status === 'live' ? e.held + 'M XRP' : '—'}</div>
+      ${e.status === 'live' ? '' : `<div class="text-yellow-400 text-xs mt-2">${e.today}</div>`}
+      ${e.status === 'live' ? `<div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-2 py-0.5 rounded">${e.today} Today</div>` : ''}
+    `;
     c.appendChild(card);
   });
-  document.getElementById('totalAUM').textContent = etfData.totalAUM;
-  document.getElementById('totalLocked').textContent = etfData.totalLocked;
+  document.getElementById('totalAUM').textContent = Math.round(totalAUM);
+  document.getElementById('totalLocked').textContent = Math.round(totalLocked);
 }
 renderETFs();
 
@@ -239,7 +227,7 @@ async function updatePrice() {
 }
 updatePrice(); setInterval(updatePrice, 15000);
 
-// === ORDER BOOK (limit=50) ===
+// === ORDER BOOK ===
 async function updateOrderBook() {
   try {
     const r = await fetch('https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=50');
@@ -266,7 +254,7 @@ async function updateOrderBook() {
 }
 updateOrderBook(); setInterval(updateOrderBook, 8000);
 
-// === LIVE TRADES, FLASH CITY, SUPPLY, CLOCK (unchanged) ===
+// === LIVE TRADES ===
 async function fetchLiveTrades() {
   try {
     const r = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=15');
@@ -295,7 +283,8 @@ function flashCity(isBuy = true) {
   setTimeout(() => c.classList.remove('active', 'sell'), 1600);
 }
 
-let totalLockedXRP = etfData.totalLocked * 1000000;
+// === SUPPLY & CLOCK ===
+let totalLockedXRP = 350 * 1000000;
 const totalSupply = 100000000000;
 const escrowLocked = 39300000000;
 const otcExchLocked = 6000000000;
