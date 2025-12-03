@@ -156,7 +156,7 @@
 </div>
 
 <script>
-// ==================== FINAL 100% WORKING SCRIPT ====================
+// ==================== FINAL 100% COMPLETE & WORKING SCRIPT ====================
 let rates = { USD: 1 }, currentCurrency = 'USD', currentUSDPrice = 2.1823;
 const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' };
 
@@ -166,10 +166,10 @@ async function loadRates() {
 document.getElementById('currencySelect').onchange = e => { currentCurrency = e.target.value; convertAll(); };
 
 function formatNumber(n) {
-  if (n >= 1e9) return (n/1e9).toFixed(2).replace(/\.00$/,'') + 'B';
-  if (n >= 1e6) return (n/1e6).toFixed(n >= 1e8 ? 0 : 1) + 'M';
-  if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
-  return Number(n).toFixed(4);
+  if (n >= 1e9) return (n/1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return (n/1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(2) + 'K';
+  return Number(n).toFixed(2);
 }
 function convertAll() {
   document.querySelectorAll('.converted').forEach(el => {
@@ -178,7 +178,7 @@ function convertAll() {
   });
 }
 
-// Live Price — FULL 4 DECIMALS
+// Live Price — ONLY 4 DECIMALS
 async function updatePrice() {
   try {
     const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT');
@@ -250,7 +250,7 @@ async function fetchTrades() {
 }
 setInterval(fetchTrades, 2400); fetchTrades();
 
-// Global Order Book — NO JUMPING
+// Global Order Book — STABLE
 let lastBookHTML = "";
 async function updateGlobalOrderBook() {
   const tbody = document.getElementById('bookBody');
@@ -273,8 +273,8 @@ async function updateGlobalOrderBook() {
     if (html !== lastBookHTML) {
       tbody.innerHTML = html;
       lastBookHTML = html;
-      document.getElementById('totalBid').textContent = formatNumber(bidTotal)+' XRP';
-      document.getElementById('totalAsk').textContent = formatNumber(askTotal)+' XRP';
+      document.getElementById('totalBid').textContent = formatNumber(bidTotal) + ' XRP';
+      document.getElementById('totalAsk').textContent = formatNumber(askTotal) + ' XRP';
       convertAll();
     }
   } catch(e) {
@@ -283,7 +283,7 @@ async function updateGlobalOrderBook() {
 }
 setInterval(updateGlobalOrderBook, 8000); updateGlobalOrderBook();
 
-// ETFs — FULLY WORKING
+// ETFs — FULLY VISIBLE
 const etfList = [
   {name:"Canary XRPC",aum:378,held:165,today:"+8.2M"},
   {name:"Bitwise XRPT",aum:196,held:91,today:"+13.1M"},
@@ -307,8 +307,8 @@ function renderETFs() {
       <div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-2 py-0.5 rounded">${e.today}</div>`;
     c.appendChild(div);
   });
-  document.getElementById('totalAUM').dataset.usd = total*1000000;
-  document.getElementById('totalLocked').textContent = locked+'M';
+  document.getElementById('totalAUM').dataset.usd = total * 1000000;
+  document.getElementById('totalLocked').textContent = locked + 'M';
   convertAll();
 }
 renderETFs();
@@ -330,9 +330,9 @@ function updateMarketTimer() {
   document.getElementById('marketTimer').className = `text-5xl font-mono my-6 ${status==='MARKET OPEN'?'clock-open':'clock-closed'}`;
   document.getElementById('marketStatus').textContent = status;
 }
-setInterval(updateMarketTimer, 1000); updateMarketTimer();
+setInterval(updateMarketTimer,1000); updateMarketTimer();
 
-// Theme
+// Theme Toggle
 document.getElementById('themeToggle').onclick = () => {
   document.documentElement.classList.toggle('dark');
   const dark = document.documentElement.classList.contains('dark');
@@ -341,8 +341,10 @@ document.getElementById('themeToggle').onclick = () => {
   document.getElementById('moon').style.display = dark ? 'block' : 'none';
 };
 
-// Init
-loadRates(); setInterval(loadRates, 600000); setInterval(convertAll, 10000);
+// Initialize everything
+loadRates();
+setInterval(loadRates, 600000);
+setInterval(convertAll, 10000);
 </script>
 </body>
 </html>
