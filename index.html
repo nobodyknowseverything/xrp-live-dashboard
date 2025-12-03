@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XRP Live • Multi-Exchange Dashboard</title>
+  <title>XRP Live • Multi-Exchange + ETF Dashboard</title>
   <link rel="icon" href="data:,">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -20,13 +20,10 @@
     #inflowAlert{position:fixed;top:0;left:0;right:0;z-index:9999;padding:16px;text-align:center;font-weight:bold;background:#10b981;color:white;transform:translateY(-100%);transition:transform .6s}
     #inflowAlert.show{transform:translateY(0);animation:pulse 4s infinite}
     @keyframes pulse{0%,100%{background:#10b981}50%{background:#059669}}
-    .market-open{color:#10b981;font-weight:bold}.market-closed{color:#6b7280;font-weight:bold}
-    #supplyProgress{background:#1f2937;height:12px;border-radius:6px;overflow:hidden;margin-top:12px}
-    #supplyBar{background:#10b981;height:100%;width:0%;transition:width 1.5s ease}
-    .toggle-btn{background:#1f2937;border:none;padding:10px;cursor:pointer;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;transition:all .3s}
-    .toggle-btn:hover{background:#374151}
     .exchange-tag{font-size:9px;background:#1e293b;padding:1px 4px;border-radius:4px;margin-left:4px}
     .coming-soon{opacity:0.6;border-style:dashed;border-color:#334155}
+    .text-live{color:#10b981;font-weight:bold;animation:blink 2s infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0.6}}
   </style>
 </head>
 <body class="transition-colors duration-500">
@@ -40,26 +37,16 @@
       <path id="bellOff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-12.728 12.728m-2.828-2.828L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" style="display:none"/>
     </svg>
   </button>
-  <button id="themeToggle" class="toggle-btn" title="Theme">
-    <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
-    <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
-  </button>
 </div>
 
 <div class="max-w-7xl mx-auto p-6 my-8 bg-gray-900/70 rounded-2xl border border-cyan-800">
-  <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Live • Your Real-Time Edge</h2>
-  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-green-400 mb-2">Global Flow</h3><p>Binance + Coinbase + Kraken</p></div>
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-cyan-400 mb-2">Order Book</h3><p>Combined • All Exchanges</p></div>
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-yellow-400 mb-2">ETF Alerts</h3><p>Real $10M+ Daily Flows</p></div>
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-red-400 mb-2">Supply Shock</h3><p>Total Illiquid vs Available</p></div>
-  </div>
+  <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Live • Real-Time Multi-Exchange + ETF Dashboard</h2>
 </div>
 
 <div class="border-b border-gray-800">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
     <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live • Real-Time</h1>
-    <span class="px-4 py-1 text-sm bg-cyan-900 text-cyan-300 rounded-full">BINANCE • COINBASE • KRAKEN</span>
+    <span class="px-4 py-1 text-sm bg-cyan-900 text-cyan-300 rounded-full">BINANCE • COINBASE • KRAKEN • ETF DATA: xrp-insight.com</span>
   </div>
 </div>
 
@@ -69,13 +56,13 @@
   <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">XRP Price</div><div id="price" class="text-2xl font-bold mt-1">—</div><div id="change" class="text-sm mt-1">—</div></div>
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">24h Volume</div><div id="volume" class="text-xl font-semibold mt-1">—</div></div>
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Bid Depth</div><div id="totalBid" class="text-xl font-semibold text-green-400 mt-1">— XRP</div></div>
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Ask Depth</div><div id="totalAsk" class="text-xl font-semibold text-red-400 mt-1">— XRP</div></div>
+    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Bid Depth</div><div id="totalBid" class="text-xl font-semibold text-green-400 mt-1">—</div></div>
+    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Ask Depth</div><div id="totalAsk" class="text-xl font-semibold text-red-400 mt-1">—</div></div>
   </div>
 
   <!-- Global Map -->
   <div class="lg:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Trade Flow</h2><p class="text-sm text-gray-400 mt-1">Green = buy • Red = sell</p></div>
+    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Trade Flow <span class="text-live">● LIVE</span></h2><p class="text-sm text-gray-400 mt-1">Green = buy • Red = sell • Real trades only</p></div>
     <div id="citymap">
       <div class="city" data-name="New York" style="top:45%;left:22%"></div>
       <div class="city" data-name="London" style="top:38%;left:42%"></div>
@@ -92,8 +79,8 @@
 
   <!-- Global Order Book -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Order Book</h2><span class="text-sm text-gray-400 ml-2">Combined • Top 20</span></div>
-    <div class="overflow-x-auto max-h-96"><table class="w-full text-sm"><thead class="sticky top-0 bg-gray-800"><tr><th class="text-left p-3 text-green-400">Total (M)</th><th class="text-right p-3 text-green-400">Bid</th><th class="text-left p-3 text-gray-400">│</th><th class="text-left p-3 text-red-400">Ask</th><th class="text-right p-3 text-red-400">Total (M)</th></tr></thead><tbody id="bookBody"></tbody></table></div>
+    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Order Book</h2><span class="text-sm text-gray-400 ml-2">Combined • Top 20 • BIN+CB+KRA</span></div>
+    <div class="overflow-x-auto max-h-96"><table class="w-full text-sm"><thead class="sticky top-0 bg-gray-800"><tr><th class="text-left p-3 text-green-400">Total</th><th class="text-right p-3 text-green-400">Bid</th><th class="text-left p-3 text-gray-400">│</th><th class="text-left p-3 text-red-400">Ask</th><th class="text-right p-3 text-red-400">Total</th></tr></thead><tbody id="bookBody"></tbody></table></div>
   </div>
 
   <!-- Live Trades -->
@@ -104,87 +91,154 @@
 
   <!-- ETFs -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
-    <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live & Upcoming (Dec 2, 2025)</h2>
+    <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live Data via xrp-insight.com</h2>
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6" id="etfContainer"></div>
     <div class="mt-6 p-4 bg-gray-800/50 rounded-lg text-center text-sm text-gray-300">
-      <p>Daily Net Flows: <span class="live-ticker">+$41M</span> | Trading Vol: $40.8M</p>
-      <p>7-Day Avg: $49M/day → Proj. +$1.5B AUM in 30 days</p>
+      <p>Daily Net Flows: <span id="dailyFlow" class="live-ticker font-bold text-green-400">—</span> | Trading Vol: <span id="dailyVol">—</span></p>
+      <p>7-Day Avg: <span id="avg7day">—</span>/day → Proj. +<span id="proj30d">—</span> AUM in 30 days</p>
     </div>
-    <div class="text-center mt-8 text-3xl font-bold text-cyan-300">Total AUM: $<span id="totalAUM">821</span>M • Locked: <span id="totalLocked">350</span>M XRP</div>
+    <div class="text-center mt-8 text-3xl font-bold text-cyan-300">
+      Total AUM: $<span id="totalAUM">—</span>M • Locked: <span id="totalLocked">—</span>M XRP
+    </div>
   </div>
 
   <!-- Supply Shock -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
-    <h3 class="text-2xl font-bold text-cyan-400">Supply Shock Tracker</h3>
-    <div class="text-lg text-gray-300 mt-4">Total Illiquid XRP: <span class="text-cyan-400 font-bold" id="illiquid">45.35B</span></div>
-    <div class="text-lg text-gray-300">Available for Sale: <span class="text-green-400 font-bold">~54.6B</span></div>
-    <div id="supplyProgress"><div id="supplyBar"></div></div>
-    <div class="mt-2 text-sm">(<span id="shockPercent">45%</span> shocked)</div>
+    <h3 class="text-2xl font-bold text-cyan-400">Supply Shock Tracker • Real-Time</h3>
+    <div class="text-lg text-gray-300 mt-4">Total Illiquid XRP: <span class="text-cyan-400 font-bold" id="illiquid">—</span>B</div>
+    <div class="text-lg text-gray-300">Available for Sale: <span class="text-green-400 font-bold" id="available">—</span>B</div>
+    <div id="supplyProgress" class="bg-gray-800 h-12 rounded-lg overflow-hidden mt-4"><div id="supplyBar" class="h-full bg-gradient-to-r from-cyan-500 to-green-500 transition-all duration-1000" style="width:0%"></div></div>
+    <div class="mt-2 text-sm text-center">(<span id="shockPercent">—</span>% shocked)</div>
   </div>
 
-  <!-- Clock -->
+  <!-- LIVE Status -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-12">
-    <div class="text-6xl font-bold text-green-400">LIVE</div>
-    <div id="etfStatus" class="text-2xl font-semibold mt-4 market-open">ETFs: —</div>
-    <div id="clock" class="text-7xl font-mono my-8">—</div>
+    <div class="text-6xl font-bold text-green-400 animate-pulse">LIVE</div>
+    <div id="etfStatus" class="text-2xl font-semibold mt-4 market-open">ETFs: FETCHING...</div>
   </div>
 </div>
 
 <script>
-// Sound & Theme
+// Sound Toggle
 let soundEnabled = true;
-document.getElementById('soundToggle').addEventListener('click', e => { e.stopPropagation(); soundEnabled = !soundEnabled; document.getElementById('bellOn').style.display = soundEnabled ? 'block' : 'none'; document.getElementById('bellOff').style.display = soundEnabled ? 'none' : 'block'; });
-document.getElementById('themeToggle').addEventListener('click', () => { document.documentElement.classList.toggle('dark'); const isDark = document.documentElement.classList.contains('dark'); document.body.style.background = isDark ? '#000' : '#f3f4f6'; document.getElementById('sun').style.display = isDark ? 'none' : 'block'; document.getElementById('moon').style.display = isDark ? 'block' : 'none'; });
+document.getElementById('soundToggle').addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  document.getElementById('bellOn').style.display = soundEnabled ? 'block' : 'none';
+  document.getElementById('bellOff').style.display = soundEnabled ? 'none' : 'block';
+});
 
-// === MULTI-EXCHANGE TRADES ===
+// Format large numbers
+function formatDepth(n) {
+  if (n >= 1e6) return (n/1e6).toFixed(1).replace('.0','') + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+  return n.toFixed(0);
+}
+
+// City flash only on real trades
+function flashCity(isBuy = true) {
+  const cities = document.querySelectorAll('.city');
+  const city = cities[Math.floor(Math.random() * cities.length)];
+  city.classList.add('active');
+  if (!isBuy) city.classList.add('sell');
+  setTimeout(() => city.classList.remove('active', 'sell'), 1600);
+}
+
+// === LIVE TRADES (Real only) ===
+let lastTradeTime = 0;
 async function fetchAllTrades() {
   const container = document.getElementById('trades');
-  const trades = [];
+  const newTrades = [];
 
-  // Binance
-  try { const r = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=15'); const t = await r.json(); t.forEach(tr => trades.push({time: tr.time, qty: parseFloat(tr.qty), price: parseFloat(tr.price), isBuy: !tr.isBuyerMaker, exch: "BIN"})); } catch(e) {}
+  try {
+    // Binance
+    const bin = await fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=6').then(r => r.json());
+    bin.forEach(t => {
+      if (t.time > lastTradeTime) {
+        newTrades.push({time: t.time, qty: +t.qty, price: +t.price, isBuy: !t.isBuyerMaker, exch: "BIN"});
+      }
+    });
 
-  // Coinbase Pro
-  try { const r = await fetch('https://api.pro.coinbase.com/products/XRP-USD/trades'); const t = await r.json(); t.slice(0,10).forEach(tr => trades.push({time: Date.parse(tr.time), qty: parseFloat(tr.size), price: parseFloat(tr.price), isBuy: tr.side === 'buy', exch: "CB"})); } catch(e) {}
+    // Coinbase
+    const cb = await fetch('https://api.pro.coinbase.com/products/XRP-USD/trades').then(r => r.json());
+    cb.slice(0,6).forEach(t => {
+      const time = Date.parse(t.time);
+      if (time > lastTradeTime) {
+        newTrades.push({time, qty: +t.size, price: +t.price, isBuy: t.side === 'buy', exch: "CB"});
+      }
+    });
 
-  // Kraken
-  try { const r = await fetch('https://api.kraken.com/0/public/Trades?pair=XRPUSD'); const d = await r.json(); if (!d.error?.length) { const t = d.result.XXRPZUSD || d.result.XRPUSD; t.slice(0,10).forEach(tr => trades.push({time: tr[2]*1000, qty: parseFloat(tr[1]), price: parseFloat(tr[0]), isBuy: null, exch: "KR"})); }} catch(e) {}
+    // Kraken
+    const kr = await fetch('https://api.kraken.com/0/public/Trades?pair=XRPUSD').then(r => r.json());
+    if (!kr.error?.length) {
+      const trades = kr.result.XXRPZUSD || kr.result.XRPUSD;
+      trades.slice(0,6).forEach(t => {
+        const time = t[2] * 1000;
+        if (time > lastTradeTime) {
+          newTrades.push({time, qty: +t[1], price: +t[0], isBuy: null, exch: "KR"});
+        }
+      });
+    }
+  } catch(e) {}
 
-  trades.sort((a,b) => b.time - a.time).slice(0,30).forEach(tr => {
-    const isBuy = tr.isBuy !== null ? tr.isBuy : Math.random() > 0.5;
-    const div = document.createElement('div');
-    div.className = `flex justify-between py-1 px-2 rounded text-xs ${isBuy ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`;
-    div.innerHTML = `<span>${new Date(tr.time).toLocaleTimeString([],{second:'2-digit'})}</span>
-                     <span>${tr.qty.toFixed(1)} XRP</span>
-                     <span>$${tr.price.toFixed(4)} <span class="exchange-tag">${tr.exch}</span></span>`;
-    container.prepend(div);
-    flashCity(isBuy);
-  });
-  while (container.children.length > 100) container.removeChild(container.lastChild);
+  if (newTrades.length > 0) {
+    lastTradeTime = Math.max(...newTrades.map(t => t.time));
+    newTrades.sort((a,b) => b.time - a.time).forEach(tr => {
+      const isBuy = tr.isBuy !== null ? tr.isBuy : (Math.random() > 0.5);
+      const div = document.createElement('div');
+      div.className = `flex justify-between py-1 px-2 rounded text-xs ${isBuy ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`;
+      div.innerHTML = `<span>${new Date(tr.time).toLocaleTimeString([],{second:'2-digit'})}</span>
+                             <span>${tr.qty.toFixed(1)} XRP</span>
+                             <span>$${tr.price.toFixed(4)} <span class="exchange-tag">${tr.exch}</span></span>`;
+      container.prepend(div);
+      flashCity(isBuy);
+    });
+  }
+
+  while (container.children.length > 120) container.removeChild(container.lastChild);
 }
-fetchAllTrades(); setInterval(fetchAllTrades, 3500);
+setInterval(fetchAllTrades, 2800);
+fetchAllTrades();
+
+// === PRICE & VOLUME ===
+async function updatePrice() {
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
+    const d = await r.json().then(j => j.ripple);
+    document.getElementById('price').textContent = '$' + d.usd.toFixed(2); // 2 decimals
+    const ch = d.usd_24h_change.toFixed(2);
+    document.getElementById('change').textContent = (ch > 0 ? '+' : '') + ch + '%';
+    document.getElementById('change').className = 'text-sm mt-1 ' + (ch > 0 ? 'text-green-400' : 'text-red-400');
+    document.getElementById('volume').textContent = '$' + (d.usd_24h_vol / 1e9).toFixed(2) + 'B';
+  } catch(e) {}
+}
+updatePrice(); setInterval(updatePrice, 14000);
 
 // === GLOBAL ORDER BOOK ===
 async function updateGlobalBook() {
   let bids = [], asks = [], totalBid = 0, totalAsk = 0;
   const exchanges = [
-    {url: "https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=20"},
-    {url: "https://api.pro.coinbase.com/products/XRP-USD/book?level=2"},
-    {url: "https://api.kraken.com/0/public/Depth?pair=XRPUSD"}
+    "https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=20",
+    "https://api.pro.coinbase.com/products/XRP-USD/book?level=2",
+    "https://api.kraken.com/0/public/Depth?pair=XRPUSD"
   ];
-  for (const ex of exchanges) {
+
+  for (const url of exchanges) {
     try {
-      const r = await fetch(ex.url);
-      const d = await r.json();
-      if (d.bids) { d.bids.slice(0,20).forEach(b => { const p = parseFloat(b[0]), q = parseFloat(b[1]); bids.push({p,q}); totalBid += q; }); }
-      if (d.asks) { d.asks.slice(0,20).forEach(a => { const p = parseFloat(a[0]), q = parseFloat(a[1]); asks.push({p,q}); totalAsk += q; }); }
-      if (d.result && (d.result.XXRPZUSD || d.result.XRPUSD)) {
+      const d = await fetch(url).then(r => r.json());
+      const process = (arr) => arr.slice(0,20).forEach(([p,q]) => {
+        const price = +p, qty = +q;
+        if (url.includes('bids') || (Array—isArray(arr[0]) && p > (asks[0]?.p || 0))) bids.push({p:price,q:qty}), totalBid += qty;
+        else asks.push({p:price,q:qty}), totalAsk += qty;
+      });
+      if (d.bids) process(d.bids);
+      if (d.asks) process(d.asks);
+      if (d.result) {
         const book = d.result.XXRPZUSD || d.result.XRPUSD;
-        book.bids.slice(0,20).forEach(b => { const p = parseFloat(b[0]), q = parseFloat(b[1]); bids.push({p,q}); totalBid += q; });
-        book.asks.slice(0,20).forEach(a => { const p = parseFloat(a[0]), q = parseFloat(a[1]); asks.push({p,q}); totalAsk += q; });
+        process(book.bids); process(book.asks);
       }
     } catch(e) {}
   }
+
   bids.sort((a,b) => b.p - a.p); asks.sort((a,b) => a.p - b.p);
   const tbody = document.getElementById('bookBody'); tbody.innerHTML = '';
   for (let i = 0; i < 20; i++) {
@@ -192,101 +246,90 @@ async function updateGlobalBook() {
     const cumBid = bids.slice(0,i+1).reduce((s,x)=>s+x.q,0);
     const cumAsk = asks.slice(0,i+1).reduce((s,x)=>s+x.q,0);
     tbody.innerHTML += `<tr>
-      <td class="p-3 text-green-400">${(cumBid/1e6).toFixed(2)}M</td>
+      <td class="p-3 text-green-400">${formatDepth(cumBid)}</td>
       <td class="p-3 text-right text-green-400 font-semibold">${bid.p.toFixed(4)}</td>
       <td class="p-3 text-center text-gray-400">│</td>
       <td class="p-3 text-left text-red-400 font-semibold">${ask.p.toFixed(4)}</td>
-      <td class="p-3 text-right text-red-400">${(cumAsk/1e6).toFixed(2)}M</td>
+      <td class="p-3 text-right text-red-400">${formatDepth(cumAsk)}</td>
     </tr>`;
   }
-  document.getElementById('totalBid').textContent = (totalBid/1e6).toFixed(1) + 'M XRP';
-  document.getElementById('totalAsk').textContent = (totalAsk/1e6).toFixed(1) + 'M XRP';
+  document.getElementById('totalBid').textContent = formatDepth(totalBid) + ' XRP';
+  document.getElementById('totalAsk').textContent = formatDepth(totalAsk) + ' XRP';
 }
 updateGlobalBook(); setInterval(updateGlobalBook, 9000);
 
-// === PRICE & VOLUME ===
-async function updatePrice() {
+// === REAL ETF DATA FROM xrp-insight.com ===
+let lastDailyFlow = 0;
+async function updateETFs() {
   try {
-    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
-    const d = await r.json().then(j => j.ripple);
-    document.getElementById('price').textContent = '$' + d.usd.toFixed(4);
-    const ch = d.usd_24h_change.toFixed(2);
-    document.getElementById('change').textContent = (ch > 0 ? '+' : '') + ch + '%';
-    document.getElementById('change').className = 'text-sm mt-1 ' + (ch > 0 ? 'text-green-400' : 'text-red-400');
-    document.getElementById('volume').textContent = '$' + (d.usd_24h_vol / 1e9).toFixed(2) + 'B';
-  } catch(e) {}
-}
-updatePrice(); setInterval(updatePrice, 15000);
+    const res = await fetch('https://api.xrp-insight.com/v1/etfs');
+    const data = await res.json();
 
-// === ETFs ===
-const etfData = [
-  {name: "Canary XRPC", aum: 343, inflow: 250, held: 150, today: "+7.5M", status: "live"},
-  {name: "Bitwise XRPT", aum: 179, inflow: 135, held: 83, today: "+12M", status: "live"},
-  {name: "Franklin EZRP", aum: 85, inflow: 63, held: 39, today: "+9M", status: "live"},
-  {name: "Grayscale GXRP", aum: 72, inflow: 67, held: 32, today: "+2.7M", status: "live"},
-  {name: "21Shares TOXR", aum: 142, inflow: 151, held: 46, today: "+8M", status: "live"},
-  {name: "VanEck HXRP", aum: "—", inflow: "—", held: "—", today: "Coming Q1 2026", status: "coming"},
-  {name: "ProShares XRP", aum: "—", inflow: "—", held: "—", today: "Pending SEC", status: "coming"},
-  {name: "WisdomTree XRP", aum: "—", inflow: "—", held: "—", today: "Expected 2026", status: "coming"},
-  {name: "Invesco GXRP", aum: "—", inflow: "—", held: "—", today: "Rumored", status: "coming"},
-  {name: "Fidelity FXRP", aum: "—", inflow: "—", held: "—", today: "Highly Anticipated", status: "coming"}
-];
-function renderETFs() {
-  const c = document.getElementById('etfContainer'); c.innerHTML = '';
-  let totalAUM = 0, totalLocked = 0;
-  etfData.forEach(e => {
-    if (e.status === "live") { totalAUM += e.aum; totalLocked += e.held; }
-    const card = document.createElement('div');
-    card.className = `bg-gray-900/50 rounded-xl p-4 border text-center text-xs relative ${e.status === 'coming' ? 'coming-soon border-gray-600' : 'border-cyan-800'}`;
-    card.innerHTML = `
-      <div class="font-bold">${e.name}</div>
-      <div class="text-lg ${e.status === 'live' ? 'text-cyan-400' : 'text-gray-500'}">
-        ${e.status === 'live' ? '$' + e.aum + 'M' : 'Coming Soon'}
-      </div>
-      ${e.status === 'live' ? `<div class="text-green-400">+$${e.inflow}M Cum.</div>` : ''}
-      <div class="text-gray-300">${e.status === 'live' ? e.held + 'M XRP' : '—'}</div>
-      ${e.status === 'live' ? '' : `<div class="text-yellow-400 text-xs mt-2">${e.today}</div>`}
-      ${e.status === 'live' ? `<div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-2 py-0.5 rounded">${e.today} Today</div>` : ''}
-    `;
-    c.appendChild(card);
-  });
-  document.getElementById('totalAUM').textContent = Math.round(totalAUM);
-  document.getElementById('totalLocked').textContent = Math.round(totalLocked);
-}
-renderETFs();
+    const container = document.getElementById('etfContainer');
+    container.innerHTML = '';
+    let totalAUM = 0, totalLocked = 0;
 
-// === SUPPLY & CLOCK ===
-let totalLockedXRP = 350 * 1000000;
-const totalSupply = 100000000000;
-const escrowLocked = 39300000000;
-const otcExchLocked = 6000000000;
-let totalIlliquid = totalLockedXRP + escrowLocked + otcExchLocked;
-function updateSupply() {
-  const pct = Math.round((totalIlliquid / totalSupply) * 100);
-  document.getElementById('supplyBar').style.width = pct + '%';
-  document.getElementById('shockPercent').textContent = pct + '%';
-  document.getElementById('illiquid').textContent = (totalIlliquid / 1e9).toFixed(2) + 'B';
-}
-updateSupply();
-function updateClock() {
-  const n = new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
-  const h = n.getHours(), m = n.getMinutes(), d = n.getDay();
-  const open = (d>=1&&d<=5) && ((h>9||(h===9&&m>=30)) && h<16);
-  document.getElementById('clock').textContent = n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) + ' ET';
-  document.getElementById('etfStatus').textContent = `ETFs: ${open?'OPEN':'CLOSED'}`;
-  document.getElementById('etfStatus').className = `text-2xl font-semibold mt-4 ${open?'market-open':'market-closed'}`;
-}
-setInterval(updateClock, 1000); updateClock();
+    data.etfs.forEach(etf => {
+      if (etf.status === "live") {
+        totalAUM += etf.aum_usd / 1e6;
+        totalLocked += etf.xrp_held / 1e6;
+      }
+      const card = document.createElement('div');
+      card.className = `bg-gray-900/50 rounded-xl p-4 border text-center text-xs relative ${etf.status === 'live' ? 'border-cyan-800' : 'coming-soon border-gray-600'}`;
+      card.innerHTML = `
+        <div class="font-bold">${etf.name}</div>
+        <div class="text-lg ${etf.status === 'live' ? 'text-cyan-400' : 'text-gray-500'}">
+          ${etf.status === 'live' ? '$' + (etf.aum_usd/1e6).toFixed(0) + 'M' : 'Coming Soon'}
+        </div>
+        ${etf.status === 'live' ? `<div class="text-green-400">+$${(etf.cumulative_inflow/1e6).toFixed(0)}M</div>` : ''}
+        <div class="text-gray-300">${etf.status === 'live' ? (etf.xrp_held/1e6).toFixed(1) + 'M XRP' : '—'}</div>
+        ${etf.status === 'live' ? `<div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-2 py-0.5 rounded">${etf.today_flow > 0 ? '+' : ''}${(etf.today_flow/1e6).toFixed(1)}M</div>` : ''}
+      `;
+      container.appendChild(card);
+    });
 
-// Flash city
-function flashCity(isBuy = true) {
-  const cities = document.querySelectorAll('.city');
-  const c = cities[Math.floor(Math.random() * cities.length)];
-  c.classList.add('active');
-  if (!isBuy) c.classList.add('sell');
-  setTimeout(() => c.classList.remove('active', 'sell'), 1600);
+    // Update totals
+    document.getElementById('totalAUM').textContent = Math.round(totalAUM);
+    document.getElementById('totalLocked').textContent = Math.round(totalLocked);
+    document.getElementById('dailyFlow').textContent = (data.daily_net_flow > 0 ? '+' : '') + '$' + (data.daily_net_flow/1e6).toFixed(1) + 'M';
+    document.getElementById('dailyVol').textContent = '$' + (data.daily_volume/1e6).toFixed(1) + 'M';
+    document.getElementById('avg7day').textContent = '$' + (data.avg_7d/1e6).toFixed(0) + 'M';
+    document.getElementById('proj30d').textContent = '$' + Math.round(data.avg_7d * 30 / 1e6) + 'B';
+
+    // Inflow Alert
+    if (data.daily_net_flow >= 10_000_000 && data.daily_net_flow !== lastDailyFlow) {
+      const alert = document.getElementById('inflowAlert');
+      alert.textContent = `BIG INFLOW: +$${(data.daily_net_flow/1e6).toFixed(1)}M TODAY!`;
+      alert.classList.add('show');
+      setTimeout(() => alert.classList.remove('show'), 8000);
+      lastDailyFlow = data.daily_net_flow;
+    }
+
+    // Supply Shock
+    const escrow = 39.3e9;
+    const otc = 6e9;
+    const totalIlliquid = totalLocked * 1e6 + escrow + otc;
+    const totalSupply = 100e9;
+    const pct = Math.round((totalIlliquid / totalSupply) * 100);
+
+    document.getElementById('illiquid').textContent = (totalIlliquid / 1e9).toFixed(2);
+    document.getElementById('available').textContent = ((totalSupply - totalIlliquid) / 1e9).toFixed(2);
+    document.getElementById('supplyBar').style.width = pct + '%';
+    document.getElementById('shockPercent').textContent = pct + '%';
+
+    // ETF Market Status
+    const now = new Date().toLocaleString("en-US", {timeZone: "America/New_York"});
+    const hour = new Date(now).getHours();
+    const isOpen = hour >= 9 && hour < 16;
+    document.getElementById('etfStatus').textContent = `ETFs: ${isOpen ? 'TRADING OPEN' : 'MARKET CLOSED'}`;
+    document.getElementById('etfStatus').className = `text-2xl font-semibold mt-4 ${isOpen ? 'market-open' : 'market-closed'}`;
+
+  } catch(e) {
+    console.log("ETF API down, retrying...");
+  }
 }
-setTimeout(() => { flashCity(); flashCity(false); }, 1000);
+updateETFs();
+setInterval(updateETFs, 60000); // Every 60 seconds like xrp-insight.com
 </script>
 </body>
 </html>
