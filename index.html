@@ -22,21 +22,16 @@
     .toggle-btn:hover{background:#374151}
     #supplyProgress{background:#1f2937;height:12px;border-radius:6px;overflow:hidden;margin-top:12px}
     #supplyBar{background:#10b981;height:100%;width:45%;transition:width 1.5s ease}
-    .clock-closed { color: #ef4444; }
-    .clock-open { color: #10b981; }
+    .clock-closed{color:#ef4444}.clock-open{color:#10b981}
     select{font-size:14px;padding:8px 12px;border-radius:8px;background:#1f2937;color:white;border:1px solid #374151}
   </style>
 </head>
 <body class="transition-colors duration-500">
 
 <div class="fixed top-4 right-4 z-50 flex gap-3 items-center">
-  <button id="themeToggle" class="toggle-btn" title="Theme">
-    <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-      <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
-    </svg>
-    <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none">
-      <path d="M17.293 13.293A8 8 0 616.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
-    </svg>
+  <button id="themeToggle" class="toggle-btn">
+    <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
+    <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none"><path d="M17.293 13.293A8 8 0 616.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
   </button>
   <select id="currencySelect">
     <option value="USD">USD $</option>
@@ -63,7 +58,6 @@
 
 <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-  <!-- Stats -->
   <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
       <div class="text-sm text-gray-400">XRP Price</div>
@@ -76,15 +70,14 @@
     </div>
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
       <div class="text-sm text-gray-400">Bid Depth</div>
-      <div id="totalBid" class="text-xl font-semibold text-green-400 mt-1">217K XRP</div>
+      <div id="totalBid" class="text-xl font-semibold text-green-400 mt-1">—</div>
     </div>
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
       <div class="text-sm text-gray-400">Ask Depth</div>
-      <div id="totalAsk" class="text-xl font-semibold text-red-400 mt-1">122K XRP</div>
+      <div id="totalAsk" class="text-xl font-semibold text-red-400 mt-1">—</div>
     </div>
   </div>
 
-  <!-- Global Map -->
   <div class="lg:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800">
       <h2 class="text-lg font-semibold">Global Trade Flow • 7 Exchanges</h2>
@@ -104,32 +97,23 @@
     </div>
   </div>
 
-  <!-- Global Order Book -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Order Book</h2></div>
     <div class="overflow-x-auto max-h-96">
       <table class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-800">
-          <tr>
-            <th class="text-left p-3 text-green-400">Total</th>
-            <th class="text-right p-3 text-green-400">Bid</th>
-            <th class="text-left p-3 text-gray-400">│</th>
-            <th class="text-left p-3 text-red-400">Ask</th>
-            <th class="text-right p-3 text-red-400">Total</th>
-          </tr>
+          <tr><th class="text-left p-3 text-green-400">Total</th><th class="text-right p-3 text-green-400">Bid</th><th class="text-left p-3 text-gray-400">│</th><th class="text-left p-3 text-red-400">Ask</th><th class="text-right p-3 text-red-400">Total</th></tr>
         </thead>
         <tbody id="bookBody"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- Live Trades -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Trades • 7 Global Exchanges</h2></div>
     <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <!-- ETFs -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
     <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live Data</h2>
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6" id="etfContainer"></div>
@@ -142,14 +126,12 @@
     </div>
   </div>
 
-  <!-- Market Clock -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-12">
     <div class="text-6xl font-bold text-green-400 animate-pulse mb-4">LIVE</div>
-    <div id="marketTimer" class="text-5xl font-mono my-6 clock-open">Closes in 03:45:21</div>
-    <div id="marketStatus" class="text-2xl font-semibold market-open">MARKET OPEN</div>
+    <div id="marketTimer" class="text-5xl font-mono my-6 clock-open">Loading...</div>
+    <div id="marketStatus" class="text-2xl font-semibold market-open">MARKET STATUS</div>
   </div>
 
-  <!-- Supply Shock Tracker -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
     <h3 class="text-2xl font-bold text-cyan-400">Supply Shock Tracker</h3>
     <div class="text-lg text-gray-300 mt-4">Total Illiquid XRP: <span class="text-cyan-400 font-bold" id="illiquid">45.35B</span></div>
@@ -160,20 +142,13 @@
 </div>
 
 <script>
-// FIXED PROXY - WORKS 100%
 const proxy = "https://corsproxy.io/?";
 
-// CURRENCY CONVERTER
 let rates = { USD: 1 }, currentCurrency = 'USD';
 const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' };
 
 async function loadRates() {
-  try {
-    const r = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-    const d = await r.json();
-    rates = d.rates;
-    convertAll();
-  } catch(e) {}
+  try { const r = await fetch('https://api.exchangerate-api.com/v4/latest/USD'); const d = await r.json(); rates = d.rates; convertAll(); } catch(e) {}
 }
 document.getElementById('currencySelect').addEventListener('change', e => { currentCurrency = e.target.value; convertAll(); });
 
@@ -196,7 +171,6 @@ function convertAll() {
   });
 }
 
-// REAL PRICE
 async function updatePrice() {
   try {
     const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
@@ -212,14 +186,12 @@ async function updatePrice() {
 }
 updatePrice(); setInterval(updatePrice, 15000);
 
-// CITY FLASHING
 const cityMap = { BIN:"Singapore", BST:"London", KRA:"Frankfurt", OKX:"Dubai", BYB:"Dubai", GAT:"Hong Kong", KUC:"Singapore" };
 function flashCity(ex, buy=true) {
   const c = document.querySelector(`.city[data-name="${cityMap[ex]}"]`);
   if(c){ c.classList.add('active'); if(!buy) c.classList.add('sell'); setTimeout(()=>c.classList.remove('active','sell'),1600); }
 }
 
-// LIVE TRADES - ALL 7
 let seen = new Set();
 async function fetchGlobalTrades() {
   const cont = document.getElementById('trades');
@@ -266,7 +238,6 @@ async function fetchGlobalTrades() {
 }
 setInterval(fetchGlobalTrades,2200); fetchGlobalTrades();
 
-// ORDER BOOK
 async function updateGlobalBook() {
   let bids=[], asks=[], tb=0, ta=0;
   const urls = [
@@ -306,7 +277,6 @@ async function updateGlobalBook() {
 }
 updateGlobalBook(); setInterval(updateGlobalBook,8000);
 
-// ETFs
 const etfs = [
   {name:"Canary XRPC",aum:378,held:165,today:"+8.2M"},
   {name:"Bitwise XRPT",aum:196,held:91,today:"+13.1M"},
@@ -338,7 +308,6 @@ function renderETFs(){
 }
 renderETFs();
 
-// MARKET CLOCK
 function updateMarketTimer(){
   const now=new Date();
   const et=new Date(now.toLocaleString("en-US",{timeZone:"America/New_York"}));
@@ -366,7 +335,6 @@ function updateMarketTimer(){
 }
 setInterval(updateMarketTimer,1000); updateMarketTimer();
 
-// THEME
 document.getElementById('themeToggle').onclick=()=>{
   document.documentElement.classList.toggle('dark');
   const dark=document.documentElement.classList.contains('dark');
@@ -375,7 +343,6 @@ document.getElementById('themeToggle').onclick=()=>{
   document.getElementById('moon').style.display=dark?'block':'none';
 };
 
-// INIT
 loadRates(); setInterval(loadRates,600000); setInterval(convertAll,3000);
 </script>
 </body>
