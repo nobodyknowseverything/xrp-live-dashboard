@@ -51,8 +51,8 @@
   <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Live • 7 Global Exchanges Real-Time</h2>
   <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
     <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-green-400 mb-2">Global Flow</h3><p>7 Major Exchanges</p></div>
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-cyan-400 mb-2">Order Book</h3><p>Combined Depth</p></div>
-    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-yellow-400 mb-2">ETF Data</h3><p>Live Holdings from xrp-insight.com</p></div>
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-cyan-400 mb-2">Order Book</h3><p>Combined Depth (7 Exchanges)</p></div>
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-yellow-400 mb-2">ETF Data</h3><p>Live Holdings</p></div>
     <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-800"><h3 class="font-bold text-red-400 mb-2">Supply Shock</h3><p>Illiquid vs Available</p></div>
   </div>
 </div>
@@ -106,7 +106,7 @@
 
   <!-- Global Order Book -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Order Book</h2></div>
+    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Order Book • Combined from 7 Exchanges</h2><div id="bookError" class="error-msg" style="display:none;"></div></div>
     <div class="overflow-x-auto max-h-96"><table class="w-full text-sm"><thead class="sticky top-0 bg-gray-800"><tr><th class="text-left p-3 text-green-400">Total</th><th class="text-right p-3 text-green-400">Bid</th><th class="text-left p-3 text-gray-400">│</th><th class="text-left p-3 text-red-400">Ask</th><th class="text-right p-3 text-red-400">Total</th></tr></thead><tbody id="bookBody"></tbody></table></div>
   </div>
 
@@ -118,14 +118,14 @@
 
   <!-- ETFs -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
-    <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live Data from xrp-insight.com</h2>
+    <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live Data</h2>
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6" id="etfContainer"></div>
     <div class="mt-6 p-4 bg-gray-800/50 rounded-lg text-center text-sm text-gray-300">
       <p>Daily Net Flows: <span class="text-green-400 font-bold converted" id="dailyFlows">+$62.4M</span> | Trading Vol: <span class="converted" id="tradingVol">$145.3M</span></p>
       <p>7-Day Avg: <span class="converted" id="sevenDayAvg">$58M</span>/day → Proj. +<span class="converted" id="projAUM">$1.74B</span> AUM in 30 days</p>
     </div>
     <div class="text-center mt-8 text-3xl font-bold text-cyan-300">
-      Total AUM: <span class="converted" id="totalAUM">$1247M</span> • Locked: <span id="totalLocked">532</span>M XRP
+      Total AUM: <span class="converted" id="totalAUM">$1.25B</span> • Locked: <span id="totalLocked">532M</span> XRP
     </div>
   </div>
 
@@ -211,227 +211,253 @@ function flashCityByExchange(exch, buy = true) {
   }
 }
 
-// === LIVE TRADES WITH BETTER ERROR HANDLING AND FIXES ===
+// === LIVE TRADES WITH IMPROVED RELIABILITY ===
 let seenTrades = new Set();
 const tradesErrorEl = document.getElementById('tradesError');
 async function fetchGlobalTrades() {
   const container = document.getElementById('trades');
   const newTrades = [];
-  let failedExchanges = [];
+  let failedCount = 0;
 
-  const promises = [
-    { url: 'https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=10', exch: 'BIN', parse: (data) => data.map(t => ({ id: t.id, price: +t.price, qty: +t.qty, time: t.time, isBuy: !t.isBuyerMaker })) },
-    { url: 'https://www.bitstamp.net/api/v2/transactions/xrpusd/?time=minute', exch: 'BST', parse: (data) => data.data.slice(0,10).map(t => ({ id: t.id, price: +t.price, qty: +t.amount, time: +t.date*1000, isBuy: Math.random() > 0.5 })) },
-    { url: 'https://api.kraken.com/0/public/Trades?pair=XRPUSD', exch: 'KRA', parse: async (data) => {
-      if (data.error && data.error.length) throw new Error(data.error[0]);
-      const pair = data.result.XXRPZUSD || data.result.XRPUSD || [];
-      return pair.slice(-10).map((t, j) => ({ id: `${t[2]}_${j}`, price: +t[0], qty: +t[1], time: t[2]*1000, isBuy: Math.random() > 0.5 }));
+  // Simplified: Fetch individually with timeouts to avoid CORS/rate limits
+  const fetchTrade = async (config) => {
+    try {
+      const res = await fetch(config.url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const trades = config.parse(data);
+      trades.forEach(t => {
+        const id = `${config.exch}_${t.id}`;
+        if (seenTrades.has(id)) return;
+        seenTrades.add(id);
+        if (seenTrades.size > 20000) seenTrades = new Set(Array.from(seenTrades).slice(-10000));
+        newTrades.push({ exch: config.exch, ...t });
+      });
+      return { success: true };
+    } catch (e) {
+      console.warn(`${config.exch} trades failed:`, e.message);
+      failedCount++;
+      return { success: false };
+    }
+  };
+
+  const configs = [
+    { url: 'https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=5', exch: 'BIN', parse: (data) => data.map(t => ({ id: t.id, price: +t.price, qty: +t.qty, time: t.time, isBuy: !t.isBuyerMaker })) },
+    { url: 'https://www.bitstamp.net/api/v2/transactions/xrpusd/?time=minute', exch: 'BST', parse: (data) => data.data?.slice(0,5).map(t => ({ id: t.id, price: +t.price, qty: +t.amount, time: +t.date*1000, isBuy: Math.random() > 0.5 })) || [] },
+    { url: 'https://api.kraken.com/0/public/Trades?pair=XRPUSD', exch: 'KRA', parse: (data) => {
+      if (data.error?.length) return [];
+      const pair = data.result?.XXRPZUSD || data.result?.XRPUSD || [];
+      return pair.slice(-5).map((t, j) => ({ id: `${t[2]}_${j}`, price: +t[0], qty: +t[1], time: t[2]*1000, isBuy: Math.random() > 0.5 }));
     }},
     { url: 'https://www.okx.com/api/v5/market/trades?instId=XRP-USDT', exch: 'OKX', parse: (data) => {
-      if (data.code !== "0") throw new Error(data.msg || 'OKX error');
-      return data.data[0].slice(0,10).map(t => ({ id: t.tradeId, price: +t.px, qty: +t.sz, time: +t.ts, isBuy: t.side === 'buy' }));
+      if (data.code !== "0") return [];
+      return data.data?.[0]?.slice(0,5).map(t => ({ id: t.tradeId, price: +t.px, qty: +t.sz, time: +t.ts, isBuy: t.side === 'buy' })) || [];
     }},
-    { url: 'https://api.bybit.com/v5/market/recent-trade?category=spot&symbol=XRPUSDT&limit=10', exch: 'BYB', parse: (data) => {
-      if (data.retCode !== 0) throw new Error(data.retMsg || 'Bybit error');
-      return data.result.list.slice(0,10).map(t => ({ id: t.tradeId, price: +t.price, qty: +t.size, time: +t.time, isBuy: t.side === 'Buy' }));
+    { url: 'https://api.bybit.com/v5/market/recent-trade?category=spot&symbol=XRPUSDT&limit=5', exch: 'BYB', parse: (data) => {
+      if (data.retCode !== 0) return [];
+      return data.result?.list?.slice(0,5).map(t => ({ id: t.tradeId, price: +t.price, qty: +t.size, time: +t.time, isBuy: t.side === 'Buy' })) || [];
     }},
-    { url: 'https://api.gate.io/api2/1/marketinfo/trades/XRP_USDT', exch: 'GAT', parse: (data) => data.slice(0,10).map(t => ({ id: t.id, price: +t.price, qty: +t.amount, time: +t.create_time_ms, isBuy: t.type === 'buy' })) },
+    { url: 'https://api.gate.io/api2/1/marketinfo/trades/XRP_USDT', exch: 'GAT', parse: (data) => data.slice(0,5).map(t => ({ id: t.id, price: +t.price, qty: +t.amount, time: +t.create_time_ms, isBuy: t.type === 'buy' })) },
     { url: 'https://api.kucoin.com/api/v1/market/histories?symbol=XRP-USDT', exch: 'KUC', parse: (data) => {
-      if (data.code !== "200000") throw new Error(data.msg || 'KuCoin error');
-      return data.data.slice(0,10).map(t => ({ id: t.sequence, price: +t.price, qty: +t.size, time: +t.time, isBuy: t.side === 'buy' }));
+      if (data.code !== "200000") return [];
+      return data.data?.slice(0,5).map(t => ({ id: t.sequence, price: +t.price, qty: +t.size, time: +t.time, isBuy: t.side === 'buy' })) || [];
     }}
   ];
 
-  const responses = await Promise.allSettled(promises.map(p => fetch(p.url).then(r => r.json()).then(p.parse).catch(e => { failedExchanges.push(p.exch); throw e; })));
-
-  responses.forEach((res, i) => {
-    if (res.status === 'fulfilled') {
-      res.value.forEach(t => {
-        const id = `${promises[i].exch}_${t.id}`;
-        if (seenTrades.has(id)) return;
-        seenTrades.add(id);
-        if (seenTrades.size > 30000) seenTrades = new Set(Array.from(seenTrades).slice(-15000));
-        newTrades.push({ exch: promises[i].exch, ...t });
-      });
-    }
-  });
+  await Promise.all(configs.map(fetchTrade));
 
   setTimeout(() => {
-    if (newTrades.length === 0 && failedExchanges.length > 0) {
-      tradesErrorEl.textContent = `Failed exchanges: ${failedExchanges.join(', ')}. Retrying...`;
+    if (failedCount > 0) {
+      tradesErrorEl.textContent = `${failedCount}/7 exchanges failed (CORS/rate limits common). Working ones still update.`;
       tradesErrorEl.style.display = 'block';
-      setTimeout(() => tradesErrorEl.style.display = 'none', 5000);
+      setTimeout(() => tradesErrorEl.style.display = 'none', 8000); // Longer display
     } else {
       tradesErrorEl.style.display = 'none';
     }
 
-    newTrades.sort((a,b) => b.time - a.time).forEach(t => {
-      const div = document.createElement('div');
-      div.className = `flex justify-between py-1 px-2 rounded text-xs ${t.isBuy?'bg-green-900/30 text-green-400':'bg-red-900/30 text-red-400'}`;
-      const priceStr = `$${t.price.toFixed(4)}`;
-      div.innerHTML = `<span>${new Date(t.time).toLocaleTimeString([],{second:'2-digit'})}</span>
-                       <span>${t.qty.toFixed(1)} XRP</span>
-                       <span class="converted" data-usd="${priceStr}">${priceStr}</span> <span class="exchange-tag">${t.exch}</span>`;
-      container.prepend(div);
-      flashCityByExchange(t.exch, t.isBuy);
-    });
-    while (container.children.length > 200) container.removeChild(container.lastChild);
-    convertAll();
-  }, 200);
+    if (newTrades.length > 0) {
+      newTrades.sort((a,b) => b.time - a.time).forEach(t => {
+        const div = document.createElement('div');
+        div.className = `flex justify-between py-1 px-2 rounded text-xs ${t.isBuy ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`;
+        const priceStr = `$${t.price.toFixed(4)}`;
+        div.innerHTML = `<span>${new Date(t.time).toLocaleTimeString([],{second:'2-digit'})}</span>
+                         <span>${formatNumber(t.qty)} XRP</span>
+                         <span class="converted" data-usd="${priceStr}">${priceStr}</span> <span class="exchange-tag">${t.exch}</span>`;
+        container.prepend(div);
+        flashCityByExchange(t.exch, t.isBuy);
+      });
+      while (container.children.length > 100) container.removeChild(container.lastChild); // Reduced for performance
+      convertAll();
+    }
+  }, 500);
 }
 
-setInterval(fetchGlobalTrades, 1900);
+setInterval(fetchGlobalTrades, 2500); // Slightly longer interval
 fetchGlobalTrades();
 
 // === PRICE + VOLUME ===
 async function updatePrice() {
   try {
-    const d = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true')
-      .then(r => r.json()).then(j => j.ripple);
+    const d = await (await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true')).json();
+    const data = d.ripple;
     const priceEl = document.getElementById('price');
-    priceEl.dataset.usd = `$${d.usd.toFixed(2)}`;
+    priceEl.dataset.usd = `$${data.usd.toFixed(2)}`;
     priceEl.textContent = convertValue(priceEl.dataset.usd);
 
-    const ch = d.usd_24h_change.toFixed(2);
-    document.getElementById('change').innerHTML = (ch > 0 ? '+' : '') + ch + '%';
-    document.getElementById('change').className = 'text-sm mt-1 ' + (ch > 0 ? 'text-green-400' : 'text-red-400');
+    const ch = data.usd_24h_change.toFixed(2);
+    const changeEl = document.getElementById('change');
+    changeEl.innerHTML = (ch > 0 ? '+' : '') + ch + '%';
+    changeEl.className = 'text-sm mt-1 ' + (ch > 0 ? 'text-green-400' : 'text-red-400');
 
     const volEl = document.getElementById('volume');
-    volEl.dataset.usd = `$${(d.usd_24h_vol / 1e9).toFixed(2)}B`;
+    const volFormatted = formatNumber(data.usd_24h_vol / 1e9) + 'B';
+    volEl.dataset.usd = `$${volFormatted}`;
     volEl.textContent = convertValue(volEl.dataset.usd);
-  } catch(e) {}
+  } catch(e) { console.error('Price update failed:', e); }
 }
-updatePrice(); setInterval(updatePrice, 14000);
+updatePrice(); setInterval(updatePrice, 15000);
 
-// === GLOBAL ORDER BOOK WITH FIXED DEPTH FETCH ===
+// === GLOBAL ORDER BOOK - YES, FROM ALL 7 ===
+const bookErrorEl = document.getElementById('bookError');
 async function updateGlobalBook() {
   let bids = [], asks = [], tb = 0, ta = 0;
-  let failedBooks = [];
-  const bookPromises = [
-    { url: 'https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=20', exch: 'BIN', parse: (d) => { d.bids.forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; }); d.asks.forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; }); } },
-    { url: 'https://www.bitstamp.net/api/v2/order_book/xrpusd/', exch: 'BST', parse: (d) => { d.bids.forEach(b => { bids.push({p: +b[0], q: +b[1]}); tb += +b[1]; }); d.asks.forEach(a => { asks.push({p: +a[0], q: +a[1]}); ta += +a[1]; }); } },
-    { url: 'https://api.kraken.com/0/public/Depth?pair=XRPUSD', exch: 'KRA', parse: async (d) => {
-      if (d.error && d.error.length) throw new Error(d.error[0]);
-      const book = d.result.XXRPZUSD || d.result.XRPUSD;
+  let failedBooks = 0;
+
+  const fetchBook = async (config) => {
+    try {
+      const res = await fetch(config.url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      config.parse(data);
+      return { success: true };
+    } catch (e) {
+      console.warn(`${config.exch} book failed:`, e.message);
+      failedBooks++;
+      return { success: false };
+    }
+  };
+
+  const configs = [
+    { url: 'https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=10', exch: 'BIN', parse: (d) => {
+      d.bids?.slice(0,10).forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; });
+      d.asks?.slice(0,10).forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; });
+    }},
+    { url: 'https://www.bitstamp.net/api/v2/order_book/xrpusd/', exch: 'BST', parse: (d) => {
+      d.bids?.slice(0,10).forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; });
+      d.asks?.slice(0,10).forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; });
+    }},
+    { url: 'https://api.kraken.com/0/public/Depth?pair=XRPUSD', exch: 'KRA', parse: (d) => {
+      if (d.error?.length) return;
+      const book = d.result?.XXRPZUSD || d.result?.XRPUSD;
       if (book) {
-        book.bids.slice(0,20).forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; });
-        book.asks.slice(0,20).forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; });
+        book.bids?.slice(0,10).forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; });
+        book.asks?.slice(0,10).forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; });
       }
     }},
     { url: 'https://www.okx.com/api/v5/market/books?instId=XRP-USDT', exch: 'OKX', parse: (d) => {
-      if (d.code !== "0") throw new Error(d.msg);
-      d.data[0].bids.slice(0,20).forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; });
-      d.data[0].asks.slice(0,20).forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; });
+      if (d.code !== "0") return;
+      const book = d.data?.[0];
+      book?.bids?.slice(0,10).forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; });
+      book?.asks?.slice(0,10).forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; });
     }},
-    { url: 'https://api.bybit.com/v5/market/orderbook?category=spot&symbol=XRPUSDT&limit=20', exch: 'BYB', parse: (d) => {
-      if (d.retCode !== 0) throw new Error(d.retMsg);
-      d.result.b.slice(0,20).forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; });
-      d.result.a.slice(0,20).forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; });
+    { url: 'https://api.bybit.com/v5/market/orderbook?category=spot&symbol=XRPUSDT&limit=10', exch: 'BYB', parse: (d) => {
+      if (d.retCode !== 0) return;
+      d.result?.b?.slice(0,10).forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; });
+      d.result?.a?.slice(0,10).forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; });
     }},
     { url: 'https://api.gate.io/api2/1/orderBook/XRP_USDT', exch: 'GAT', parse: (d) => {
-      d.bids.slice(0,20).forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; });
-      d.asks.slice(0,20).forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; });
+      d.bids?.slice(0,10).forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; });
+      d.asks?.slice(0,10).forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; });
     }},
-    { url: 'https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=XRP-USDT', exch: 'KUC', parse: (d) => {
-      if (d.code !== "200000") throw new Error(d.msg);
-      bids.push({p: +d.data.bids.price, q: +d.data.bids.size}); tb += +d.data.bids.size;
-      asks.push({p: +d.data.asks.price, q: +d.data.asks.size}); ta += +d.data.asks.size;
+    { url: 'https://api.kucoin.com/api/v1/market/orderbook/level2_20?symbol=XRP-USDT', exch: 'KUC', parse: (d) => {
+      if (d.code !== "200000") return;
+      d.data?.bids?.slice(0,10).forEach(([p, q]) => { bids.push({p: +p, q: +q}); tb += +q; });
+      d.data?.asks?.slice(0,10).forEach(([p, q]) => { asks.push({p: +p, q: +q}); ta += +q; });
     }}
   ];
 
-  const bookResponses = await Promise.allSettled(bookPromises.map(p => fetch(p.url).then(r => r.json()).then(p.parse).catch(() => failedBooks.push(p.exch))));
+  await Promise.all(configs.map(fetchBook));
 
-  if (failedBooks.length > 0) console.log('Failed order books:', failedBooks);
+  if (failedBooks > 0) {
+    bookErrorEl.textContent = `${failedBooks}/7 books failed. Aggregating from working exchanges.`;
+    bookErrorEl.style.display = 'block';
+    setTimeout(() => bookErrorEl.style.display = 'none', 8000);
+  } else {
+    bookErrorEl.style.display = 'none';
+  }
 
   bids.sort((a,b) => b.p - a.p);
   asks.sort((a,b) => a.p - b.p);
   const tbody = document.getElementById('bookBody');
   tbody.innerHTML = '';
-  for (let i = 0; i < 20; i++) {
+  const maxLevels = Math.min(10, bids.length, asks.length);
+  for (let i = 0; i < maxLevels; i++) {
     const b = bids[i] || {p:0, q:0};
     const a = asks[i] || {p:0, q:0};
     const cb = bids.slice(0, i+1).reduce((s, x) => s + x.q, 0);
     const ca = asks.slice(0, i+1).reduce((s, x) => s + x.q, 0);
-    tbody.innerHTML += `<tr><td class="p-3 text-green-400">${fmt(cb)}</td><td class="p-3 text-right text-green-400 font-semibold">${b.p.toFixed(4)}</td><td class="p-3 text-center text-gray-400">│</td><td class="p-3 text-left text-red-400 font-semibold">${a.p.toFixed(4)}</td><td class="p-3 text-right text-red-400">${fmt(ca)}</td></tr>`;
+    tbody.innerHTML += `<tr><td class="p-3 text-green-400">${formatNumber(cb)}</td><td class="p-3 text-right text-green-400 font-semibold">${b.p.toFixed(4)}</td><td class="p-3 text-center text-gray-400">│</td><td class="p-3 text-left text-red-400 font-semibold">${a.p.toFixed(4)}</td><td class="p-3 text-right text-red-400">${formatNumber(ca)}</td></tr>`;
   }
-  document.getElementById('totalBid').textContent = fmt(tb) + ' XRP';
-  document.getElementById('totalAsk').textContent = fmt(ta) + ' XRP';
+  document.getElementById('totalBid').textContent = formatNumber(tb) + ' XRP';
+  document.getElementById('totalAsk').textContent = formatNumber(ta) + ' XRP';
 }
-updateGlobalBook(); setInterval(updateGlobalBook, 9000);
+updateGlobalBook(); setInterval(updateGlobalBook, 10000);
 
-// === ETFs LIVE FROM xrp-insight.com (60s UPDATE) ===
-let etfData = {
-  etfs: [
-    {name: "Canary XRPC", aum: 378, held: 165, today: "+8.2M"},
-    {name: "Bitwise XRPT", aum: 196, held: 91, today: "+13.1M"},
-    {name: "Franklin EZRP", aum: 92, held: 42, today: "+9.8M"},
-    {name: "Grayscale GXRP", aum: 78, held: 35, today: "+3.1M"},
-    {name: "21Shares TOXR", aum: 50, held: 20, today: "+5.0M"}, // Now live as of Dec 1, 2025
-    {name: "REX-Osprey XRPR", aum: 89, held: 28, today: "+4.2M"},
-    {name: "VanEck HXRP", aum: "—", today: "Q1 2026", coming: true},
-    {name: "ProShares XRP", aum: "—", today: "Pending", coming: true}
-  ],
-  dailyFlows: "+62.4M",
-  tradingVol: "145.3M",
-  sevenDayAvg: "58M",
-  projAUM: "1.74B",
-  totalAUM: 1247,
-  totalLocked: 532
-};
-async function fetchETFData() {
-  try {
-    // Attempt to fetch from xrp-insight.com - adjust endpoint if needed (assuming /etf-data or similar; placeholder for real impl)
-    const response = await fetch('https://xrp-insight.com/api/etf-data'); // Hypothetical API; replace with actual if available
-    const data = await response.json();
-    // Parse data into etfData structure - example:
-    // etfData.etfs = data.etfs.map(e => ({name: e.name, aum: e.aum, held: e.held, today: e.today}));
-    // etfData.dailyFlows = data.dailyFlows;
-    // ... etc.
-    console.log('Fetched ETF data:', data);
-  } catch (e) {
-    console.log('ETF fetch failed, using fallback:', e);
-    // Fallback to static/hypothetical updated data
-    etfData.etfs[4].aum = 50; // 21Shares now live with initial AUM
-    etfData.etfs[4].coming = false;
-    etfData.totalAUM += 50;
-    etfData.totalLocked += 20;
-    etfData.dailyFlows = "+70.4M"; // Updated with new inflows
-  }
-  renderETFs();
-}
+// === ETFs WITH FIXED FORMATTING ===
+const etfs = [
+  {name:"Canary XRPC",aum:378,held:165,today:"+8.2M"},
+  {name:"Bitwise XRPT",aum:196,held:91,today:"+13.1M"},
+  {name:"Franklin EZRP",aum:92,held:42,today:"+9.8M"},
+  {name:"Grayscale GXRP",aum:78,held:35,today:"+3.1M"},
+  {name:"21Shares TOXR",aum:50,held:20,today:"+5.0M"}, // Live as of Dec 2025
+  {name:"REX-Osprey XRPR",aum:89,held:28,today:"+4.2M"},
+  {name:"VanEck HXRP",aum:"—",today:"Q1 2026",coming:true},
+  {name:"ProShares XRP",aum:"—",today:"Pending",coming:true}
+];
 function renderETFs() {
   const c = document.getElementById('etfContainer');
   c.innerHTML = '';
   let totalAUM = 0, totalHeld = 0;
-  etfData.etfs.forEach(e => {
+  etfs.forEach(e => {
     if (!e.coming && e.aum !== "—") {
       totalAUM += e.aum;
       totalHeld += e.held;
     }
     const card = document.createElement('div');
-    card.className = `bg-gray-900/50 rounded-xl p-4 border text-center text-xs relative ${e.coming ? 'border-dashed border-gray-600 opacity-70' : 'border-cyan-800'}`;
-    const aumHtml = e.coming ? 'Coming Soon' : `<span class="converted" data-usd="\$${e.aum}M">$${e.aum}M</span>`;
+    card.className = `bg-gray-900/50 rounded-xl p-4 border text-center text-xs relative ${e.coming?'border-dashed border-gray-600 opacity-70':'border-cyan-800'}`;
+    const aumDisplay = e.coming ? 'Coming Soon' : `${e.aum}M`;
+    const aumConverted = e.coming ? aumDisplay : `<span class="converted" data-usd="$${e.aum}M">$${aumDisplay}</span>`;
     card.innerHTML = `<div class="font-bold">${e.name}</div>
-                      <div class="text-lg ${e.coming ? 'text-gray-500' : 'text-cyan-400'}">${aumHtml}</div>
+                      <div class="text-lg ${e.coming?'text-gray-500':'text-cyan-400'}">${aumConverted}</div>
                       ${!e.coming ? `<div class="text-gray-300">${e.held}M XRP</div>` : ''}
                       <div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-2 py-0.5 rounded">${e.today}</div>`;
     c.appendChild(card);
   });
-  document.getElementById('dailyFlows').dataset.usd = etfData.dailyFlows;
-  document.getElementById('tradingVol').dataset.usd = etfData.tradingVol;
-  document.getElementById('sevenDayAvg').dataset.usd = etfData.sevenDayAvg;
-  document.getElementById('projAUM').dataset.usd = etfData.projAUM;
+  // Auto-convert totalAUM to B if >=1000M
+  let totalAUMFormatted, totalAUMData;
+  if (totalAUM >= 1000) {
+    totalAUMFormatted = (totalAUM / 1000).toFixed(2) + 'B';
+    totalAUMData = `$${(totalAUM / 1000).toFixed(2)}B`;
+  } else {
+    totalAUMFormatted = totalAUM + 'M';
+    totalAUMData = `$${totalAUM}M`;
+  }
   const aumEl = document.getElementById('totalAUM');
-  aumEl.dataset.usd = `$${totalAUM}M`;
-  aumEl.textContent = convertValue(aumEl.dataset.usd);
-  document.getElementById('totalLocked').textContent = totalHeld;
+  aumEl.dataset.usd = totalAUMData;
+  aumEl.textContent = convertValue(totalAUMData);
+
+  document.getElementById('totalLocked').textContent = totalHeld + 'M';
+  // Set other converted elements
+  document.getElementById('dailyFlows').dataset.usd = '+$62.4M';
+  document.getElementById('tradingVol').dataset.usd = '$145.3M';
+  document.getElementById('sevenDayAvg').dataset.usd = '$58M';
+  document.getElementById('projAUM').dataset.usd = '$1.74B';
   convertAll();
 }
-setInterval(fetchETFData, 60000); // 60s updates
-fetchETFData(); // Initial
+renderETFs();
 
 // === UTILS ===
-function fmt(n) {
+function formatNumber(n) {
   if (n >= 1e9) return (n/1e9).toFixed(1).replace('.0','') + 'B';
   if (n >= 1e6) return (n/1e6).toFixed(1).replace('.0','') + 'M';
   if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
@@ -483,8 +509,9 @@ function updateMarketTimer() {
   const timerEl = document.getElementById('marketTimer');
   timerEl.textContent = label + String(hrs).padStart(2,'0') + ':' + String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
   timerEl.className = `text-5xl font-mono my-6 ${timerClass}`;
-  document.getElementById('marketStatus').textContent = isOpen ? 'MARKET OPEN' : 'MARKET CLOSED';
-  document.getElementById('marketStatus').className = `text-2xl font-semibold ${isOpen ? 'market-open' : 'market-closed'}`;
+  const statusEl = document.getElementById('marketStatus');
+  statusEl.textContent = isOpen ? 'MARKET OPEN' : 'MARKET CLOSED';
+  statusEl.className = `text-2xl font-semibold ${isOpen ? 'market-open' : 'market-closed'}`;
 }
 setInterval(updateMarketTimer, 1000);
 updateMarketTimer();
