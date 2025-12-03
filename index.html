@@ -218,6 +218,7 @@ function flashCity(ex, buy=true) {
 }
 
 // === LIVE TRADES - ALL 7 EXCHANGES ===
+const proxy = "https://cors.bridged.cc/"; 
 let seen = new Set();
 async function fetchGlobalTrades() {
   const cont = document.getElementById('trades');
@@ -378,3 +379,4 @@ loadRates(); setInterval(loadRates,600000); setInterval(convertAll,3000);
 </script>
 </body>
 </html>
+
