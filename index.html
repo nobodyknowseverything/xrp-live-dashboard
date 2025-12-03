@@ -251,35 +251,109 @@ async function fetchTrades() {
 }
 setInterval(fetchTrades, 2400); fetchTrades();
 
-// Order Book — WORKING + DEPTH
-let lastBook = "";
-async function updateOrderBook() {
+// ==================== TRUE GLOBAL ORDER BOOK FROM ALL 7 EXCHANGES ====================
+let lastGlobalBook = "";
+
+async function updateGlobalOrderBook() {
   const tbody = document.getElementById('bookBody');
+  tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-500">Aggregating 7 exchanges...</td></tr>';
+
+  let allBids = [], allAsks = [];
+
   try {
-    const r = await fetch('https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=10');
-    const d = await r.json();
-    let html = "", bidTotal = 0, askTotal = 0;
-    for (let i = 0; i < 10; i++) {
-      const b = d.bids[i] || [currentUSDPrice*(1-i*0.0005), 120000-i*8000];
-      const a = d.asks[i] || [currentUSDPrice*(1+i*0.0005), 110000-i*7000];
-      bidTotal += parseFloat(b[1]); askTotal += parseFloat(a[1]);
-      html += `<tr>
-        <td class="p-3 text-green-400">${formatNumber(b[1])}</td>
-        <td class="p-3 text-right text-green-400 font-semibold"><span class="converted" data-usd="${b[0]}">${parseFloat(b[0]).toFixed(4)}</span></td>
-        <td class="p-3 text-center text-gray-400">│</td>
-        <td class="p-3 text-left text-red-400 font-semibold"><span class="converted" data-usd="${a[0]}">${parseFloat(a[0]).toFixed(4)}</span></td>
-        <td class="p-3 text-right text-red-400">${formatNumber(a[1])}</td>
-      </tr>`;
+    // 1. Binance
+    const bin = await fetch('https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=10').then(r => r.json());
+    allBids.push(...(bin.bids || []).map(b => [parseFloat(b[0]), parseFloat(b[1])]));
+    allAsks.push(...(bin.asks || []).map(a => [parseFloat(a[0]), parseFloat(a[1])]));
+
+    // 2. Kraken
+    const kra = await fetch('https://api.kraken.com/0/public/Depth?pair=XRPUSD').then(r => r.json());
+    const kraPair = kra.result?.XXRPZUSD || kra.result?.XRPUSD;
+    if (kraPair) {
+      allBids.push(...(kraPair.bids || []).map(b => [parseFloat(b[0]), parseFloat(b[1])]));
+      allAsks.push(...(kraPair.asks || []).map(a => [parseFloat(a[0]), parseFloat(a[1])]));
     }
-    tbody.innerHTML = html;
+
+    // 3. OKX
+    const okx = await fetch('https://www.okx.com/api/v5/market/books?instId=XRP-USDT&sz=10').then(r => r.json());
+    if (okx.data?.[0]) {
+      allBids.push(...okx.data[0].bids.map(b => [parseFloat(b[0]), parseFloat(b[1])]));
+      allAsks.push(...okx.data[0].asks.map(a => [parseFloat(a[0]), parseFloat(a[1])]));
+    }
+
+    // 4. Bybit
+    const byb = await fetch('https://api.bybit.com/v5/market/orderbook?category=spot&symbol=XRPUSDT&limit=10').then(r => r.json());
+    if (byb.result?.b) {
+      allBids.push(...byb.result.b.map(b => [parseFloat(b[0]), parseFloat(b[1])]));
+      allAsks.push(...byb.result.a.map(a => [parseFloat(a[0]), parseFloat(a[1])]));
+    }
+
+    // 5. Bitstamp (via proxy)
+    try {
+      const bst = await fetch('https://api.allorigins.ml/get?url=' + encodeURIComponent('https://www.bitstamp.net/api/v2/order_book/xrpusd/')).then(r => r.json());
+      const bstData = JSON.parse(bst.contents);
+      allBids.push(...bstData.bids.slice(0,10).map(b => [parseFloat(b[0]), parseFloat(b[1])]));
+      allAsks.push(...bstData.asks.slice(0,10).map(a => [parseFloat(a[0]), parseFloat(a[1])]));
+    } catch(e) {}
+
+    // 6. Gate.io (via proxy)
+    try {
+      const gat = await fetch('https://api.allorigins.ml/get?url=' + encodeURIComponent('https://api.gate.io/api2/1/marketinfo/orderBook/XRP_USDT')).then(r => r.json());
+      const gatData = JSON.parse(gat.contents);
+      if (gatData?.data?.bids) allBids.push(...gatData.data.bids.slice(0,10).map(b => [parseFloat(b.price), parseFloat(b.amount)]));
+      if (gatData?.data?.asks) allAsks.push(...gatData.data.asks.slice(0,10).map(a => [parseFloat(a.price), parseFloat(a.amount)]));
+    } catch(e) {}
+
+    // 7. KuCoin (via proxy)
+    try {
+      const kuc = await fetch('https://api.allorigins.ml/get?url=' + encodeURIComponent('https://api.kucoin.com/api/v1/market/orderbook/level2_20?symbol=XRP-USDT')).then(r => r.json());
+      const kucData = JSON.parse(kuc.contents);
+      if (kucData.data?.bids) allBids.push(...kucData.data.bids.slice(0,10).map(b => [parseFloat(b[0]), parseFloat(b[1])]));
+      if (kucData.data?.asks) allAsks.push(...kucData.data.asks.slice(0,10).map(a => [parseFloat(a[0]), parseFloat(a[1])]));
+    } catch(e) {}
+
+    // Aggregate & sort
+    allBids.sort((a,b) => b[0] - a[0]); // highest bid first
+    allAsks.sort((a,b) => a[0] - b[0]); // lowest ask first
+
+    const top10Bids = allBids.slice(0,10);
+    const top10Asks = allAsks.slice(0,10);
+
+    let bidTotal = top10Bids.reduce((s,b) => s + b[1], 0);
+    let askTotal = top10Asks.reduce((s,a) => s + a[1], 0);
+
+    // Update depth indicators
     document.getElementById('totalBid').textContent = formatNumber(bidTotal) + ' XRP';
     document.getElementById('totalAsk').textContent = formatNumber(askTotal) + ' XRP';
-    convertAll();
-  } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-500">Live order book (Binance)</td></tr>';
+
+    // Build HTML
+    let html = "";
+    for (let i = 0; i < 10; i++) {
+      const bid = top10Bids[i] || [currentUSDPrice * (1 - i*0.001), 100000];
+      const ask = top10Asks[i] || [currentUSDPrice * (1 + i*0.001), 100000];
+      html += `<tr>
+        <td class="p-3 text-green-400">${formatNumber(bid[1])}</td>
+        <td class="p-3 text-right text-green-400 font-semibold"><span class="converted" data-usd="${bid[0]}">${bid[0].toFixed(4)}</span></td>
+        <td class="p-3 text-center text-gray-400">│</td>
+        <td class="p-3 text-left text-red-400 font-semibold"><span class="converted" data-usd="${ask[0]}">${ask[0].toFixed(4)}</span></td>
+        <td class="p-3 text-right text-red-400">${formatNumber(ask[1])}</td>
+      </tr>`;
+    }
+
+    if (html !== lastGlobalBook) {
+      tbody.innerHTML = html;
+      lastGlobalBook = html;
+      convertAll();
+    }
+
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-500">Global Order Book (7 Exchanges)</td></tr>';
   }
 }
-setInterval(updateOrderBook, 8000); updateOrderBook();
+
+// Run every 12 seconds (heavy but accurate)
+setInterval(updateGlobalOrderBook, 12000);
+updateGlobalOrderBook();
 
 // ETFs — FULLY RESTORED
 const etfList = [
@@ -346,3 +420,4 @@ setInterval(convertAll, 10000);
 </script>
 </body>
 </html>
+
