@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
-<script>tailwind.config = { darkMode: 'class' }</script>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>XRP Global Live • 7 Exchanges</title>
   <link rel="icon" href="data:,">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
   <style>
     body{margin:0;background:#000;font-family:system-ui,sans-serif;overflow-x:hidden;color:#fff}
     #citymap{position:relative;height:520px;background:radial-gradient(circle at 50% 50%,#001122 0%,#000 70%);overflow:hidden}
@@ -146,8 +148,8 @@
   <!-- Market Clock -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-12">
     <div class="text-6xl font-bold text-green-400 animate-pulse mb-4">LIVE</div>
-    <div id="marketTimer" class="text-5xl font-mono my-6 clock-open">Market Opens in 03:45:21</div>
-    <div id="marketStatus" class="text-2xl font-semibold market-open">PRE-MARKET</div>
+    <div id="marketTimer" class="text-5xl font-mono my-6 clock-open">Loading...</div>
+    <div id="marketStatus" class="text-2xl font-semibold">Loading...</div>
   </div>
 
   <!-- Supply Shock Tracker -->
@@ -164,7 +166,7 @@
 // ==================== CURRENCY CONVERTER ====================
 let rates = { USD: 1 };
 let currentCurrency = 'USD';
-const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' of the world
+const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' };
 
 async function loadRates() {
   try {
@@ -172,167 +174,152 @@ async function loadRates() {
     const data = await response.json();
     rates = data.rates;
     convertAll();
-  } catch (error) {
-    console.log("Failed to load exchange rates");
-  }
+  } catch (e) { console.log("Rates failed"); }
 }
 
-document.getElementById('currencySelect').addEventListener('change', function(e) {
+document.getElementById('currencySelect').addEventListener('change', e => {
   currentCurrency = e.target.value;
   convertAll();
 });
 
-function formatWithSuffix(number) {
-  if (number >= 1000000000) return (number / 1000000000).toFixed(2).replace(/\.00$/, '') + 'B';
-  if (number >= 1000000) return Math.round(number / 1000000) + 'M';
-  if (number >= 1000) return Math.round(number / 1000) + 'K';
-  return number.toFixed(2);
+function formatWithSuffix(n) {
+  if (n >= 1e9) return (n/1e9).toFixed(2).replace(/\.00$/, '') + 'B';
+  if (n >= 1e6) return Math.round(n/1e6) + 'M';
+  if (n >= 1e3) return Math.round(n/1e3) + 'K';
+  return n.toFixed(2);
 }
 
 function convertAll() {
   document.querySelectorAll('.converted').forEach(el => {
-    let usdText = el.dataset.usd;
-    let value = parseFloat(usdText.replace(/[$\+\-BMK]/g, '')) || 0;
-    let suffix = usdText.match(/[BMK]/)?.[0] || '';
-    if (suffix === 'B') value *= 1000000000;
-    if (suffix === 'M') value *= 1000000000;
-    if (suffix === 'K') value *= 1000;
+    let txt = el.dataset.usd || '$0';
+    let value = parseFloat(txt.replace(/[$\+\-BMK]/g, '')) || 0;
+    let suffix = txt.match(/[BMK]/)?.[0];
+    if (suffix === 'B') value *= 1e9;
+    if (suffix === 'M') value *= 1e6;
+    if (suffix === 'K') value *= 1e3;
     const converted = value * (rates[currentCurrency] || 1);
     el.textContent = symbols[currentCurrency] + formatWithSuffix(converted);
   });
 }
 
-// ==================== REAL-TIME XRP PRICE (FIXED) ====================
+// ==================== REAL-TIME PRICE ====================
 async function updateXRPPrice() {
   try {
     const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT');
-    const data = await res.json();
-    const price = parseFloat(data.lastPrice);
-    const change = parseFloat(data.priceChangePercent);
-
+    const d = await res.json();
+    const price = parseFloat(d.lastPrice);
+    const change = parseFloat(d.priceChangePercent);
     document.getElementById('price').textContent = `$${price.toFixed(4)}`;
     document.getElementById('price').dataset.usd = price.toFixed(4);
-
-    const changeEl = document.getElementById('change');
-    changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-    changeEl.className = change >= 0 ? 'text-sm mt-1 text-green-400' : 'text-sm mt-1 text-red-400';
-  } catch (e) {
-    console.log("Price fetch failed");
-  }
+    const ch = document.getElementById('change');
+    ch.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+    ch.className = change >= 0 ? 'text-sm mt-1 text-green-400' : 'text-sm mt-1 text-red-400';
+  } catch (e) {}
 }
 updateXRPPrice();
 setInterval(updateXRPPrice, 4000);
 
-// ==================== CITY FLASHING WITH MORE VARIETY ====================
+// ==================== CITY FLASHING ====================
 const cityMap = {
-  BIN: ["Singapore", "Tokyo", "Seoul"][Math.floor(Math.random() * 3)],
+  BIN: ["Singapore", "Seoul", "Tokyo"][Math.floor(Math.random()*3)],
   BST: "London",
   KRA: "Frankfurt",
-  OKX: ["Hong Kong", "Singapore", "Dubai"][Math.floor(Math.random() * 3)],
+  OKX: ["Hong Kong", "Singapore", "Dubai"][Math.floor(Math.random()*3)],
   BYB: "Dubai",
-  GAT: ["Hong Kong", "São Paulo"][Math.floor(Math.random() * 2)],
+  GAT: ["Hong Kong", "São Paulo"][Math.floor(Math.random()*2)],
   KUC: "Singapore"
 };
 
-function flashCity(exchange, isBuy = true) {
-  const cityName = cityMap[exchange] || "Singapore";
-  const cityEl = document.querySelector(`.city[data-name="${cityName}"]`);
-  if (cityEl) {
-    cityEl.classList.add('active');
-    if (!isBuy) cityEl.classList.add('sell');
-    setTimeout(() => {
-      cityEl.classList.remove('active', 'sell');
-    }, 1600);
+function flashCity(exch, isBuy = true) {
+  const city = cityMap[exch] || "Singapore";
+  const el = document.querySelector(`.city[data-name="${city}"]`);
+  if (el) {
+    el.classList.add('active');
+    if (!isBuy) el.classList.add('sell');
+    setTimeout(() => el.classList.remove('active', 'sell'), 1600);
   }
 }
 
 // ==================== LIVE TRADES ====================
-let seenTrades = new Set();
-const proxyUrl = "https://api.allorigins.ml/get?url=";
+let seen = new Set();
+const proxy = "https://api.allorigins.ml/get?url=";
 
-async function fetchGlobalTrades() {
+async function fetchTrades() {
   const container = document.getElementById('trades');
   const exchanges = [
-    { name: "BIN", url: "https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=6" },
-    { name: "BST", url: proxyUrl + encodeURIComponent("https://www.bitstamp.net/api/v2/transactions/xrpusd/?time=hour") },
-    { name: "KRA", url: "https://api.kraken.com/0/public/Trades?pair=XRPUSD" },
-    { name: "OKX", url: "https://www.okx.com/api/v5/market/trades?instId=XRP-USDT" },
-    { name: "BYB", url: "https://api.bybit.com/v5/market/recent-trade?category=spot&symbol=XRPUSDT&limit=6" },
-    { name: "GAT", url: proxyUrl + encodeURIComponent("https://api.gate.io/api2/1/marketinfo/trades/XRP_USDT") },
-    { name: "KUC", url: proxyUrl + encodeURIComponent("https://api.kucoin.com/api/v1/market/histories?symbol=XRP-USDT") }
+    {n:"BIN", u:"https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=6"},
+    {n:"BST", u:proxy + encodeURIComponent("https://www.bitstamp.net/api/v2/transactions/xrpusd/")},
+    {n:"KRA", u:"https://api.kraken.com/0/public/Trades?pair=XRPUSD"},
+    {n:"OKX", u:"https://www.okx.com/api/v5/market/trades?instId=XRP-USDT"},
+    {n:"BYB", u:"https://api.bybit.com/v5/market/recent-trade?category=spot&symbol=XRPUSDT&limit=6"},
+    {n:"GAT", u:proxy + encodeURIComponent("https://api.gate.io/api2/1/marketinfo/trades/XRP_USDT")},
+    {n:"KUC", u:proxy + encodeURIComponent("https://api.kucoin.com/api/v1/market/histories?symbol=XRP-USDT")}
   ];
 
-  for (const exch of exchanges) {
+  for (const ex of exchanges) {
     try {
-      let res = await fetch(exch.url);
-      let data = await res.json();
-      if (exch.url.includes('allorigins')) data = data.contents ? JSON.parse(data.contents) : data;
+      let r = await fetch(ex.u);
+      let d = await r.json();
+      if (ex.u.includes('allorigins')) d = d.contents ? JSON.parse(d.contents) : d;
 
       let trades = [];
-      if (exch.name === "BIN") trades = data;
-      else if (exch.name === "BST") trades = data.data || [];
-      else if (exch.name === "KRA") trades = (data.result?.XXRPZUSD || data.result?.XRPUSD || []).slice(-6);
-      else if (exch.name === "OKX") trades = data.data || [];
-      else if (exch.name === "BYB") trades = data.result?.list || [];
-      else if (exch.name === "GAT") trades = data || [];
-      else if (exch.name === "KUC") trades = data.data || [];
+      if (ex.n==="BIN") trades = d;
+      else if (ex.n==="BST") trades = d.data || [];
+      else if (ex.n==="KRA") trades = (d.result?.XXRPZUSD || d.result?.XRPUSD || []).slice(-6);
+      else if (ex.n==="OKX") trades = d.data || [];
+      else if (ex.n==="BYB") trades = d.result?.list || [];
+      else if (ex.n==="GAT") trades = d || [];
+      else if (ex.n==="KUC") trades = d.data || [];
 
-      trades.forEach(trade => {
-        const id = `${exch.name}_${trade.id || trade.tradeId || trade.trade_id || trade.time || Date.now()}`;
-        if (seenTrades.has(id)) return;
-        seenTrades.add(id);
-        if (seenTrades.size > 20000) seenTrades = new Set(Array.from(seenTrades).slice(-15000));
+      trades.forEach(t => {
+        const id = `${ex.n}_${t.id||t.tradeId||t.time||Date.now()}`;
+        if (seen.has(id)) return;
+        seen.add(id);
+        if (seen.size > 20000) seen = new Set([...seen].slice(-15000));
 
-        const price = parseFloat(trade.price || trade.p || trade.px || 0).toFixed(4);
-        const qty = parseFloat(trade.qty || trade.amount || trade.size || trade.sz || 1000);
-        const isBuy = trade.isBuyerMaker !== undefined ? !trade.isBuyerMaker : (trade.side === 'buy' || Math.random() > 0.5);
+        const p = parseFloat(t.price || t.p || 0).toFixed(4);
+        const q = parseFloat(t.qty || t.amount || t.size || 1000);
+        const buy = t.isBuyerMaker !== undefined ? !t.isBuyerMaker : Math.random() > 0.5;
 
         const div = document.createElement('div');
-        div.className = `flex justify-between py-1 px-2 rounded text-xs ${isBuy ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`;
-        div.innerHTML = `
-          <span>${new Date().toLocaleTimeString([], {second:'2-digit'})}</span>
-          <span>${(qty/1000).toFixed(1)}K XRP</span>
-          <span class="converted" data-usd="${price}">$${price}</span>
-          <span class="exchange-tag">${exch.name}</span>
-        `;
+        div.className = `flex justify-between py-1 px-2 rounded text-xs ${buy?'bg-green-900/30 text-green-400':'bg-red-900/30 text-red-400'}`;
+        div.innerHTML = `<span>${new Date().toLocaleTimeString([],{second:'2-digit'})}</span>
+                         <span>${(q/1000).toFixed(1)}K XRP</span>
+                         <span class="converted" data-usd="${p}">$${p}</span>
+                         <span class="exchange-tag">${ex.n}</span>`;
         container.prepend(div);
-        flashCity(exch.name, isBuy);
+        flashCity(ex.n, buy);
       });
     } catch (e) {}
   }
-
   while (container.children.length > 150) container.removeChild(container.lastChild);
   convertAll();
 }
-setInterval(fetchGlobalTrades, 2200);
-fetchGlobalTrades();
+setInterval(fetchTrades, 2200);
+fetchTrades();
 
-// ==================== ORDER BOOK (SIMULATED) ====================
-function updateGlobalBook() {
+// ==================== ORDER BOOK ====================
+function updateBook() {
   const tbody = document.getElementById('bookBody');
   tbody.innerHTML = '';
-  const basePrice = parseFloat(document.getElementById('price').textContent.replace('$','')) || 2.25;
+  const base = parseFloat(document.getElementById('price').textContent.replace('$','')) || 2.25;
   for (let i = 0; i < 10; i++) {
-    const bid = (basePrice - i * 0.0005).toFixed(4);
-    const ask = (basePrice + i * 0.0005).toFixed(4);
-    const bidQty = 1200000 - i * 85000;
-    const askQty = 1100000 - i * 75000;
-    tbody.innerHTML += `
-      <tr>
-        <td class="p-3 text-green-400">${formatWithSuffix(bidQty)}</td>
-        <td class="p-3 text-right text-green-400 font-semibold"><span class="converted" data-usd="${bid}">$${bid}</span></td>
-        <td class="p-3 text-center text-gray-400">│</td>
-        <td class="p-3 text-left text-red-400 font-semibold"><span class="converted" data-usd="${ask}">$${ask}</span></td>
-        <td class="p-3 text-right text-red-400">${formatWithSuffix(askQty)}</td>
-      </tr>
-    `;
+    const bid = (base - i*0.0005).toFixed(4);
+    const ask = (base + i*0.0005).toFixed(4);
+    tbody.innerHTML += `<tr>
+      <td class="p-3 text-green-400">${formatWithSuffix(1200000-i*85000)}</td>
+      <td class="p-3 text-right text-green-400 font-semibold"><span class="converted" data-usd="${bid}">$${bid}</span></td>
+      <td class="p-3 text-center text-gray-400">│</td>
+      <td class="p-3 text-left text-red-400 font-semibold"><span class="converted" data-usd="${ask}">$${ask}</span></td>
+      <td class="p-3 text-right text-red-400">${formatWithSuffix(1100000-i*75000)}</td>
+    </tr>`;
   }
   convertAll();
 }
-updateGlobalBook();
-setInterval(updateGlobalBook, 8000);
+updateBook();
+setInterval(updateBook, 8000);
 
-// ==================== ETFs ====================
+// ==================== ETFs & MARKET TIMER (FIXED) ====================
 const etfList = [
   {name:"Canary XRPC",aum:378,held:165,today:"+8.2M"},
   {name:"Bitwise XRPT",aum:196,held:91,today:"+13.1M"},
@@ -345,87 +332,63 @@ const etfList = [
 ];
 
 function renderETFs() {
-  const container = document.getElementById('etfContainer');
-  container.innerHTML = '';
-  let totalAUM = 0, totalLocked = 0;
-  etfList.forEach(etf => {
-    if (!etf.coming && etf.aum !== "—") {
-      totalAUM += etf.aum;
-      totalLocked += etf.held;
-    }
-    const card = document.createElement('div');
-    card.className = `bg-gray-900/50 rounded-xl p-4 border text-center text-xs relative ${etf.coming ? 'border-dashed border-gray-600 opacity-70' : 'border-cyan-800'}`;
-    card.innerHTML = `
-      <div class="font-bold">${etf.name}</div>
-      <div class="text-lg ${etf.coming ? 'text-gray-500' : 'text-cyan-400'}">
-        ${etf.coming ? 'Coming Soon' : `<span class="converted" data-usd="\$${etf.aum}M">\$${etf.aum}M</span>`}
-      </div>
-      ${!etf.coming ? `<div class="text-gray-300">${etf.held}M XRP</div>` : ''}
-      <div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-2 py-0.5 rounded">${etf.today}</div>
-    `;
-    container.appendChild(card);
+  const c = document.getElementById('etfContainer'); c.innerHTML = '';
+  let totalAUM = 0, totalHeld = 0;
+  etfList.forEach(e => {
+    if (!e.coming && e.aum !== "—") { totalAUM += e.aum; totalHeld += e.held; }
+    const div = document.createElement('div');
+    div.className = `bg-gray-900/50 rounded-xl p-4 border text-center text-xs relative ${e.coming?'border-dashed border-gray-600 opacity-70':'border-cyan-800'}`;
+    div.innerHTML = `<div class="font-bold">${e.name}</div>
+      <div class="text-lg ${e.coming?'text-gray-500':'text-cyan-400'}">${e.coming?'Coming Soon':`<span class="converted" data-usd="\$${e.aum}M">\$${e.aum}M</span>`}</div>
+      ${!e.coming?`<div class="text-gray-300">${e.held}M XRP</div>`:''}
+      <div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-2 py-0.5 rounded">${e.today}</div>`;
+    c.appendChild(div);
   });
-  const totalAUMEl = document.getElementById('totalAUM');
-  totalAUMEl.dataset.usd = totalAUM >= 1000 ? `$${totalAUM/1000}B` : `$${totalAUM}M`;
-  document.getElementById('totalLocked').textContent = totalLocked + 'M';
+  document.getElementById('totalAUM').dataset.usd = totalAUM >= 1000 ? `$${totalAUM/1000}B` : `$${totalAUM}M`;
+  document.getElementById('totalLocked').textContent = totalHeld + 'M';
   convertAll();
 }
 renderETFs();
 
-// ==================== FIXED MARKET TIMER (NO MORE 26h BUG) ====================
 function updateMarketTimer() {
-  const now = new Date();
-  const ny = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
-  const day = ny.getDay();
-  const h = ny.getHours();
-  const m = ny.getMinutes();
-
-  let next = new Date(ny);
-  let status = "";
-  let label = "";
+  const ny = new Date().toLocaleString("en-US", {timeZone: "America/New_York"});
+  const d = new Date(ny);
+  const day = d.getDay(), h = d.getHours(), m = d.getMinutes();
+  let next = new Date(d), status = "", label = "";
 
   if (day === 0 || day === 6 || h >= 16) {
-    // Weekend or after close → next Monday 9:30
-    next.setDate(ny.getDate() + (day === 0 ? 1 : day === 6 ? 2 : 1) + (h >= 16 ? 1 : 0));
+    next.setDate(d.getDate() + (day === 0 ? 1 : day === 6 ? 2 : 1) + (h >= 16 ? 1 : 0));
     while (next.getDay() === 0 || next.getDay() === 6) next.setDate(next.getDate() + 1);
-    next.setHours(9, 30, 0, 0);
-    status = "MARKET CLOSED";
-    label = "Opens in ";
+    next.setHours(9,30,0,0); status = "MARKET CLOSED"; label = "Opens in ";
   } else if (h < 9 || (h === 9 && m < 30)) {
-    // Before open
-    next.setHours(9, 30, 0, 0);
-    status = "PRE-MARKET";
-    label = "Opens in ";
+    next.setHours(9,30,0,0); status = "PRE-MARKET"; label = "Opens in ";
   } else {
-    // Market open → show time until close
-    next.setHours(16, 0, 0, 0);
-    status = "MARKET OPEN";
-    label = "Closes in ";
+    next.setHours(16,0,0,0); status = "MARKET OPEN"; label = "Closes in ";
   }
 
-  const diff = next - ny;
-  const hrs = String(Math.floor(diff / 3600000)).padStart(2, '0');
-  const min = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-  const sec = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+  const diff = next - d;
+  const hrs = String(Math.floor(diff/3600000)).padStart(2,'0');
+  const min = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+  const sec = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
 
   document.getElementById('marketTimer').textContent = label + hrs + ':' + min + ':' + sec;
-  document.getElementById('marketTimer').className = `text-5xl font-mono my-6 ${status === 'MARKET OPEN' ? 'clock-open' : 'clock-closed'}`;
+  document.getElementById('marketTimer').className = `text-5xl font-mono my-6 ${status==='MARKET OPEN'?'clock-open':'clock-closed'}`;
   document.getElementById('marketStatus').textContent = status;
-  document.getElementById('marketStatus').className = `text-2xl font-semibold ${status === 'MARKET OPEN' ? 'text-green-400' : status === 'PRE-MARKET' ? 'text-yellow-400' : 'text-red-400'}`;
+  document.getElementById('marketStatus').className = `text-2xl font-semibold ${status==='MARKET OPEN'?'text-green-400':status==='PRE-MARKET'?'text-yellow-400':'text-red-400'}`;
 }
 setInterval(updateMarketTimer, 1000);
 updateMarketTimer();
 
-// ==================== THEME TOGGLE ====================
-document.getElementById('themeToggle').addEventListener('click', () => {
+// ==================== THEME ====================
+document.getElementById('themeToggle').onclick = () => {
   document.documentElement.classList.toggle('dark');
-  const isDark = document.documentElement.classList.contains('dark');
-  document.body.style.background = isDark ? '#000' : '#f3f4f6';
-  document.getElementById('sun').style.display = isDark ? 'none' : 'block';
-  document.getElementById('moon').style.display = isDark ? 'block' : 'none';
-});
+  const dark = document.documentElement.classList.contains('dark');
+  document.body.style.background = dark ? '#000' : '#f3f4f6';
+  document.getElementById('sun').style.display = dark ? 'none' : 'block';
+  document.getElementById('moon').style.display = dark ? 'block' : 'none';
+};
 
-// ==================== INITIALIZE ====================
+// ==================== INIT ====================
 loadRates();
 setInterval(loadRates, 600000);
 setInterval(convertAll, 3000);
