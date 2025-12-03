@@ -22,7 +22,8 @@
     .toggle-btn:hover{background:#374151}
     #supplyProgress{background:#1f2937;height:12px;border-radius:6px;overflow:hidden;margin-top:12px}
     #supplyBar{background:#10b981;height:100%;width:45%;transition:width 1.5s ease}
-    .clock-closed{color:#ef4444}.clock-open{color:#10b981}
+    .clock-closed { color: #ef4444; }
+    .clock-open { color: #10b981; }
     select{font-size:14px;padding:8px 12px;border-radius:8px;background:#1f2937;color:white;border:1px solid #374151}
   </style>
 </head>
@@ -30,8 +31,12 @@
 
 <div class="fixed top-4 right-4 z-50 flex gap-3 items-center">
   <button id="themeToggle" class="toggle-btn" title="Theme">
-    <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
-    <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none"><path d="M17.293 13.293A8 8 0 616.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+    <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
+    </svg>
+    <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none">
+      <path d="M17.293 13.293A8 8 0 616.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+    </svg>
   </button>
   <select id="currencySelect">
     <option value="USD">USD $</option>
@@ -155,11 +160,10 @@
 </div>
 
 <script>
-// ==================== FULLY WORKING CODE BELOW ====================
-
+// === CURRENCY CONVERTER ===
 let rates = { USD: 1 }, currentCurrency = 'USD';
 const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' };
-const proxy = "https://corsproxy.io/?";
+const proxy = "https://api.allorigins.win/raw?url=";
 
 async function loadRates() {
   try {
@@ -190,7 +194,7 @@ function convertAll() {
   });
 }
 
-// REAL PRICE + VOLUME
+// === REAL XRP PRICE ===
 async function updatePrice() {
   try {
     const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
@@ -206,31 +210,30 @@ async function updatePrice() {
 }
 updatePrice(); setInterval(updatePrice, 15000);
 
-// CITY FLASHING - ALL 7 CITIES
+// === CITY FLASHING ===
 const cityMap = { BIN:"Singapore", BST:"London", KRA:"Frankfurt", OKX:"Dubai", BYB:"Dubai", GAT:"Hong Kong", KUC:"Singapore" };
 function flashCity(ex, buy=true) {
   const c = document.querySelector(`.city[data-name="${cityMap[ex]}"]`);
   if(c){ c.classList.add('active'); if(!buy) c.classList.add('sell'); setTimeout(()=>c.classList.remove('active','sell'),1600); }
 }
 
-// LIVE TRADES
+// === LIVE TRADES - ALL 7 EXCHANGES ===
 let seen = new Set();
 async function fetchGlobalTrades() {
   const cont = document.getElementById('trades');
   const exs = [
     {n:"BIN",u:"https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=5"},
-    {n:"BST",u:proxy+encodeURIComponent("https://www.bitstamp.net/api/v2/transactions/xrpusd/")},
+    {n:"BST",u:proxy+"https://www.bitstamp.net/api/v2/transactions/xrpusd/"},
     {n:"KRA",u:"https://api.kraken.com/0/public/Trades?pair=XRPUSD"},
     {n:"OKX",u:"https://www.okx.com/api/v5/market/trades?instId=XRP-USDT"},
     {n:"BYB",u:"https://api.bybit.com/v5/market/recent-trade?category=spot&symbol=XRPUSDT&limit=5"},
-    {n:"GAT",u:proxy+encodeURIComponent("https://api.gate.io/api2/1/marketinfo/trades/XRP_USDT")},
-    {n:"KUC",u:proxy+encodeURIComponent("https://api.kucoin.com/api/v1/market/histories?symbol=XRP-USDT")}
+    {n:"GAT",u:proxy+"https://api.gate.io/api2/1/marketinfo/trades/XRP_USDT"},
+    {n:"KUC",u:proxy+"https://api.kucoin.com/api/v1/market/histories?symbol=XRP-USDT"}
   ];
   for(const e of exs){
     try{
       const r = await fetch(e.u);
       let d = await r.json();
-      if(e.u.includes('corsproxy')) d = d.contents ? JSON.parse(d.contents) : d;
       let t = [];
       if(e.n==="BIN") t=d;
       else if(e.n==="BST") t=d.data||[];
@@ -261,13 +264,13 @@ async function fetchGlobalTrades() {
 }
 setInterval(fetchGlobalTrades,2200); fetchGlobalTrades();
 
-// GLOBAL ORDER BOOK
+// === GLOBAL ORDER BOOK ===
 async function updateGlobalBook() {
   let bids=[], asks=[], tb=0, ta=0;
   const urls = [
     'https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=10',
-    proxy+encodeURIComponent('https://www.bitstamp.net/api/v2/order_book/xrpusd/'),
-    proxy+encodeURIComponent('https://api.kraken.com/0/public/Depth?pair=XRPUSD'),
+    proxy+'https://www.bitstamp.net/api/v2/order_book/xrpusd/',
+    proxy+'https://api.kraken.com/0/public/Depth?pair=XRPUSD',
     'https://www.okx.com/api/v5/market/books?instId=XRP-USDT&sz=10',
     'https://api.bybit.com/v5/market/orderbook?category=spot&symbol=XRPUSDT&limit=10'
   ];
@@ -275,7 +278,6 @@ async function updateGlobalBook() {
     try{
       let r=await fetch(u);
       let d=await r.json();
-      if(u.includes('corsproxy')) d=JSON.parse(d.contents||'{}');
       let b = d.bids||d.result?.b||d.data?.[0]?.bids||[];
       let a = d.asks||d.result?.a||d.data?.[0]?.asks||[];
       b.slice(0,10).forEach(x=>{bids.push({p:+x[0],q:+x[1]}); tb+=+x[1];});
@@ -302,7 +304,7 @@ async function updateGlobalBook() {
 }
 updateGlobalBook(); setInterval(updateGlobalBook,8000);
 
-// ETFs
+// === ETFs ===
 const etfs = [
   {name:"Canary XRPC",aum:378,held:165,today:"+8.2M"},
   {name:"Bitwise XRPT",aum:196,held:91,today:"+13.1M"},
@@ -334,7 +336,7 @@ function renderETFs(){
 }
 renderETFs();
 
-// MARKET CLOCK
+// === MARKET CLOCK ===
 function updateMarketTimer(){
   const now=new Date();
   const et=new Date(now.toLocaleString("en-US",{timeZone:"America/New_York"}));
@@ -359,20 +361,19 @@ function updateMarketTimer(){
   document.getElementById('marketTimer').textContent=label+hh+':'+mm+':'+ss;
   document.getElementById('marketTimer').className=`text-5xl font-mono my-6 ${open?'clock-open':'clock-closed'}`;
   document.getElementById('marketStatus').textContent=status;
-  document.getElementById('marketStatus').className=`text-2xl font-semibold ${open?'market-open':'market-closed'}`;
 }
 setInterval(updateMarketTimer,1000); updateMarketTimer();
 
-// THEME
+// === THEME TOGGLE ===
 document.getElementById('themeToggle').onclick=()=>{
   document.documentElement.classList.toggle('dark');
   const dark=document.documentElement.classList.contains('dark');
-  document.body.style.background=dark?'#000':'#f3f4f6';
+  document.body.style.background=dark?'#000'+'000':'#f3f4f6';
   document.getElementById('sun').style.display=dark?'none':'block';
   document.getElementById('moon').style.display=dark?'block':'none';
 };
 
-// INIT
+// === INIT ===
 loadRates(); setInterval(loadRates,600000); setInterval(convertAll,3000);
 </script>
 </body>
