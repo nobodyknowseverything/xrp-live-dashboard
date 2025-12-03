@@ -234,7 +234,7 @@ function flashCity(exchange, isBuy = true) {
 
 // ==================== LIVE TRADES (FULLY WORKING) ====================
 let seenTrades = new Set();
-const proxyUrl = "https://api.allorigins.ml/get?url=";
+const proxyUrl = "https://corsproxy.io/?";
 
 async function fetchGlobalTrades() {
   const container = document.getElementById('trades');
@@ -428,3 +428,4 @@ setInterval(convertAll, 3000);
 </script>
 </body>
 </html>
+
