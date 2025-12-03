@@ -21,7 +21,7 @@
     #inflowAlert.show{transform:translateY(0);animation:pulse 3s infinite}
     @keyframes pulse{0%,100%{background:#10b981}50%{background:#059669}}
     .exchange-tag{font-size:9px;background:#1e293b;padding:1px 4px;border-radius:4px;margin-left:4px}
-    .toggle-btn{background:#1f2937;border:none;padding:10px;cursor:pointer;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;transition:all .3s}
+    .toggle-btn{background:#1f2937;border:none;padding:10px;cursor:pointer;border-radius:50%;width:48px;h eight:48px;display:flex;align-items:center;justify-content:center;transition:all .3s}
     .toggle-btn:hover{background:#374151}
     .market-open{color:#10b981;font-weight:bold}
     .market-closed{color:#6b7280;font-weight:bold}
@@ -33,7 +33,6 @@
 
 <div id="inflowAlert"></div>
 
-<!-- Top Right Buttons -->
 <div class="fixed top-4 right-4 z-50 flex gap-3">
   <button id="soundToggle" class="toggle-btn" title="Sound">
     <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,12 +41,15 @@
     </svg>
   </button>
   <button id="themeToggle" class="toggle-btn" title="Theme">
-    <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 0180zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
-    <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+    <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
+    </svg>
+    <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none">
+      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+    </svg>
   </button>
 </div>
 
-<!-- Header -->
 <div class="max-w-7xl mx-auto p-6 my-8 bg-gray-900/70 rounded-2xl border border-cyan-800">
   <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Live • Your Real-Time Edge</h2>
   <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
@@ -67,7 +69,6 @@
 
 <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-  <!-- Stats -->
   <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">XRP Price</div><div id="price" class="text-2xl font-bold mt-1">—</div><div id="change" class="text-sm mt-1">—</div></div>
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">24h Volume</div><div id="volume" class="text-xl font-semibold mt-1">—</div></div>
@@ -75,7 +76,6 @@
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Ask Depth</div><div id="totalAsk" class="text-xl font-semibold text-red-400 mt-1">—</div></div>
   </div>
 
-  <!-- Map -->
   <div class="lg:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Trade Flow</h2><p class="text-sm text-gray-400 mt-1">Green = buy • Red = sell • Real trades only</p></div>
     <div id="citymap">
@@ -92,30 +92,26 @@
     </div>
   </div>
 
-  <!-- Order Book -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Order Book</h2><span class="text-sm text-gray-400 ml-2">Combined • Top 20</span></div>
     <div class="overflow-x-auto max-h-96"><table class="w-full text-sm"><thead class="sticky top-0 bg-gray-800"><tr><th class="text-left p-3 text-green-400">Total</th><th class="text-right p-3 text-green-400">Bid</th><th class="text-left p-3 text-gray-400">│</th><th class="text-left p-3 text-red-400">Ask</th><th class="text-right p-3 text-red-400">Total</th></tr></thead><tbody id="bookBody"></tbody></table></div>
   </div>
 
-  <!-- Live Trades -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Trades • Binance + Coinbase + Kraken</h2></div>
     <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <!-- ETFs -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
     <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live Data</h2>
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6" id="etfContainer"></div>
     <div class="mt-6 p-4 bg-gray-800/50 rounded-lg text-center text-sm text-gray-300">
-      <p>Daily Net Flows: <span id="dailyFlow" class="text-green-400 font-bold">+$41.2M</span> | Trading Vol: <span id="dailyVol">$82.5M</span></p>
+      <p>Daily Net Flows: <span class="text-green-400 font-bold">+$41.2M</span> | Trading Vol: $82.5M</p>
       <p>7-Day Avg: $49M/day → Proj. +$1.5B AUM in 30 days</p>
     </div>
     <div class="text-center mt-8 text-3xl font-bold text-cyan-300">Total AUM: $<span id="totalAUM">821</span>M • Locked: <span id="totalLocked">350</span>M XRP</div>
   </div>
 
-  <!-- Supply Shock Tracker -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
     <h3 class="text-2xl font-bold text-cyan-400">Supply Shock Tracker</h3>
     <div class="text-lg text-gray-300 mt-4">Total Illiquid XRP: <span class="text-cyan-400 font-bold" id="illiquid">45.35B</span></div>
@@ -124,7 +120,6 @@
     <div class="mt-2 text-sm">(<span id="shockPercent">45</span>% shocked)</div>
   </div>
 
-  <!-- Countdown Clock -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-12">
     <div class="text-6xl font-bold text-green-400 animate-pulse">LIVE</div>
     <div id="marketTimer" class="text-5xl font-mono my-6 text-cyan-300">Loading...</div>
@@ -148,14 +143,12 @@ document.getElementById('soundToggle').addEventListener('click', () => {
   document.getElementById('bellOff').style.display = soundEnabled ? 'none' : 'block';
 });
 
-// Format numbers
 function fmt(n) {
   if (n >= 1e6) return (n/1e6).toFixed(1).replace('.0','') + 'M';
   if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
   return Math.round(n);
 }
 
-// Flash city on real trade
 function flashCity(buy = true) {
   const cities = document.querySelectorAll('.city');
   const city = cities[Math.floor(Math.random() * cities.length)];
@@ -164,9 +157,8 @@ function flashCity(buy = true) {
   setTimeout(() => city.classList.remove('active', 'sell'), 1600);
 }
 
-// LIVE TRADES — TRUE MULTI-EXCHANGE MERGED FEED
+// LIVE TRADES — TRUE MULTI-EXCHANGE
 let knownTradeIds = new Set();
-
 async function fetchAllTrades() {
   const container = document.getElementById('trades');
   const newTrades = [];
@@ -174,11 +166,10 @@ async function fetchAllTrades() {
   try {
     const [binRes, cbRes, krRes] = await Promise.all([
       fetch('https://api.binance.com/api/v3/trades?symbol=XRPUSDT&limit=15').then(r => r.json()).catch(() => []),
-     175      fetch('https://api.pro.coinbase.com/products/XRP-USD/trades').then(r => r.json()).catch(() => []),
+      fetch('https://api.pro.coinbase.com/products/XRP-USD/trades').then(r => r.json()).catch(() => []),
       fetch('https://api.kraken.com/0/public/Trades?pair=XRPUSD').then(r => r.json()).catch(() => ({result:{}}))
     ]);
 
-    // Binance
     binRes.forEach(t => {
       const id = `BIN_${t.id}`;
       if (!knownTradeIds.has(id)) {
@@ -187,7 +178,6 @@ async function fetchAllTrades() {
       }
     });
 
-    // Coinbase
     cbRes.slice(0,15).forEach(t => {
       const id = `CB_${t.trade_id}`;
       if (!knownTradeIds.has(id)) {
@@ -196,7 +186,6 @@ async function fetchAllTrades() {
       }
     });
 
-    // Kraken
     if (krRes.result) {
       const krTrades = krRes.result.XXRPZUSD || krRes.result.XRPUSD || [];
       krTrades.slice(0,15).forEach((t, i) => {
@@ -220,36 +209,134 @@ async function fetchAllTrades() {
         flashCity(isBuy);
       });
     }
-
     while (container.children.length > 120) container.removeChild(container.lastChild);
   } catch(e) {}
 }
-
 setInterval(fetchAllTrades, 2200);
 fetchAllTrades();
 
-// Price & Volume
+// Price
 async function updatePrice() {
   try {
     const d = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true')
       .then(r => r.json()).then(j => j.ripple);
     document.getElementById('price').textContent = '$' + d.usd.toFixed(2);
     const ch = d.usd_24h_change.toFixed(2);
-    document.getElementById('change').textContent = (ch > 0 ? '+' : '') + ch + '%';
+    document.getElementById('change').innerHTML = (ch > 0 ? '+' : '') + ch + '%';
     document.getElementById('change').className = 'text-sm mt-1 ' + (ch > 0 ? 'text-green-400' : 'text-red-400');
     document.getElementById('volume').textContent = '$' + (d.usd_24h_vol / 1e9).toFixed(2) + 'B';
   } catch(e) {}
 }
 updatePrice(); setInterval(updatePrice, 14000);
 
-// Global Order Book (unchanged – already working perfectly)
-async function updateGlobalBook() { /* ... your existing working orderbook code ... */ }
+// Order Book
+async function updateGlobalBook() {
+  let bids = [], asks = [], totalBid = 0, totalAsk = 0;
+  const urls = [
+    "https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=20",
+    "https://api.pro.coinbase.com/products/XRP-USD/book?level=2",
+    "https://api.kraken.com/0/public/Depth?pair=XRPUSD"
+  ];
+  for (const u of urls) {
+    try {
+      const d = await fetch(u).then(r => r.json());
+      if (d.bids) d.bids.slice(0,20).forEach(b => { const p=+b[0], q=+b[1]; bids.push({p,q}); totalBid += q; });
+      if (d.asks) d.asks.slice(0,20).forEach(a => { const p=+a[0], q=+a[1]; asks.push({p,q}); totalAsk += q; });
+      if (d.result) {
+        const book = d.result.XXRPZUSD || d.result.XRPUSD;
+        book.bids.slice(0,20).forEach(b => { const p=+b[0], q=+b[1]; bids.push({p,q}); totalBid += q; });
+        book.asks.slice(0,20).forEach(a => { const p=+a[0], q=+a[1]; asks.push({p,q}); totalAsk += q; });
+      }
+    } catch(e) {}
+  }
+  bids.sort((a,b) => b.p - a.p); asks.sort((a,b) => a.p - b.p);
+  const tbody = document.getElementById('bookBody'); tbody.innerHTML = '';
+  for (let i = 0; i < 20; i++) {
+    const b = bids[i] || {p:0,q:0}, a = asks[i] || {p:0,q:0};
+    const cumB = bids.slice(0,i+1).reduce((s,x)=>s+x.q,0);
+    const cumA = asks.slice(0,i+1).reduce((s,x)=>s+x.q,0);
+    tbody.innerHTML += `<tr>
+      <td class="p-3 text-green-400">${fmt(cumB)}</td>
+      <td class="p-3 text-right text-green-400 font-semibold">${b.p.toFixed(4)}</td>
+      <td class="p-3 text-center text-gray-400">│</td>
+      <td class="p-3 text-left text-red-400 font-semibold">${a.p.toFixed(4)}</td>
+      <td class="p-3 text-right text-red-400">${fmt(cumA)}</td>
+    </tr>`;
+  }
+  document.getElementById('totalBid').textContent = fmt(totalBid) + ' XRP';
+  document.getElementById('totalAsk').textContent = fmt(totalAsk) + ' XRP';
+}
 updateGlobalBook(); setInterval(updateGlobalBook, 9000);
 
-// ETF Cards, Supply Shock, Countdown Clock – all exactly as before
-// (they were already perfect, so left untouched)
+// ETF Cards
+const etfs = [
+  {name:"Canary XRPC",aum:343,inflow:250,held:150,today:"+7.5M"},
+  {name:"Bitwise XRPT",aum:179,inflow:135,held:83,today:"+12.3M"},
+  {name:"Franklin EZRP",aum:85,inflow:63,held:39,today:"+9.1M"},
+  {name:"Grayscale GXRP",aum:72,inflow:67,held:32,today:"+2.7M"},
+  {name:"21Shares TOXR",aum:142,inflow:151,held:46,today:"+8.4M"},
+  {name:"VanEck HXRP",aum:"—",today:"Q1 2026",coming:true},
+  {name:"ProShares XRP",aum:"—",today:"Pending",coming:true}
+];
+function renderETFs() {
+  const c = document.getElementById('etfContainer'); c.innerHTML = '';
+  let totalAUM = 0, totalHeld = 0;
+  etfs.forEach(e => {
+    if (!e.coming) { totalAUM += e.aum; totalHeld += e.held; }
+    const card = document.createElement('div');
+    card.className = `bg-gray-900/50 rounded-xl p-4 border text-center text-xs relative ${e.coming ? 'border-dashed border-gray-600 opacity-70' : 'border-cyan-800'}`;
+    card.innerHTML = `
+      <div class="font-bold">${e.name}</div>
+      <div class="text-lg ${e.coming?'text-gray-500':'text-cyan-400'}">${e.coming?'Coming Soon':'$'+e.aum+'M'}</div>
+      ${!e.coming ? `<div class="text-green-400">+$${e.inflow}M Cum.</div><div class="text-gray-300">${e.held}M XRP</div>` : ''}
+      <div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-2 py-0.5 rounded">${e.today}</div>
+    `;
+    c.appendChild(card);
+  });
+  document.getElementById('totalAUM').textContent = Math.round(totalAUM);
+  document.getElementById('totalLocked').textContent = Math.round(totalHeld);
+}
+renderETFs();
 
-renderETFs(); updateSupply(); setInterval(updateMarketTimer, 1000); updateMarketTimer();
+// Supply Shock
+function updateSupply() {
+  const totalLockedXRP = 350_000_000;
+  const escrow = 39_300_000_000;
+  const otc = 6_000_000_000;
+  const totalIlliquid = totalLockedXRP + escrow + otc;
+  const totalSupply = 100_000_000_000;
+  const pct = Math.round((totalIlliquid / totalSupply) * 100);
+  document.getElementById('illiquid').textContent = (totalIlliquid / 1e9).toFixed(2) + 'B';
+  document.getElementById('supplyBar').style.width = pct + '%';
+  document.getElementById('shockPercent').textContent = pct + '%';
+}
+updateSupply();
+
+// Market Timer
+function updateMarketTimer() {
+  const now = new Date();
+  const ny = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+  const day = ny.getDay();
+  const h = ny.getHours(), m = ny.getMinutes(), s = ny.getSeconds();
+  const isOpen = day >= 1 && day <= 5 && (h > 9 || (h === 9 && m >= 30)) && h < 16;
+  let next = isOpen ? new Date(ny) : new Date(ny);
+  if (isOpen) next.setHours(16,0,0,0);
+  else {
+    const daysUntilMon = day === 0 ? 1 : day === 6 ? 2 : (h < 9 || (h === 9 && m < 30) ? 0 : 1);
+    next.setDate(ny.getDate() + daysUntilMon);
+    next.setHours(9,30,0,0);
+  }
+  const diff = (isOpen ? next - ny : next - ny);
+  const hrs = Math.floor(diff / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  document.getElementById('marketTimer').textContent = (isOpen ? "Trading Open • " : "Market Opens in ") +
+    String(hrs).padStart(2,'0') + ':' + String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+  document.getElementById('marketStatus').textContent = isOpen ? 'MARKET OPEN' : 'MARKET CLOSED';
+  document.getElementById('marketStatus').className = isOpen ? 'text-2xl font-semibold market-open' : 'text-2xl font-semibold market-closed';
+}
+setInterval(updateMarketTimer, 1000);
+updateMarketTimer();
 
 </script>
 </body>
