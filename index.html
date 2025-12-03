@@ -10,7 +10,7 @@
     body{margin:0;background:#000;font-family:system-ui,sans-serif;overflow-x:hidden;color:#fff}
     #citymap{position:relative;height:520px;background:radial-gradient(circle at 50% 50%,#001122 0%,#000 70%);overflow:hidden}
     @media(max-width:768px){#citymap{height:340px}}
-    .city{position:absolute;width:12px;height:12px;background:#00ffff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 10px #00ffff60}
+    .city{position:absolute;width:12px;height:12px;background:#00ffff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 10px #00ffff60;transition:all .3s}
     .city::after{content:attr(data-name);position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:11px;color:#00ffff90;opacity:0.6}
     .city.active{z-index:10;animation:glow 1.6s ease-out}
     .city.active::after{color:white;opacity:1;font-weight:bold;text-shadow:0 0 12px white}
@@ -21,132 +21,143 @@
     #inflowAlert.show{transform:translateY(0);animation:pulse 3s infinite}
     @keyframes pulse{0%,100%{background:#10b981}50%{background:#059669}}
     .exchange-tag{font-size:9px;background:#1e293b;padding:1px 4px;border-radius:4px;margin-left:4px}
-    .countdown{font-family:monospace;letter-spacing:2px}
+    .toggle-btn{background:#1f2937;border:none;padding:10px;cursor:pointer;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;transition:all .3s}
+    .toggle-btn:hover{background:#374151}
     .market-open{color:#10b981;font-weight:bold}
     .market-closed{color:#6b7280;font-weight:bold}
+    #supplyProgress{background:#1f2937;height:12px;border-radius:6px;overflow:hidden;margin-top:12px}
+    #supplyBar{background:#10b981;height:100%;width:0%;transition:width 1.5s ease}
   </style>
 </head>
-<body>
+<body class="transition-colors duration-500">
 
 <div id="inflowAlert"></div>
 
-<div class="fixed top-4 right-4 z-50">
-  <button id="soundToggle" class="bg-gray-800 p-3 rounded-full hover:bg-gray-700 transition">
+<!-- Top Right Buttons -->
+<div class="fixed top-4 right-4 z-50 flex gap-3">
+  <button id="soundToggle" class="toggle-btn" title="Sound">
     <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path id="bellOn" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
       <path id="bellOff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-12.728 12.728m-2.828-2.828L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" style="display:none"/>
     </svg>
   </button>
+  <button id="themeToggle" class="toggle-btn" title="Theme">
+    <svg id="sun" class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
+    <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20" style="display:none"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+  </button>
 </div>
 
-<div class="max-w-7xl mx-auto px-4 py-6">
-  <div class="text-center mb-6">
-    <h1 class="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live • Real-Time</h1>
-    <p class="text-cyan-300 text-sm mt-2">Binance • Coinbase • Kraken • ETF Data (Live Simulation)</p>
+<!-- Header -->
+<div class="max-w-7xl mx-auto p-6 my-8 bg-gray-900/70 rounded-2xl border border-cyan-800">
+  <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Live • Your Real-Time Edge</h2>
+  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-green-400 mb-2">Global Flow</h3><p>Binance + Coinbase + Kraken</p></div>
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-cyan-400 mb-2">Order Book</h3><p>Combined • All Exchanges</p></div>
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-yellow-400 mb-2">ETF Alerts</h3><p>Real $10M+ Daily Flows</p></div>
+    <div class="bg-gray-800/50 p-5 rounded-xl border border-gray-700"><h3 class="font-bold text-red-400 mb-2">Supply Shock</h3><p>Total Illiquid vs Available</p></div>
   </div>
+</div>
+
+<div class="border-b border-gray-800">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live • Real-Time</h1>
+    <span class="px-4 py-1 text-sm bg-cyan-900 text-cyan-300 rounded-full">BINANCE • COINBASE • KRAKEN</span>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
-      <div class="text-sm text-gray-400">XRP Price</div>
-      <div id="price" class="text-3xl font-bold mt-1">$—.--</div>
-      <div id="change" class="text-sm mt-1">—</div>
-    </div>
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
-      <div class="text-sm text-gray-400">24h Volume</div>
-      <div id="volume" class="text-xl font-bold mt-1">—</div>
-    </div>
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
-      <div class="text-sm text-gray-400">Bid Depth</div>
-      <div id="totalBid" class="text-xl font-bold text-green-400 mt-1">—</div>
-    </div>
-    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
-      <div class="text-sm text-gray-400">Ask Depth</div>
-      <div id="totalAsk" class="text-xl font-bold text-red-400 mt-1">—</div>
+  <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">XRP Price</div><div id="price" class="text-2xl font-bold mt-1">—</div><div id="change" class="text-sm mt-1">—</div></div>
+    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">24h Volume</div><div id="volume" class="text-xl font-semibold mt-1">—</div></div>
+    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Bid Depth</div><div id="totalBid" class="text-xl font-semibold text-green-400 mt-1">—</div></div>
+    <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Ask Depth</div><div id="totalAsk" class="text-xl font-semibold text-red-400 mt-1">—</div></div>
+  </div>
+
+  <!-- Map -->
+  <div class="lg:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Trade Flow</h2><p class="text-sm text-gray-400 mt-1">Green = buy • Red = sell • Real trades only</p></div>
+    <div id="citymap">
+      <div class="city" data-name="New York" style="top:45%;left:22%"></div>
+      <div class="city" data-name="London" style="top:38%;left:42%"></div>
+      <div class="city" data-name="Frankfurt" style="top:40%;left:45%"></div>
+      <div class="city" data-name="Dubai" style="top:50%;left:58%"></div>
+      <div class="city" data-name="Mumbai" style="top:55%;left:62%"></div>
+      <div class="city" data-name="Singapore" style="top:60%;left:68%"></div>
+      <div class="city" data-name="Hong Kong" style="top:52%;left:72%"></div>
+      <div class="city" data-name="Tokyo" style="top:45%;left:78%"></div>
+      <div class="city" data-name="Sydney" style="top:68%;left:75%"></div>
+      <div class="city" data-name="São Paulo" style="top:68%;left:28%"></div>
     </div>
   </div>
 
-  <div class="grid lg:grid-cols-3 gap-6">
+  <!-- Order Book -->
+  <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Global Order Book</h2><span class="text-sm text-gray-400 ml-2">Combined • Top 20</span></div>
+    <div class="overflow-x-auto max-h-96"><table class="w-full text-sm"><thead class="sticky top-0 bg-gray-800"><tr><th class="text-left p-3 text-green-400">Total</th><th class="text-right p-3 text-green-400">Bid</th><th class="text-left p-3 text-gray-400">│</th><th class="text-left p-3 text-red-400">Ask</th><th class="text-right p-3 text-red-400">Total</th></tr></thead><tbody id="bookBody"></tbody></table></div>
+  </div>
 
-    <!-- Map -->
-    <div class="lg:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-      <div class="px-6 py-4 border-b border-gray-800 flex justify-between items-center">
-        <h2 class="text-lg font-semibold">Global Trade Flow • Real Trades Only</h2>
-        <span class="text-green-400 text-sm font-bold animate-pulse">● LIVE</span>
-      </div>
-      <div id="citymap">
-        <div class="city" data-name="New York" style="top:45%;left:22%"></div>
-        <div class="city" data-name="London" style="top:38%;left:42%"></div>
-        <div class="city" data-name="Frankfurt" style="top:40%;left:45%"></div>
-        <div class="city" data-name="Dubai" style="top:50%;left:58%"></div>
-        <div class="city" data-name="Singapore" style="top:60%;left:68%"></div>
-        <div class="city" data-name="Hong Kong" style="top:52%;left:72%"></div>
-        <div class="city" data-name="Tokyo" style="top:45%;left:78%"></div>
-        <div class="city" data-name="Sydney" style="top:68%;left:75%"></div>
-        <div class="city" data-name="São Paulo" style="top:68%;left:28%"></div>
-      </div>
+  <!-- Live Trades -->
+  <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Trades • Binance + Coinbase + Kraken</h2></div>
+    <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
+  </div>
+
+  <!-- ETFs -->
+  <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
+    <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live Data</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6" id="etfContainer"></div>
+    <div class="mt-6 p-4 bg-gray-800/50 rounded-lg text-center text-sm text-gray-300">
+      <p>Daily Net Flows: <span id="dailyFlow" class="text-green-400 font-bold">+$41.2M</span> | Trading Vol: <span id="dailyVol">$82.5M</span></p>
+      <p>7-Day Avg: $49M/day → Proj. +$1.5B AUM in 30 days</p>
     </div>
+    <div class="text-center mt-8 text-3xl font-bold text-cyan-300">Total AUM: $<span id="totalAUM">821</span>M • Locked: <span id="totalLocked">350</span>M XRP</div>
+  </div>
 
-    <!-- Order Book -->
-    <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-      <div class="px-6 py-4 border-b border-gray-800">
-        <h2 class="text-lg font-semibold">Global Order Book</h2>
-      </div>
-      <div class="overflow-x-auto max-h-96">
-        <table class="w-full text-sm"><thead class="sticky top-0 bg-gray-800">
-          <tr><th class="text-left p-3 text-green-400">Total</th><th class="text-right p-3 text-green-400">Bid</th><th class="text-center p-3 text-gray-400">│</th><th class="text-left p-3 text-red-400">Ask</th><th class="text-right p-3 text-red-400">Total</th></tr>
-        </thead><tbody id="bookBody"></tbody></table>
-      </div>
-    </div>
+  <!-- Supply Shock Tracker -->
+  <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
+    <h3 class="text-2xl font-bold text-cyan-400">Supply Shock Tracker</h3>
+    <div class="text-lg text-gray-300 mt-4">Total Illiquid XRP: <span class="text-cyan-400 font-bold" id="illiquid">45.35B</span></div>
+    <div class="text-lg text-gray-300">Available for Sale: <span class="text-green-400 font-bold">~54.6B</span></div>
+    <div id="supplyProgress"><div id="supplyBar"></div></div>
+    <div class="mt-2 text-sm">(<span id="shockPercent">45</span>% shocked)</div>
+  </div>
 
-    <!-- Live Trades -->
-    <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden mt-6">
-      <div class="px-6 py-4 border-b border-gray-800">
-        <h2 class="text-lg font-semibold">Live Trades • Binance + Coinbase + Kraken</h2>
-      </div>
-      <div id="trades" class="h-64 overflow-y-auto font-mono text-sm p-4 space-y-1"></div>
-    </div>
-
-    <!-- ETFs -->
-    <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-6">
-      <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Spot ETFs • Live Data</h2>
-      <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6" id="etfContainer"></div>
-      <div class="mt-8 p-6 bg-gray-800/50 rounded-xl text-center">
-        <p class="text-lg">Daily Net Flows: <span id="dailyFlow" class="text-green-400 font-bold">+$41.2M</span> | Trading Vol: <span id="dailyVol">$82.5M</span></p>
-        <p class="text-sm text-gray-400 mt-2">7-Day Avg: $49M/day → Proj. +$1.5B AUM in 30 days</p>
-      </div>
-      <div class="text-center mt-6 text-3xl font-bold text-cyan-300">
-        Total AUM: $<span id="totalAUM">821</span>M • Locked: <span id="totalLocked">350</span>M XRP
-      </div>
-    </div>
-
-    <!-- Countdown Clock (like xrp-insight.com) -->
-    <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 p-8 text-center">
-      <div class="text-6xl font-bold text-green-400 mb-4">LIVE</div>
-      <div id="marketTimer" class="text-4xl font-mono countdown text-cyan-300">Loading...</div>
-      <div id="marketStatus" class="text-xl mt-4 font-semibold market-closed">Market Closed</div>
-    </div>
-
+  <!-- Countdown Clock (xrp-insight.com style) -->
+  <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 text-center py-12">
+    <div class="text-6xl font-bold text-green-400 animate-pulse">LIVE</div>
+    <div id="marketTimer" class="text-5xl font-mono my-6 text-cyan-300">Loading...</div>
+    <div id="marketStatus" class="text-2xl font-semibold market-closed">Market Closed</div>
   </div>
 </div>
 
 <script>
-// Sound
+// Theme Toggle
+document.getElementById('themeToggle').addEventListener('click', () => {
+  document.documentElement.classList.toggle('dark');
+  const isDark = document.documentElement.classList.contains('dark');
+  document.body.style.background = isDark ? '#000' : '#f3f4f6';
+  document.getElementById('sun').style.display = isDark ? 'none' : 'block';
+  document.getElementById('moon').style.display = isDark ? 'block' : 'none';
+});
+
+// Sound Toggle
 let soundEnabled = true;
-document.getElementById('soundToggle').onclick = () => {
+document.getElementById('soundToggle').addEventListener('click', () => {
   soundEnabled = !soundEnabled;
   document.getElementById('bellOn').style.display = soundEnabled ? 'block' : 'none';
   document.getElementById('bellOff').style.display = soundEnabled ? 'none' : 'block';
-};
+});
 
-// Format depth
+// Format Depth
 function fmt(n) {
   if (n >= 1e6) return (n/1e6).toFixed(1).replace('.0','') + 'M';
   if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
-  return n.toFixed(0);
+  return Math.round(n);
 }
 
-// City flash only on real trades
+// Flash City (only real trades)
 function flashCity(buy = true) {
   const cities = document.querySelectorAll('.city');
   const city = cities[Math.floor(Math.random() * cities.length)];
@@ -167,28 +178,28 @@ async function fetchAllTrades() {
       fetch('https://api.kraken.com/0/public/Trades?pair=XRPUSD').then(r => r.json())
     ]);
 
-    bin.forEach(t => { if (t.time > lastTradeTime) newTrades.push({t: t.time, q: +t.qty, p: +t.price, buy: !t.isBuyerMaker, ex: "BIN"}); });
-    cb.slice(0,10).forEach(t => { const tm = Date.parse(t.time); if (tm > lastTradeTime) newTrades.push({t: tm, q: +t.size, p: +t.price, buy: t.side === 'buy', ex: "CB"}); });
+    bin.forEach(t => { if (t.time > lastTradeTime) newTrades.push({time: t.time, qty: +t.qty, price: +t.price, buy: !t.isBuyerMaker, exch: "BIN"}); });
+    cb.slice(0,10).forEach(t => { const tm = Date.parse(t.time); if (tm > lastTradeTime) newTrades.push({time: tm, qty: +t.size, price: +t.price, buy: t.side === 'buy', exch: "CB"}); });
     if (!kr.error?.length) {
       const trades = kr.result.XXRPZUSD || kr.result.XRPUSD || [];
-      trades.slice(0,10).forEach(t => { const tm = t[2]*1000; if (tm > lastTradeTime) newTrades.push({t: tm, q: +t[1], p: +t[0], buy: null, ex: "KR"}); });
+      trades.slice(0,10).forEach(t => { const tm = t[2]*1000; if (tm > lastTradeTime) newTrades.push({time: tm, qty: +t[1], price: +t[0], buy: null, exch: "KR"}); });
     }
   } catch(e) {}
 
   if (newTrades.length) {
-    lastTradeTime = Math.max(...newTrades.map(x => x.t));
-    newTrades.sort((a,b) => b.t - a.t).forEach(tr => {
+    lastTradeTime = Math.max(...newTrades.map(x => x.time));
+    newTrades.sort((a,b) => b.time - a.time).forEach(tr => {
       const buy = tr.buy ?? Math.random() > 0.5;
       const div = document.createElement('div');
-      div.className = `flex justify-between px-3 py-1 rounded ${buy ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`;
-      div.innerHTML = `<span>${new Date(tr.t).toLocaleTimeString([],{second:'2-digit'})}</span>
-                       <span>${tr.q.toFixed(1)} XRP</span>
-                       <span>$${tr.p.toFixed(4)} <span class="exchange-tag">${tr.ex}</span></span>`;
+      div.className = `flex justify-between py-1 px-2 rounded text-xs ${buy ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`;
+      div.innerHTML = `<span>${new Date(tr.time).toLocaleTimeString([],{second:'2-digit'})}</span>
+                       <span>${tr.qty.toFixed(1)} XRP</span>
+                       <span>$${tr.price.toFixed(4)} <span class="exchange-tag">${tr.exch}</span></span>`;
       container.prepend(div);
       flashCity(buy);
     });
   }
-  while (container.children.length > 100) container.removeChild(container.lastChild);
+  while (container.children.length > 120) container.removeChild(container.lastChild);
 }
 setInterval(fetchAllTrades, 3000); fetchAllTrades();
 
@@ -200,29 +211,25 @@ async function updatePrice() {
     document.getElementById('price').textContent = '$' + d.usd.toFixed(2);
     const ch = d.usd_24h_change.toFixed(2);
     document.getElementById('change').textContent = (ch > 0 ? '+' : '') + ch + '%';
-    document.getElementById('change').className = ch > 0 ? 'text-green-400' : 'text-red-400';
+    document.getElementById('change').className = 'text-sm mt-1 ' + (ch > 0 ? 'text-green-400' : 'text-red-400');
     document.getElementById('volume').textContent = '$' + (d.usd_24h_vol / 1e9).toFixed(2) + 'B';
   } catch(e) {}
 }
-updatePrice(); setInterval(updatePrice, 15000);
+updatePrice(); setInterval(updatePrice, 14000);
 
 // Global Order Book
 async function updateGlobalBook() {
-  let bids = [], asks = [], totBid = 0, totAsk = 0;
-  const urls = [
-    "https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=20",
-    "https://api.pro.coinbase.com/products/XRP-USD/book?level=2",
-    "https://api.kraken.com/0/public/Depth?pair=XRPUSD"
-  ];
+  let bids = [], asks = [], totalBid = 0, totalAsk = 0;
+  const urls = ["https://api.binance.com/api/v3/depth?symbol=XRPUSDT&limit=20", "https://api.pro.coinbase.com/products/XRP-USD/book?level=2", "https://api.kraken.com/0/public/Depth?pair=XRPUSD"];
   for (const u of urls) {
     try {
       const d = await fetch(u).then(r => r.json());
-      if (d.bids) d.bids.slice(0,20).forEach(b => { const p=+b[0], q=+b[1]; bids.push({p,q}); totBid += q; });
-      if (d.asks) d.asks.slice(0,20).forEach(a => { const p=+a[0], q=+a[1]; asks.push({p,q}); totAsk += q; });
+      if (d.bids) d.bids.slice(0,20).forEach(b => { const p=+b[0], q=+b[1]; bids.push({p,q}); totalBid += q; });
+      if (d.asks) d.asks.slice(0,20).forEach(a => { const p=+a[0], q=+a[1]; asks.push({p,q}); totalAsk += q; });
       if (d.result) {
         const book = d.result.XXRPZUSD || d.result.XRPUSD;
-        book.bids.slice(0,20).forEach(b => { const p=+b[0], q=+b[1]; bids.push({p,q}); totBid += q; });
-        book.asks.slice(0,20).forEach(a => { const p=+a[0], q=+a[1]; asks.push({p,q}); totAsk += q; });
+        book.bids.slice(0,20).forEach(b => { const p=+b[0], q=+b[1]; bids.push({p,q}); totalBid += q; });
+        book.asks.slice(0,20).forEach(a => { const p=+a[0], q=+a[1]; asks.push({p,q}); totalAsk += q; });
       }
     } catch(e) {}
   }
@@ -240,17 +247,17 @@ async function updateGlobalBook() {
       <td class="p-3 text-right text-red-400">${fmt(cumA)}</td>
     </tr>`;
   }
-  document.getElementById('totalBid').textContent = fmt(totBid) + ' XRP';
-  document.getElementById('totalAsk').textContent = fmt(totAsk) + ' XRP';
+  document.getElementById('totalBid').textContent = fmt(totalBid) + ' XRP';
+  document.getElementById('totalAsk').textContent = fmt(totalAsk) + ' XRP';
 }
 updateGlobalBook(); setInterval(updateGlobalBook, 9000);
 
-// ETF Cards (realistic live simulation)
+// ETF Cards
 const etfs = [
-  {name:"Canary XRPC",aum:343,inflow:250,held:150,today:"+7.5"}, {name:"Bitwise XRPT",aum:179,inflow:135,held:83,today:"+12.3"},
-  {name:"Franklin EZRP",aum:85,inflow:63,held:39,today:"+9.1"}, {name:"Grayscale GXRP",aum:72,inflow:67,held:32,today:"+2.7"},
-  {name:"21Shares TOXR",aum:142,inflow:151,held:46,today:"+8.4"}, {name:"VanEck HXRP",aum:"—",today:"Q1 2026",coming:true},
-  {name:"ProShares XRP",aum:"—",today:"Pending",coming:true}, {name:"WisdomTree",aum:"—",today:"2026",coming:true}
+  {name:"Canary XRPC",aum:343,inflow:250,held:150,today:"+7.5M"}, {name:"Bitwise XRPT",aum:179,inflow:135,held:83,today:"+12.3M"},
+  {name:"Franklin EZRP",aum:85,inflow:63,held:39,today:"+9.1M"}, {name:"Grayscale GXRP",aum:72,inflow:67,held:32,today:"+2.7M"},
+  {name:"21Shares TOXR",aum:142,inflow:151,held:46,today:"+8.4M"},
+  {name:"VanEck HXRP",aum:"—",today:"Q1 2026",coming:true}, {name:"ProShares XRP",aum:"—",today:"Pending",coming:true}
 ];
 function renderETFs() {
   const c = document.getElementById('etfContainer'); c.innerHTML = '';
@@ -258,13 +265,11 @@ function renderETFs() {
   etfs.forEach(e => {
     if (!e.coming) { totalAUM += e.aum; totalHeld += e.held; }
     const card = document.createElement('div');
-    card.className = `bg-gray-900/50 rounded-xl p-5 border ${e.coming?'border-dashed border-gray-600 opacity-70':'border-cyan-800'} text-center text-sm`;
-    card.innerHTML = `
-      <div class="font-bold text-lg">${e.name}</div>
-      <div class="text-2xl font-bold ${e.coming?'text-gray-500':'text-cyan-400'}">${e.coming?'Coming': '$'+e.aum+'M'}</div>
-      ${!e.coming ? `<div class="text-green-400">+$${e.inflow}M</div><div class="text-gray-300">${e.held}M XRP</div>` : ''}
-      <div class="mt-2 text-xs ${e.today.startsWith('+')?'text-green-400':'text-yellow-400'}">${e.today}M${e.coming?'':''}</div>
-    `;
+    card.className = `bg-gray-900/50 rounded-xl p-4 border text-center text-xs relative ${e.coming ? 'border-dashed border-gray-600 opacity-70' : 'border-cyan-800'}`;
+    card.innerHTML = `<div class="font-bold">${e.name}</div>
+      <div class="text-lg ${e.coming?'text-gray-500':'text-cyan-400'}">${e.coming?'Coming Soon':'$'+e.aum+'M'}</div>
+      ${!e.coming ? `<div class="text-green-400">+$${e.inflow}M Cum.</div><div class="text-gray-300">${e.held}M XRP</div>` : ''}
+      <div class="absolute top-1 right-1 text-xs text-green-500 bg-green-900/50 px-2 py-0.5 rounded">${e.today}</div>`;
     c.appendChild(card);
   });
   document.getElementById('totalAUM').textContent = Math.round(totalAUM);
@@ -272,41 +277,44 @@ function renderETFs() {
 }
 renderETFs();
 
-// Countdown Clock (exactly like xrp-insight.com)
+// Supply Shock
+function updateSupply() {
+  const totalLockedXRP = 350_000_000;
+  const escrow = 39_300_000_000;
+  const otc = 6_000_000_000;
+  const totalIlliquid = totalLockedXRP + escrow + otc;
+  const totalSupply = 100_000_000_000;
+  const pct = Math.round((totalIlliquid / totalSupply) * 100);
+  document.getElementById('illiquid').textContent = (totalIlliquid / 1e9).toFixed(2) + 'B';
+  document.getElementById('supplyBar').style.width = pct + '%';
+  document.getElementById('shockPercent').textContent = pct + '%';
+}
+updateSupply();
+
+// Countdown Clock (exact xrp-insight.com style)
 function updateMarketTimer() {
   const now = new Date();
-  const nyTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
-  const day = nyTime.getDay();
-  const h = nyTime.getHours(), m = nyTime.getMinutes(), s = nyTime.getSeconds();
-  
-  let nextOpen, nextClose;
-  if (day === 0) { nextOpen = new Date(nyTime); nextOpen.setDate(nyTime.getDate() + 1); nextOpen.setHours(9,30,0,0); } // Sunday → Monday
-  else if (day === 6) { nextOpen = new Date(nyTime); nextOpen.setDate(nyTime.getDate() + 2); nextOpen.setHours(9,30,0,0); } // Saturday → Monday
-  else {
-    const todayOpen = new Date(nyTime); todayOpen.setHours(9,30,0,0);
-    const todayClose = new Date(nyTime); todayClose.setHours(16,0,0,0);
-    if (nyTime < todayOpen) nextOpen = todayOpen;
-    else if (nyTime >= todayClose) { nextOpen = new Date(nyTime); nextOpen.setDate(nyTime.getDate() + (day === 5 ? 3 : 1)); nextOpen.setHours(9,30,0,0); }
-    nextClose = todayClose;
-  }
+  const ny = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+  const day = ny.getDay();
+  const h = ny.getHours(), m = ny.getMinutes(), s = ny.getSeconds();
 
-  const isOpen = nyTime >= new Date(nyTime.setHours(9,30,0,0)) && nyTime < new Date(nyTime.setHours(16,0,0,0)) && day >=1 && day <=5;
-  
-  let diff, label;
-  if (isOpen) {
-    diff = nextClose - nyTime;
-    label = "Trading Open • ";
-  } else {
-    diff = nextOpen - nyTime;
-    label = "Market Opens in ";
-  }
+  let nextOpen = new Date(ny);
+  if (day === 0 || (day === 6 && h >= 16)) nextOpen.setDate(ny.getDate() + (day === 0 ? 1 : 2));
+  else if (h >= 16 || (day === 5 && h >= 16)) nextOpen.setDate(ny.getDate() + (day === 5 ? 3 : 1));
+  else nextOpen.setDate(ny.getDate() + (h < 9 || (h === 9 && m < 30) ? 0 : 1));
+  nextOpen.setHours(9,30,0,0);
+
+  const isOpen = day >= 1 && day <= 5 && (h > 9 || (h === 9 && m >= 30)) && h < 16;
+  const diff = isOpen ? new Date(ny.setHours(16,0,0,0)) - ny : nextOpen - ny;
 
   const hrs = Math.floor(diff / 3600000);
   const mins = Math.floor((diff % 3600000) / 60000);
   const secs = Math.floor((diff % 60000) / 1000);
-  document.getElementById('marketTimer').textContent = label + String(hrs).padStart(2,'0') + ':' + String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+
+  document.getElementById('marketTimer').textContent = (isOpen ? "Trading Open • " : "Market Opens in ") + 
+    String(hrs).padStart(2,'0') + ':' + String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
   document.getElementById('marketStatus').textContent = isOpen ? 'MARKET OPEN' : 'MARKET CLOSED';
-  document.getElementById('marketStatus').className = isOpen ? 'text-xl mt-4 font-semibold market-open' : 'text-xl mt-4 font-semibold market-closed';
+  document.getElementById('marketStatus').className = isOpen ? 'text-2xl font-semibold market-open' : 'text-2xl font-semibold market-closed';
 }
 setInterval(updateMarketTimer, 1000); updateMarketTimer();
 
