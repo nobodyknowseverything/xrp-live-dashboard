@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>XRP Global Live • 10 Exchanges</title>
   <link rel="icon" href="data:,">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com?v=3"></script>
   <script>tailwind.config = { darkMode: 'class' }</script>
   <style>
     body{margin:0;background:#000;font-family:system-ui,sans-serif;overflow-x:hidden;color:#fff}
@@ -22,7 +22,7 @@
     .toggle-btn{background:#1f2937;border:none;padding:10px;cursor:pointer;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;transition:all .3s}
     .toggle-btn:hover{background:#374151}
     #supplyProgress{background:#1f2937;height:12px;border-radius:6px;overflow:hidden;margin-top:12px}
-    #supplyBar{background:#10b981;height:100%;width:60.4%;transition:width 1.5s ease}
+    #supplyBar{background:#10b981;height:100%;width:39.67%;transition:width 1.5s ease}
     select{font-size:14px;padding:8px 12px;border-radius:8px;background:#1f2937;color:white;border:1px solid #374151}
     .etf-clock{font-size:14px;padding:4px 12px;border-radius:8px;background:#1e40af;color:#93c5fd}
   </style>
@@ -46,7 +46,6 @@
   </select>
 </div>
 
-<!-- Your layout unchanged -->
 <div class="max-w-7xl mx-auto p-6 my-8 bg-gray-900/70 rounded-2xl border border-cyan-800">
   <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP Live • 10 Global Exchanges Real-Time</h2>
 </div>
@@ -60,6 +59,7 @@
 
 <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
+  <!-- Top Stats -->
   <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
       <div class="text-sm text-gray-400">XRP Price</div>
@@ -68,7 +68,7 @@
     </div>
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
       <div class="text-sm text-gray-400">24h Volume</div>
-      <div class="text-xl font-semibold mt-1 converted" data-usd="2480000000">$2.48B</div>
+      <div class="text-xl font-semibold mt-1 converted" data-usd="12000000000">$12.0B</div>
     </div>
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
       <div class="text-sm text-gray-400">Global Bid Depth</div>
@@ -186,7 +186,7 @@
       <h3 class="text-2xl font-bold text-cyan-400">Supply Shock Tracker</h3>
       <div class="text-lg text-gray-300 mt-4">Total Illiquid XRP: <span class="text-cyan-400 font-bold">39.67B</span></div>
       <div class="text-lg text-gray-300">Available for Sale: <span class="text-green-400 font-bold">60.33B</span></div>
-      <div id="supplyProgress"><div id="supplyBar" style="width:39.67%"></div></div>
+      <div id="supplyProgress"><div id="supplyBar"></div></div>
       <div class="mt-2 text-sm text-yellow-400">(39.67% shocked)</div>
     </div>
   </div>
@@ -205,60 +205,55 @@ function bigNumber(n){
   return Math.round(n);
 }
 
-// FINAL CURRENCY SYSTEM — NOW FULLY FIXED INCLUDING LIVE TRADES
 function convertAll(){
   const rate = rates[currentCurrency];
   const sym = symbols[currentCurrency];
   
-  // Main price
   document.getElementById('price').textContent = sym + (currentUSDPrice * rate).toFixed(4);
   
-  // All .converted elements (ETFs, volume, etc.)
   document.querySelectorAll('.converted').forEach(el => {
     const usd = parseFloat(el.dataset.usd) || 0;
     el.textContent = sym + bigNumber(usd * rate);
   });
   
-  // Live trades — now using data-usd attribute
   document.querySelectorAll('#trades .trade-price').forEach(span => {
     const usdPrice = parseFloat(span.dataset.usd);
     span.textContent = sym + (usdPrice * rate).toFixed(4);
-  });
-  
-  // Order book prices (already handled separately but safe to keep)
-  document.querySelectorAll('#bookBody td:nth-child(2), #bookBody td:nth-child(4)').forEach(td => {
-    const text = td.textContent;
-    const match = text.match(/[\d.]+/);
-    if (match) {
-      const usdPrice = parseFloat(match[0]);
-      td.textContent = sym + (usdPrice * rate).toFixed(4);
-    }
   });
 }
 
 document.getElementById('currencySelect').onchange = e => {
   currentCurrency = e.target.value;
   convertAll();
-  updateGlobalOrderBook(); // Refresh order book with correct currency
+  updateGlobalOrderBook();
 };
 
-// PRICE UPDATE — RESPECTS SELECTED CURRENCY
+// Real global price + real global 24h volume from CoinGecko
 async function updatePrice(){
   try{
-    const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT');
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true');
     const d = await r.json();
-    currentUSDPrice = parseFloat(d.lastPrice);
-    document.getElementById('price').textContent = symbols[currentCurrency] + (currentUSDPrice * rates[currentCurrency]).toFixed(4);
-    const ch = parseFloat(d.priceChangePercent);
-    document.getElementById('change').textContent = (ch>=0?'+':'') + ch.toFixed(2) + '%';
-    document.getElementById('change').className = ch>=0?'text-green-400':'text-red-400';
-    document.querySelector('[data-usd="2480000000"]').dataset.usd = d.quoteVolume; // update volume
-    convertAll();
-  }catch(e){}
-}
-updatePrice(); setInterval(updatePrice, 4000);
+    
+    currentUSDPrice = d.ripple.usd;
+    const real24hVolume = d.ripple.usd_24h_vol;
+    const change24h = d.ripple.usd_24h_change;
 
-// MAP + TRADES
+    document.getElementById('price').textContent = symbols[currentCurrency] + (currentUSDPrice * rates[currentCurrency]).toFixed(4);
+    
+    document.getElementById('change').textContent = (change24h>=0?'+':'') + change24h.toFixed(2) + '%';
+    document.getElementById('change').className = change24h>=0?'text-green-400':'text-red-400';
+
+    // Fixed line (this was the bug)
+    document.querySelector('.converted[data-usd]').dataset.usd = real24hVolume;
+
+    convertAll();
+  }catch(e){
+    console.log("CoinGecko fetch failed — using cached data");
+  }
+}
+updatePrice();
+setInterval(updatePrice, 8000);
+
 const cityMap = {BIN:"Singapore",BST:"London",KRA:["New York","Frankfurt"],OKX:"Tokyo",BYB:["Dubai","Hong Kong"],GAT:"São Paulo",KUC:"Seoul",CSP:"Sydney",UPH:"Los Angeles",BTR:"Singapore"};
 
 function flashCity(ex, buy = true) {
@@ -280,21 +275,21 @@ async function fetchTrades(){
     const ex = exchanges[Math.floor(Math.random()*exchanges.length)];
     const isBuy = Math.random() > 0.5;
     const amount = 5000 + Math.random()*25000;
-    const priceUSD = currentUSDPrice * (1 + (Math.random()-0.5)*0.005); // USD price
+    const priceUSD = currentUSDPrice * (1 + (Math.random()-0.5)*0.005);
 
     const div = document.createElement('div');
     div.className = `flex justify-between py-1 px-2 rounded text-xs ${isBuy?'bg-green-900/30 text-green-400':'bg-red-900/30 text-red-400'}`;
     
     const priceSpan = document.createElement('span');
     priceSpan.className = 'trade-price';
-    priceSpan.dataset.usd = priceUSD.toFixed(6); // store raw USD price
+    priceSpan.dataset.usd = priceUSD.toFixed(6);
     priceSpan.textContent = symbols[currentCurrency] + (priceUSD * rates[currentCurrency]).toFixed(4);
 
     div.innerHTML = `
       <span>${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
       <span>${bigNumber(amount)} XRP</span>
       <span class="exchange-tag">${ex}</span>`;
-    div.insertBefore(priceSpan, div.children[2]); // insert price span before exchange tag
+    div.insertBefore(priceSpan, div.children[2]);
 
     container.prepend(div);
     flashCity(ex, isBuy);
@@ -302,7 +297,6 @@ async function fetchTrades(){
 }
 setInterval(fetchTrades, 2200); fetchTrades();
 
-// ORDER BOOK — CONVERTED
 async function updateGlobalOrderBook(){
   let totalBid = 0, totalAsk = 0;
   let html = '';
@@ -328,7 +322,6 @@ async function updateGlobalOrderBook(){
 }
 setInterval(updateGlobalOrderBook, 15000); updateGlobalOrderBook();
 
-// ETF CLOCK
 function updateETFClock(){
   const now = new Date();
   const utcHour = now.getUTCHours();
@@ -336,10 +329,8 @@ function updateETFClock(){
   document.getElementById('etfClock').textContent = isTrading ? "LIVE TRADING" : "MARKET CLOSED";
   document.getElementById('etfClock').className = isTrading ? "etf-clock bg-green-900 text-green-300" : "etf-clock bg-gray-700 text-gray-400";
 }
-setInterval(updateETFClock, 1000);
-updateETFClock();
+setInterval(updateETFClock, 1000); updateETFClock();
 
-// THEME TOGGLE
 document.getElementById('themeToggle').onclick = () => {
   document.documentElement.classList.toggle('dark');
   const isDark = document.documentElement.classList.contains('dark');
@@ -348,7 +339,6 @@ document.getElementById('themeToggle').onclick = () => {
   document.getElementById('moon').classList.toggle('hidden', isDark);
 };
 
-// Start
 convertAll();
 </script>
 </body>
