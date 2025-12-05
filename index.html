@@ -323,27 +323,19 @@ async function updateGlobalOrderBook(){
 }
 setInterval(updateGlobalOrderBook, 15000); updateGlobalOrderBook();
 
-// FIXED ETF CLOCK + COUNTDOWN TIMER WITH WEEKENDS SKIPPED
+// FIXED ETF CLOCK + COUNTDOWN WITH CORRECT TIME ZONE HANDLING
 function updateETFStatus() {
   const now = new Date();
-  const year = now.getUTCFullYear();
-  const marchSecondSunday = new Date(Date.UTC(year, 2, 1));
-  marchSecondSunday.setUTCDate(8 + (7 - marchSecondSunday.getUTCDay()) % 7);
-  const novFirstSunday = new Date(Date.UTC(year, 10, 1));
-  novFirstSunday.setUTCDate(1 + (7 - novFirstSunday.getUTCDay()) % 7);
-  const isDST = now >= marchSecondSunday.setUTCHours(7,0,0,0) && now < novFirstSunday.setUTCHours(6,0,0,0);
-  const offset = isDST ? -4 : -5;
-  const etNow = new Date(now.getTime() + offset * 3600000);
+  const etStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
+  const etNow = new Date(etStr);
   const etHour = etNow.getHours();
   const etMin = etNow.getMinutes();
   const etSec = etNow.getSeconds();
-  const etDay = etNow.getDay();
+  const etDay = etNow.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
 
-  function isMarketDay(day) {
-    return day >= 1 && day <= 5; // Mon-Fri
-  }
+  const isMarketDay = (day) => day >= 1 && day <= 5;
 
-  const isOpen = isMarketDay(etDay) && (etHour > 9 || (etHour === 9 && etMin >= 30)) && etHour < 16;
+  const isOpen = isMarketDay(etDay) && (etHour > 9 || (etHour === 9 && etMin >= 30)) && (etHour < 16 || (etHour === 16 && etMin === 0));
 
   const clockEl = document.getElementById('etfClock');
   const countdownEl = document.getElementById('etfCountdown');
@@ -362,7 +354,7 @@ function updateETFStatus() {
   } else {
     clockEl.textContent = "MARKET CLOSED";
     clockEl.className = "etf-clock bg-gray-700 text-gray-400";
-    const openTime = new Date(etNow);
+    let openTime = new Date(etNow);
     openTime.setHours(9, 30, 0, 0);
     if (etHour >= 16 || etHour < 9 || (etHour === 9 && etMin < 30)) {
       openTime.setDate(openTime.getDate() + 1);
