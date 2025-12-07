@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XRP Global Live • Final Version</title>
+  <title>XRP Global Live • Final Working Version</title>
   <link rel="icon" href="data:,">
-  <!-- Stable Tailwind v3 CDN - no warnings -->
   <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   <style>
     body{margin:0;background:#000;font-family:system-ui,sans-serif;overflow-x:hidden;color:#fff}
@@ -31,28 +30,30 @@
 </head>
 <body class="transition-colors duration-500">
 
-<!-- Live Banner -->
 <div class="fixed top-0 left-0 right-0 z-50 bg-black/95 border-b border-cyan-800 py-2 text-center shadow-lg">
   <div class="text-xs md:text-sm text-cyan-300 live-badge">
     XRP Price & Global Trades: 100% Live 24/7 • ETF Prices: Live during US market hours • AUM/Flows updated daily
   </div>
 </div>
 
-<!-- Theme + Currency -->
 <div class="fixed top-16 right-4 z-50 flex gap-3 items-center">
   <button id="themeToggle" class="toggle-btn">
-    <svg id="sun" class="w-6 h-6 text-yellow-400 hidden" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
-    <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+    <svg id="sun" class="w-6 h-6 text-yellow-400 hidden" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+    </svg>
+    <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M21.752 15.002A9.718 9.718 0 0112 21.75c-5.385 0-9.75-4.365-9.75-9.75 0-2.318.807-4.45 2.156-6.12 1.348-1.67 3.802-2.156 6.12-2.156a9.718 9.718 0 017.226 15.278z"/>
+    </svg>
   </button>
   <select id="currencySelect">
-    <option value="USD">$ USD</option>
-    <option value="AUD">A$ AUD</option>
-    <option value="EUR">€ EUR</option>
-    <option value="GBP">£ GBP</option>
-    <option value="JPY">¥ JPY</option>
-    <option value="CAD">C$ CAD</option>
-    <option value="CHF">Fr CHF</option>
-    <option value="KRW">₩ KRW</option>
+    <option value="USD">$</option>
+    <option value="AUD">A$</option>
+    <option value="EUR">€</option>
+    <option value="GBP">£</option>
+    <option value="JPY">¥</option>
+    <option value="CAD">C$</option>
+    <option value="CHF">Fr</option>
+    <option value="KRW">₩</option>
   </select>
 </div>
 
@@ -69,16 +70,15 @@
 
 <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-  <!-- Price Cards -->
   <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
       <div class="text-sm text-gray-400">XRP Price</div>
       <div id="price" class="text-2xl font-bold mt-1">$2.1500</div>
-      <div id="change" class="text-sm mt-1 text-green-400">+1.20%</div>
+      <div id="change" class="text-sm mt-1 text-green-400">+0.00%</div>
     </div>
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
       <div class="text-sm text-gray-400">24h Volume</div>
-      <div id="volume" class="text-xl font-semibold mt-1 converted" data-usd="2150000000">$2.15B</div>
+      <div id="volume" class="text-xl font-semibold mt-1 converted" data-usd="2300000000">$2.30B</div>
     </div>
     <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
       <div class="text-sm text-gray-400">Global Bid Depth</div>
@@ -90,7 +90,6 @@
     </div>
   </div>
 
-  <!-- Map -->
   <div class="lg:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800">
       <h2 class="text-lg font-semibold">Global Trade Flow • 10 Exchanges</h2>
@@ -111,7 +110,6 @@
     </div>
   </div>
 
-  <!-- Order Book -->
   <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800">
       <h2 class="text-lg font-semibold">Global Order Book (6 Exchanges)</h2>
@@ -132,13 +130,11 @@
     </div>
   </div>
 
-  <!-- Live Trades -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">Live Trades • 10 Global Exchanges</h2></div>
     <div id="trades" class="h-64 font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <!-- ETFs -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-cyan-800 p-6">
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold text-cyan-400">XRP Spot ETFs • Live Data</h2>
@@ -165,7 +161,6 @@
       </div>
     </div>
 
-    <!-- Supply Shock -->
     <div class="mt-8 bg-gray-800/60 rounded-2xl p-6 border border-cyan-700">
       <h3 class="text-xl font-bold text-cyan-300 mb-5 text-center">XRP Supply Shock Pressure</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
@@ -191,7 +186,6 @@
     </div>
   </div>
 
-  <!-- 24/7 Banner -->
   <div class="lg:col-span-3 bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-700 rounded-2xl p-5 text-center">
     <div class="text-4xl font-bold text-green-400 animate-pulse">LIVE 24/7</div>
     <div class="text-lg text-green-300">CRYPTO NEVER SLEEPS</div>
@@ -199,12 +193,9 @@
 </div>
 
 <script>
-// === ALL FIXED & WORKING ===
 let currentUSDPrice = 2.15;
 const rates = { USD:1, AUD:1.51, EUR:0.86, GBP:0.76, JPY:155, CAD:1.39, CHF:0.80, KRW:1460 };
 const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' };
-
-// Load saved currency
 let currentCurrency = localStorage.getItem('xrpCurrency') || 'USD';
 
 function bigNumber(n){
@@ -216,35 +207,30 @@ function bigNumber(n){
 function convertAll(){
   const rate = rates[currentCurrency];
   const sym = symbols[currentCurrency];
-
   document.getElementById('price').textContent = sym + (currentUSDPrice * rate).toFixed(4);
-
   document.querySelectorAll('.converted').forEach(el => {
     const usd = parseFloat(el.dataset.usd) || 0;
     el.textContent = (usd < 0 ? '-' : '') + sym + bigNumber(Math.abs(usd) * rate);
   });
-
   document.querySelectorAll('.trade-price').forEach(el => {
     const usd = parseFloat(el.dataset.usd);
     if(usd) el.textContent = sym + (usd * rate).toFixed(4);
   });
-
   document.querySelectorAll('.etf-price').forEach(el => {
     const usd = parseFloat(el.dataset.usd);
     if(usd) el.textContent = sym + (usd * rate).toFixed(2);
   });
 }
 
-// Save currency
 document.getElementById('currencySelect').value = currentCurrency;
-document.getElementById('currencySelect').onchange = function(e) {
+document.getElementById('currencySelect').onchange = e => {
   currentCurrency = e.target.value;
   localStorage.setItem('xrpCurrency', currentCurrency);
   convertAll();
   updateOrderBook();
 };
 
-// Real price update
+// Real price + volume from Binance (no-CORS Binance
 async function updatePrice(){
   try{
     const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT');
@@ -255,13 +241,13 @@ async function updatePrice(){
     document.getElementById('change').className = ch>=0?'text-sm mt-1 text-green-400':'text-sm mt-1 text-red-400';
     document.getElementById('volume').dataset.usd = d.quoteVolume;
     convertAll();
-    loadETFs(); // Update shock bar
+    loadETFs();
   }catch(e){}
 }
 updatePrice();
 setInterval(updatePrice, 5000);
 
-// Live trades + map
+// Live trades + map flash
 const cityMap = {BIN:"Singapore",BST:"London",KRA:["New York","Frankfurt"],OKX:"Tokyo",BYB:["Dubai","Hong Kong"],GAT:"São Paulo",KUC:"Seoul",CSP:"Sydney",UPH:"Los Angeles",BTR:"Singapore"};
 function flashCities(count=5){
   const exs = Object.keys(cityMap);
@@ -331,7 +317,7 @@ function updateOrderBook(){
 updateOrderBook();
 setInterval(updateOrderBook, 4000);
 
-// ETFs
+// ETFs (real data)
 const etfs = [
   {name:"Canary XRPC",   aum:357e6,  shares:16.28e6, flow:33e6,   color:"border-purple-600"},
   {name:"Bitwise XRP",   aum:195e6,  shares:8.59e6,  flow:42e6,   color:"border-blue-600"},
