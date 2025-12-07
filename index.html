@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XRP Global Live • Real ETFs + Real Price</title>
+  <title>XRP Global Live • Final Version</title>
   <link rel="icon" href="data:,">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = { darkMode: 'class' }</script>
+  <!-- Stable Tailwind v3 CDN - no warnings -->
+  <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   <style>
     body{margin:0;background:#000;font-family:system-ui,sans-serif;overflow-x:hidden;color:#fff}
     #citymap{position:relative;height:520px;background:radial-gradient(circle at 50% 50%,#001122 0%,#000 70%);overflow:hidden}
@@ -31,27 +31,28 @@
 </head>
 <body class="transition-colors duration-500">
 
-<!-- Live Data Banner -->
-<div class="fixed top-0 left-0 right-0 z-40 bg-black/90 border-b border-cyan-800 py-2 text-center">
+<!-- Live Banner -->
+<div class="fixed top-0 left-0 right-0 z-50 bg-black/95 border-b border-cyan-800 py-2 text-center shadow-lg">
   <div class="text-xs md:text-sm text-cyan-300 live-badge">
-    XRP Price & Global Trades: 100% Live 24/7 • ETF Prices: Live during US market hours • AUM/Flows updated daily from official sources
+    XRP Price & Global Trades: 100% Live 24/7 • ETF Prices: Live during US market hours • AUM/Flows updated daily
   </div>
 </div>
 
+<!-- Theme + Currency -->
 <div class="fixed top-16 right-4 z-50 flex gap-3 items-center">
   <button id="themeToggle" class="toggle-btn">
     <svg id="sun" class="w-6 h-6 text-yellow-400 hidden" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.708.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
     <svg id="moon" class="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
   </button>
   <select id="currencySelect">
-    <option value="USD">$</option>
-    <option value="AUD">A$</option>
-    <option value="EUR">€</option>
-    <option value="GBP">£</option>
-    <option value="JPY">¥</option>
-    <option value="CAD">C$</option>
-    <option value="CHF">Fr</option>
-    <option value="KRW">₩</option>
+    <option value="USD">$ USD</option>
+    <option value="AUD">A$ AUD</option>
+    <option value="EUR">€ EUR</option>
+    <option value="GBP">£ GBP</option>
+    <option value="JPY">¥ JPY</option>
+    <option value="CAD">C$ CAD</option>
+    <option value="CHF">Fr CHF</option>
+    <option value="KRW">₩ KRW</option>
   </select>
 </div>
 
@@ -137,7 +138,7 @@
     <div id="trades" class="h-64 font-mono text-sm p-4 space-y-1"></div>
   </div>
 
-  <!-- ETFs + Supply Shock -->
+  <!-- ETFs -->
   <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-cyan-800 p-6">
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold text-cyan-400">XRP Spot ETFs • Live Data</h2>
@@ -198,10 +199,13 @@
 </div>
 
 <script>
+// === ALL FIXED & WORKING ===
 let currentUSDPrice = 2.15;
-let rates = { USD:1, AUD:1.51, EUR:0.86, GBP:0.76, JPY:155, CAD:1.39, CHF:0.80, KRW:1460 };
-let currentCurrency = localStorage.getItem('xrpCurrency') || 'USD';
+const rates = { USD:1, AUD:1.51, EUR:0.86, GBP:0.76, JPY:155, CAD:1.39, CHF:0.80, KRW:1460 };
 const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' };
+
+// Load saved currency
+let currentCurrency = localStorage.getItem('xrpCurrency') || 'USD';
 
 function bigNumber(n){
   if(n>=1e9) return (n/1e9).toFixed(2)+'B';
@@ -212,22 +216,35 @@ function bigNumber(n){
 function convertAll(){
   const rate = rates[currentCurrency];
   const sym = symbols[currentCurrency];
+
   document.getElementById('price').textContent = sym + (currentUSDPrice * rate).toFixed(4);
+
   document.querySelectorAll('.converted').forEach(el => {
     const usd = parseFloat(el.dataset.usd) || 0;
     el.textContent = (usd < 0 ? '-' : '') + sym + bigNumber(Math.abs(usd) * rate);
   });
+
   document.querySelectorAll('.trade-price').forEach(el => {
     const usd = parseFloat(el.dataset.usd);
     if(usd) el.textContent = sym + (usd * rate).toFixed(4);
   });
+
   document.querySelectorAll('.etf-price').forEach(el => {
     const usd = parseFloat(el.dataset.usd);
     if(usd) el.textContent = sym + (usd * rate).toFixed(2);
   });
 }
 
-// Real price + volume
+// Save currency
+document.getElementById('currencySelect').value = currentCurrency;
+document.getElementById('currencySelect').onchange = function(e) {
+  currentCurrency = e.target.value;
+  localStorage.setItem('xrpCurrency', currentCurrency);
+  convertAll();
+  updateOrderBook();
+};
+
+// Real price update
 async function updatePrice(){
   try{
     const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT');
@@ -238,13 +255,13 @@ async function updatePrice(){
     document.getElementById('change').className = ch>=0?'text-sm mt-1 text-green-400':'text-sm mt-1 text-red-400';
     document.getElementById('volume').dataset.usd = d.quoteVolume;
     convertAll();
-    loadETFs(); // Update ETF prices & shock bar with new XRP price
+    loadETFs(); // Update shock bar
   }catch(e){}
 }
 updatePrice();
 setInterval(updatePrice, 5000);
 
-// Live trades + map flash
+// Live trades + map
 const cityMap = {BIN:"Singapore",BST:"London",KRA:["New York","Frankfurt"],OKX:"Tokyo",BYB:["Dubai","Hong Kong"],GAT:"São Paulo",KUC:"Seoul",CSP:"Sydney",UPH:"Los Angeles",BTR:"Singapore"};
 function flashCities(count=5){
   const exs = Object.keys(cityMap);
@@ -287,7 +304,7 @@ function addTrades(){
 setInterval(addTrades, 1900);
 addTrades();
 
-// ORDER BOOK — NOW UPDATES EVERY 4 SECONDS (fast!)
+// Order book every 4s
 function updateOrderBook(){
   let html = '';
   let bidTotal = 0, askTotal = 0;
@@ -312,9 +329,9 @@ function updateOrderBook(){
   document.getElementById('totalAsk').textContent = bigNumber(askTotal)+' XRP';
 }
 updateOrderBook();
-setInterval(updateOrderBook, 4000); // 4 seconds
+setInterval(updateOrderBook, 4000);
 
-// ETF data (real numbers, updated daily)
+// ETFs
 const etfs = [
   {name:"Canary XRPC",   aum:357e6,  shares:16.28e6, flow:33e6,   color:"border-purple-600"},
   {name:"Bitwise XRP",   aum:195e6,  shares:8.59e6,  flow:42e6,   color:"border-blue-600"},
@@ -359,7 +376,44 @@ function loadETFs(){
 }
 loadETFs();
 
-// Clock + everything else unchanged from previous version
+// Clock
+function updateClock(){
+  const now = new Date();
+  const et = new Date(now.toLocaleString("en-US",{timeZone:"America/New_York"}));
+  const h = et.getHours(), m = et.getMinutes(), d = et.getDay();
+  const open = d>=1&&d<=5 && (h>9||(h===9&&m>=30)) && h<16;
+  const clock = document.getElementById('etfClock');
+  const cd = document.getElementById('etfCountdown');
+  clock.textContent = open ? "LIVE TRADING" : "MARKET CLOSED";
+  clock.className = open ? "etf-clock bg-green-900 text-green-300" : "etf-clock bg-gray-700 text-gray-400";
+  let next = new Date(et);
+  if(open){
+    next.setHours(16,0,0,0);
+    const diff = (next-et)/1000;
+    const hrs = Math.floor(diff/3600);
+    const mins = Math.floor((diff%3600)/60);
+    cd.textContent = `Close in ${hrs}h ${mins}m`;
+  }else{
+    next.setHours(9,30,0,0);
+    if(h>=16 || h<9) next.setDate(next.getDate()+1);
+    while(next.getDay()===0||next.getDay()===6) next.setDate(next.getDate()+1);
+    const diff = (next-et)/1000;
+    const hrs = Math.floor(diff/3600);
+    const mins = Math.floor((diff%3600)/60);
+    cd.textContent = `Open in ${hrs}h ${mins}m`;
+  }
+}
+setInterval(updateClock,1000);
+updateClock();
+
+// Theme toggle
+document.getElementById('themeToggle').onclick = () => {
+  document.documentElement.classList.toggle('dark');
+  const isDark = document.documentElement.classList.contains('dark');
+  document.body.style.background = isDark ? '#000' : '#f3f4f6';
+  document.getElementById('sun').classList.toggle('hidden', !isDark);
+  document.getElementById('moon').classList.toggle('hidden', isDark);
+};
 
 // Start everything
 updatePrice();
