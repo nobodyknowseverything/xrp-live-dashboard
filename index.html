@@ -363,22 +363,55 @@
       convertAll();
     }
     function updateClock(){
-      const now = new Date();
-      const et = new Date(now.toLocaleString("en-US",{timeZone:"America/New_York"}));
-      const h = et.getHours(), m = et.getMinutes(), d = et.getDay();
-      const open = d>=1&&d<=5 && (h>9||(h===9&&m>=30)) && h<16;
-      const clock = document.getElementById('etfClock');
-      const cd = document.getElementById('etfCountdown');
-      clock.textContent = open ? "LIVE TRADING" : "MARKET CLOSED";
-      clock.className = open ? "etf-clock bg-green-900 text-green-300" : "etf-clock bg-gray-700 text-gray-400";
-      let next = new Date(et);
-      if(open){ next.setHours(16,0,0,0); } else { next.setHours(9,30,0,0); if(h>=16 || h<9) next.setDate(next.getDate()+1); while(next.getDay()===0||next.getDay()===6) next.setDate(next.getDate()+1); }
-      const diff = (next-et)/1000;
-      const hrs = Math.floor(diff/3600);
-      const mins = Math.floor((diff%3600)/60);
-      cd.textContent = open ? `Close in ${hrs}h ${mins}m` : `Open in ${hrs}h ${mins}m`;
-    }
+  const now = new Date();
+  const et = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+  const h = et.getHours();
+  const m = et.getMinutes();
+  const day = et.getDay(); // 0 = Sunday, 6 = Saturday
 
+  const clock = document.getElementById('etfClock');
+  const cd = document.getElementById('etfCountdown');
+
+  // Determine next market open (9:30 AM ET) or close (4:00 PM ET)
+  let nextOpen = new Date(et);
+  nextOpen.setHours(9, 30, 0, 0);   // today 9:30 AM
+
+  // If it's past 9:30 AM or weekend → move to next trading day
+  if (et > nextOpen || day === 0 || day === 6) {
+    nextOpen.setDate(nextOpen.getDate() + 1);
+    nextOpen.setHours(9, 30, 0, 0);
+
+    // Skip weekends
+    while (nextOpen.getDay() === 0 || nextOpen.getDay() === 6) {
+      nextOpen.setDate(nextOpen.getDate() + 1);
+    }
+  }
+
+  // Market is open if current time is between 9:30 AM and 4:00 PM ET on a weekday
+  const isOpen = day >= 1 && day <= 5 && 
+                 (h > 9 || (h === 9 && m >= 30)) && 
+                 h < 16;
+
+  if (isOpen) {
+    // Count down to close (4:00 PM)
+    let close = new Date(et);
+    close.setHours(16, 0, 0, 0);
+    const diff = (close - et) / 1000;
+    const hrs = Math.floor(diff / 3600);
+    const mins = Math.floor((diff % 3600) / 60);
+    clock.textContent = "LIVE TRADING";
+    clock.className = "etf-clock bg-green-900 text-green-300";
+    cd.textContent = `Closes in ${hrs}h ${mins}m`;
+  } else {
+    // Count down to next open
+    const diff = (nextOpen - et) / 1000;
+    const hrs = Math.floor(diff / 3600);
+    const mins = Math.floor((diff % 3600) / 60);
+    clock.textContent = "MARKET CLOSED";
+    clock.className = "etf-clock bg-gray-700 text-gray-400";
+    cd.textContent = `Opens in ${hrs}h ${mins}m`;
+  }
+}
     document.getElementById('themeToggle').onclick = () => {
       document.documentElement.classList.toggle('dark');
       const isDark = document.documentElement.classList.contains('dark');
@@ -395,4 +428,3 @@
   </script>
 </body>
 </html>
-
