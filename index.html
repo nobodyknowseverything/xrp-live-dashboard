@@ -168,14 +168,14 @@
     let currentCurrency = localStorage.getItem('xrpCurrency') || 'USD';
 
     let etfData = [
-      {name:"Canary XRPC", ticker:"XRPC", status:"live", price:22.26, change:3.29, aum_usd:337200000, xrp_held:166130000, daily_flow_usd:15000000},
-      {name:"Grayscale GXRP", ticker:"GXRP", status:"live", price:40.55, change:3.14, aum_usd:210500000, xrp_held:103990000, daily_flow_usd:-5000000},
-      {name:"Bitwise XRP", ticker:"XRP", status:"live", price:23.40, change:3.13, aum_usd:186300000, xrp_held:91810000, daily_flow_usd:28000000},
-      {name:"Franklin XRPZ", ticker:"XRPZ", status:"live", price:22.73, change:3.18, aum_usd:127800000, xrp_held:62990000, daily_flow_usd:12000000},
-      {name:"REX-Osprey XRPR", ticker:"XRPR", status:"live", price:17.21, change:3.36, aum_usd:110500000, xrp_held:53000000, daily_flow_usd:22000000},
-      {name:"WisdomTree XRP", ticker:"WRP", status:"pending", launchDate:"2026-01-15"},
-      {name:"VanEck XRP", ticker:"VXRP", status:"announced"}
-    ];
+  {name:"Canary XRPC", ticker:"XRPC", status:"live", price:22.26, change:3.29, aum_usd:337200000, xrp_held:166130000, daily_flow_usd:15000000},
+  {name:"Grayscale GXRP", ticker:"GXRP", status:"live", price:40.55, change:3.14, aum_usd:210500000, xrp_held:103990000, daily_flow_usd:-5000000},
+  {name:"Bitwise XRP", ticker:"XRP", status:"live", price:23.40, change:3.13, aum_usd:186300000, xrp_held:91810000, daily_flow_usd:28000000},
+  {name:"Franklin XRPZ", ticker:"XRPZ", status:"live", price:22.73, change:3.18, aum_usd:127800000, xrp_held:62990000, daily_flow_usd:12000000},
+  {name:"REX-Osprey XRPR", ticker:"XRPR", status:"live", price:17.21, change:3.36, aum_usd:110500000, xrp_held:53000000, daily_flow_usd:22000000},
+  {name:"WisdomTree XRP", ticker:"WRP", status:"pending", launchDate:"2026-01-15"},
+  {name:"VanEck XRP", ticker:"VXRP", status:"announced"}
+];
 
     function bigNumber(n){
       if(n >= 1e12) return (n/1e12).toFixed(2)+'T';
@@ -339,3 +339,4 @@
   </script>
 </body>
 </html>
+
