@@ -155,191 +155,235 @@
     </div>
   </div>
 
-  <script>
-    let currentUSDPrice = 2.15;
-    let currentVolumeUSD = 2900000000;
-    let currentMarketCap = 126000000000;
-    let currentRank = 4;
+<script>
+  let currentUSDPrice = 2.15;
+  let currentVolumeUSD = 2900000000;
+  let currentMarketCap = 126000000000;
+  let currentRank = 4;
 
-    const rates = { USD:1, AUD:1.51, EUR:0.86, GBP:0.76, JPY:155, CAD:1.39, CHF:0.80, KRW:1460 };
-    const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' };
-    let currentCurrency = localStorage.getItem('xrpCurrency') || 'USD';
+  const rates = { USD:1, AUD:1.51, EUR:0.86, GBP:0.76, JPY:155, CAD:1.39, CHF:0.80, KRW:1460 };
+  const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' };
+  let currentCurrency = localStorage.getItem('xrpCurrency') || 'USD';
 
-    let etfData = [
-      {name:"Canary XRPC", price:22.26, change:3.29, aum_usd:352300000, xrp_held:169000000, daily_flow_usd:7300000},
-      {name:"Grayscale GXRP", price:41.06, change:1.27, aum_usd:217900000, xrp_held:104380000, daily_flow_usd:4970000},
-      {name:"Bitwise XRP", price:23.72, change:1.37, aum_usd:195600000, xrp_held:93830000, daily_flow_usd:6740000},
-      {name:"Franklin XRPZ", price:22.96, change:1.01, aum_usd:163000000, xrp_held:78200000, daily_flow_usd:9350000},
-      {name:"REX-Osprey XRPR", price:17.39, change:1.05, aum_usd:110500000, xrp_held:53000000, daily_flow_usd:5240000},
-      {name:"WisdomTree XRP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"pending", launchDate:"2026-01-15"},
-      {name:"VanEck XRP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"announced"}
-    ];
+  // Real ETF Data (Dec 10, 2025 – from xrp-insights.com)
+  let etfData = [
+    {name:"Canary XRPC", ticker:"XRPC", price:22.26, change:3.29, aum_usd:352300000, xrp_held:169000000, daily_flow_usd:7300000},
+    {name:"Grayscale GXRP", ticker:"GXRP", price:41.06, change:1.27, aum_usd:217900000, xrp_held:104380000, daily_flow_usd:4970000},
+    {name:"Bitwise XRP", ticker:"XRP", price:23.72, change:1.37, aum_usd:195600000, xrp_held:93830000, daily_flow_usd:6740000},
+    {name:"Franklin XRPZ", ticker:"XRPZ", price:22.96, change:1.01, aum_usd:163000000, xrp_held:78200000, daily_flow_usd:9350000},
+    {name:"REX-Osprey XRPR", ticker:"XRPR", price:17.39, change:1.05, aum_usd:110500000, xrp_held:53000000, daily_flow_usd:5240000},
+    {name:"WisdomTree XRP", ticker:"WRP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"pending", launchDate:"2026-01-15"},
+    {name:"VanEck XRP", ticker:"VXRP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"announced"}
+  ];
 
-    function bigNumber(n){
-      if(n >= 1e12) return (n/1e12).toFixed(2)+'T';
-      if(n >= 1e9) return (n/1e9).toFixed(2)+'B';
-      if(n >= 1e6) return (n/1e6).toFixed(1)+'M';
-      return n.toLocaleString();
+  function bigNumber(n){
+    if(n >= 1e12) return (n/1e12).toFixed(2)+'T';
+    if(n >= 1e9) return (n/1e9).toFixed(2)+'B';
+    if(n >= 1e6) return (n/1e6).toFixed(1)+'M';
+    return n.toLocaleString();
+  }
+
+  // MASTER CONVERSION FUNCTION – updates EVERYTHING
+  function convertAll() {
+    const rate = rates[currentCurrency];
+    const sym = symbols[currentCurrency];
+
+    // XRP Price
+    document.getElementById('price').textContent = sym + (currentUSDPrice * rate).toFixed(4);
+
+    // Volume & Market Cap
+    document.getElementById('volume').textContent = sym + bigNumber(currentVolumeUSD * rate);
+    document.getElementById('marketCap').textContent = sym + bigNumber(currentMarketCap * rate);
+
+    // ETF Cards AUM & Flow
+    document.querySelectorAll('.converted[data-usd]').forEach(el => {
+      const usd = parseFloat(el.dataset.usd) || 0;
+      el.textContent = (usd < 0 ? '-' : '') + sym + bigNumber(Math.abs(usd) * rate);
+    });
+
+    // Live Trades Prices
+    document.querySelectorAll('#trades span.font-medium').forEach(span => {
+      const usdPrice = parseFloat(span.dataset.usd || span.textContent.replace(/[^0-9.-]/g, ''));
+      if (!isNaN(usdPrice)) {
+        span.textContent = sym + (usdPrice * rate).toFixed(4);
+      }
+    });
+
+    // Order Book Prices
+    document.querySelectorAll('#bookBody span').forEach(span => {
+      const usdPrice = parseFloat(span.dataset.usd || span.textContent.replace(/[^0-9.-]/g, ''));
+      if (!isNaN(usdPrice)) {
+        span.textContent = sym + (usdPrice * rate).toFixed(4);
+      }
+    });
+  }
+
+  // Update real price data
+  async function updatePriceAndVolume() {
+    try {
+      const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT');
+      if(r.ok){
+        const d = await r.json();
+        currentUSDPrice = parseFloat(d.lastPrice);
+        currentVolumeUSD = parseFloat(d.quoteVolume);
+      }
+    } catch(e) {
+      try {
+        const r = await fetch('https://api.coingecko.com/api/v3/coins/ripple');
+        const d = await r.json();
+        currentUSDPrice = d.market_data.current_price.usd;
+        currentVolumeUSD = d.market_data.total_volume.usd;
+        currentMarketCap = d.market_data.market_cap.usd;
+        currentRank = d.market_cap_rank;
+      } catch(ee) {}
     }
+    document.getElementById('volume').dataset.usd = currentVolumeUSD;
+    document.getElementById('marketCap').dataset.usd = currentMarketCap;
+    document.getElementById('rank').textContent = '#' + currentRank;
+    convertAll();
+  }
 
-    function convertAll(){
-      const rate = rates[currentCurrency];
-      const sym = symbols[currentCurrency];
-      document.getElementById('price').textContent = sym + (currentUSDPrice * rate).toFixed(4);
-      document.querySelectorAll('.converted[data-usd]').forEach(el => {
-        const usd = parseFloat(el.dataset.usd) || 0;
-        el.textContent = (usd < 0 ? '-' : '') + sym + bigNumber(Math.abs(usd) * rate);
+  // Map flashes
+  const cityMap = {BIN:"Singapore",BST:"London",KRA:["New York","Frankfurt"],OKX:"Tokyo",BYB:["Dubai","Hong Kong"],GAT:"São Paulo",KUC:"Seoul",CSP:"Sydney",UPH:"Los Angeles",BTR:"Singapore"};
+  function flashCities(c=5){
+    for(let i=0;i<c;i++){
+      const keys = Object.keys(cityMap);
+      const ex = keys[Math.floor(Math.random()*keys.length)];
+      const buy = Math.random()>0.5;
+      const cities = Array.isArray(cityMap[ex]) ? cityMap[ex] : [cityMap[ex]];
+      cities.forEach(name => {
+        const el = document.querySelector(`.city[data-name="${name}"]`);
+        if(el){
+          el.classList.add('active');
+          if(!buy) el.classList.add('sell');
+          setTimeout(()=>el.classList.remove('active','sell'),1800);
+        }
       });
     }
+  }
 
-    async function updatePriceAndVolume() {
-      try {
-        const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT');
-        if(r.ok){
-          const d = await r.json();
-          currentUSDPrice = parseFloat(d.lastPrice);
-          currentVolumeUSD = parseFloat(d.quoteVolume);
-        }
-      } catch(e) {
-        try {
-          const r = await fetch('https://api.coingecko.com/api/v3/coins/ripple');
-          const d = await r.json();
-          currentUSDPrice = d.market_data.current_price.usd;
-          currentVolumeUSD = d.market_data.total_volume.usd;
-          currentMarketCap = d.market_data.market_cap.usd;
-          currentRank = d.market_cap_rank;
-        } catch(ee) {}
+  // Live Trades
+  function addTrades(){
+    const container = document.getElementById('trades');
+    const exs = ["BIN","OKX","BYB","GAT","UPH","KRA","KUC","BTR","CSP","BST"];
+    for(let i=0;i<6;i++){
+      const ex = exs[Math.floor(Math.random()*exs.length)];
+      const buy = Math.random()>0.5;
+      const amt = 6000 + Math.random()*30000;
+      const priceUSD = currentUSDPrice * (1 + (Math.random()-0.5)*0.005);
+      const div = document.createElement('div');
+      div.className = `flex justify-between py-1 px-2 rounded text-xs ${buy?'bg-green-900/30 text-green-400':'bg-red-900/30 text-red-400'}`;
+      const priceSpan = document.createElement('span');
+      priceSpan.className = 'font-medium';
+      priceSpan.dataset.usd = priceUSD;
+      priceSpan.textContent = symbols[currentCurrency] + (priceUSD * rates[currentCurrency]).toFixed(4);
+      div.innerHTML = `<span>${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
+        <span>${bigNumber(amt)} XRP</span>
+        <span class="exchange-tag">${ex}</span>`;
+      div.insertBefore(priceSpan, div.children[2]);
+      container.prepend(div);
+      if(container.children.length > 20) container.removeChild(container.lastChild);
+    }
+    flashCities(5);
+  }
+
+  // Order Book
+  function updateOrderBook(){
+    let html = ''; let bidTotal = 0, askTotal = 0;
+    for(let i=0;i<12;i++){
+      const bidP = currentUSDPrice * (1 - (i+1)*0.0008);
+      const askP = currentUSDPrice * (1 + (i+1)*0.0009);
+      const bidA = 1200000 + Math.random()*800000;
+      const askA = 1100000 + Math.random()*750000;
+      bidTotal += bidA; askTotal += askA;
+      html += `<tr>
+        <td class="p-3 text-green-400">${bigNumber(bidA)}</td>
+        <td class="p-3 text-right text-green-400"><span data-usd="${bidP}">${symbols[currentCurrency]}${(bidP * rates[currentCurrency]).toFixed(4)}</span></td>
+        <td class="p-3 text-center text-gray-400">│</td>
+        <td class="p-3 text-left text-red-400"><span data-usd="${askP}">${symbols[currentCurrency]}${(askP * rates[currentCurrency]).toFixed(4)}</span></td>
+        <td class="p-3 text-right text-red-400">${bigNumber(askA)}</td>
+      </tr>`;
+    }
+    document.getElementById('bookBody').innerHTML = html;
+    document.getElementById('totalBid').textContent = bigNumber(bidTotal)+' XRP';
+    document.getElementById('totalAsk').textContent = bigNumber(askTotal)+' XRP';
+  }
+
+  // ETF Cards
+  function renderETFCards() {
+    const grid = document.getElementById('etfGrid'); grid.innerHTML = '';
+    let totalAUM = 0, totalFlow = 0, totalXRP = 0;
+
+    etfData.forEach(etf => {
+      const live = etf.price > 0;
+      if (live) {
+        totalAUM += etf.aum_usd || 0;
+        totalFlow += etf.daily_flow_usd || 0;
+        totalXRP += etf.xrp_held || 0;
       }
-      document.getElementById('volume').dataset.usd = currentVolumeUSD;
-      document.getElementById('marketCap').dataset.usd = currentMarketCap;
-      document.getElementById('rank').textContent = '#' + currentRank;
-      convertAll();
-    }
 
-    const cityMap = {BIN:"Singapore",BST:"London",KRA:["New York","Frankfurt"],OKX:"Tokyo",BYB:["Dubai","Hong Kong"],GAT:"São Paulo",KUC:"Seoul",CSP:"Sydney",UPH:"Los Angeles",BTR:"Singapore"};
-    function flashCities(c=5){
-      for(let i=0;i<c;i++){
-        const keys = Object.keys(cityMap);
-        const ex = keys[Math.floor(Math.random()*keys.length)];
-        const buy = Math.random()>0.5;
-        const cities = Array.isArray(cityMap[ex]) ? cityMap[ex] : [cityMap[ex]];
-        cities.forEach(name => {
-          const el = document.querySelector(`.city[data-name="${name}"]`);
-          if(el){
-            el.classList.add('active');
-            if(!buy) el.classList.add('sell');
-            setTimeout(()=>el.classList.remove('active','sell'),1800);
-          }
-        });
+      const card = document.createElement('div');
+      card.className = `bg-gray-900/60 rounded-xl p-5 border text-center text-sm relative transition-all ${live ? 'border-cyan-500' : 'border-gray-600 opacity-60'}`;
+
+      if (!live) {
+        card.innerHTML += `<div class="absolute inset-0 bg-black/70 rounded-xl flex items-center justify-center z-10">
+          <div class="text-center"><div class="font-bold text-yellow-400 text-lg">PENDING</div>
+          ${etf.launchDate ? `<div class="text-xs text-gray-300">~${etf.launchDate}</div>` : ''}</div></div>`;
       }
-    }
 
-    function addTrades(){
-      const container = document.getElementById('trades');
-      const exs = ["BIN","OKX","BYB","GAT","UPH","KRA","KUC","BTR","CSP","BST"];
-      for(let i=0;i<6;i++){
-        const ex = exs[Math.floor(Math.random()*exs.length)];
-        const buy = Math.random()>0.5;
-        const amt = 6000 + Math.random()*30000;
-        const priceUSD = currentUSDPrice * (1 + (Math.random()-0.5)*0.005);
-        const div = document.createElement('div');
-        div.className = `flex justify-between py-1 px-2 rounded text-xs ${buy?'bg-green-900/30 text-green-400':'bg-red-900/30 text-red-400'}`;
-        div.innerHTML = `<span>${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
-          <span>${bigNumber(amt)} XRP</span>
-          <span class="font-medium">${symbols[currentCurrency]}${(priceUSD * rates[currentCurrency]).toFixed(4)}</span>
-          <span class="exchange-tag">${ex}</span>`;
-        container.prepend(div);
-        if(container.children.length > 20) container.removeChild(container.lastChild);
-      }
-      flashCities(5);
-    }
+      card.innerHTML += `
+        <div class="font-bold text-gray-200">${etf.name}</div>
+        <div class="text-xs text-gray-500">${etf.ticker || ''}</div>
+        ${live ? `
+          <div class="text-xl font-bold text-cyan-300 mt-2">$${etf.price.toFixed(2)}</div>
+          <div class="${etf.change >= 0 ? 'text-green-400' : 'text-red-400'}">+${etf.change.toFixed(2)}%</div>
+          <div class="text-lg font-bold text-cyan-400 mt-3 converted" data-usd="${etf.aum_usd}">$0</div>
+          <div class="text-xs text-gray-400">AUM</div>
+          <div class="text-gray-300">${(etf.xrp_held/1e6).toFixed(1)}M XRP</div>
+          <div class="text-xs mt-2 ${etf.daily_flow_usd >= 0 ? 'text-green-400' : 'text-red-400'}">
+            ${etf.daily_flow_usd >= 0 ? '+' : ''}$${bigNumber(Math.abs(etf.daily_flow_usd))}</div>
+        ` : '<div class="text-3xl text-gray-600 mt-6">Coming Soon</div>'}
+      `;
+      grid.appendChild(card);
+    });
 
-    function updateOrderBook(){
-      let html = ''; let bidTotal = 0, askTotal = 0;
-      for(let i=0;i<12;i++){
-        const bidP = currentUSDPrice * (1 - (i+1)*0.0008);
-        const askP = currentUSDPrice * (1 + (i+1)*0.0009);
-        const bidA = 1200000 + Math.random()*800000;
-        const askA = 1100000 + Math.random()*750000;
-        bidTotal += bidA; askTotal += askA;
-        html += `<tr>
-          <td class="p-3 text-green-400">${bigNumber(bidA)}</td>
-          <td class="p-3 text-right text-green-400">${symbols[currentCurrency]}${(bidP*rates[currentCurrency]).toFixed(4)}</td>
-          <td class="p-3 text-center text-gray-400">│</td>
-          <td class="p-3 text-left text-red-400">${symbols[currentCurrency]}${(askP*rates[currentCurrency]).toFixed(4)}</td>
-          <td class="p-3 text-right text-red-400">${bigNumber(askA)}</td>
-        </tr>`;
-      }
-      document.getElementById('bookBody').innerHTML = html;
-      document.getElementById('totalBid').textContent = bigNumber(bidTotal)+' XRP';
-      document.getElementById('totalAsk').textContent = bigNumber(askTotal)+' XRP';
-    }
+    document.getElementById('totalAUM').dataset.usd = totalAUM;
+    document.getElementById('dailyFlow').dataset.usd = totalFlow;
+    document.getElementById('totalLocked').textContent = bigNumber(totalXRP) + ' XRP';
+    document.getElementById('shockEtf').textContent = (totalXRP/1e9).toFixed(2) + 'B';
+    const percent = Math.min(99, Math.round((totalXRP + 22.8e9) / 56.7e9 * 100));
+    document.getElementById('shockBar').style.width = percent + '%';
+    document.getElementById('shockPercent').textContent = percent + '%';
+    convertAll(); // This line makes EVERYTHING convert
+  }
 
-   function renderETFCards() {
-  const grid = document.getElementById('etfGrid'); 
-  grid.innerHTML = '';
-  let totalAUM = 0, totalFlow = 0, totalXRP = 0;
+  // Theme & Currency Switcher
+  document.getElementById('themeToggle').onclick = () => {
+    document.documentElement.classList.toggle('dark');
+    const isDark = document.documentElement.classList.contains('dark');
+    document.body.style.background = isDark ? '#000' : '#f3f4f6';
+    document.getElementById('sun').classList.toggle('hidden', !isDark);
+    document.getElementById('moon').classList.toggle('hidden', isDark);
+  };
 
-  etfData.forEach(etf => {
-    // Live = has price > 0 OR explicitly says "live"
-    const live = (etf.price && etf.price > 0) || etf.status === "live";
-
-    if (live) {
-      totalAUM += etf.aum_usd || 0;
-      totalFlow += etf.daily_flow_usd || 0;
-      totalXRP += etf.xrp_held || 0;
-    }
-
-    const card = document.createElement('div');
-    card.className = `bg-gray-900/60 rounded-xl p-5 border text-center text-sm relative transition-all
-      ${live ? 'border-cyan-500' : 'border-gray-600 opacity-60'}`;
-
-    if (!live) {
-      card.innerHTML += `<div class="absolute inset-0 bg-black/70 rounded-xl flex items-center justify-center z-10">
-        <div class="text-center">
-          <div class="font-bold text-yellow-400 text-lg">
-            ${etf.status === "announced" ? "ANNOUNCED" : "PENDING"}
-          </div>
-          ${etf.launchDate ? `<div class="text-xs text-gray-300">~${etf.launchDate}</div>` : ''}
-        </div>
-      </div>`;
-    }
-
-    card.innerHTML += `
-      <div class="font-bold text-gray-200">${etf.name}</div>
-      <div class="text-xs text-gray-500">${etf.ticker || ''}</div>
-      ${live ? `
-        <div class="text-xl font-bold text-cyan-300 mt-2">$${etf.price.toFixed(2)}</div>
-        <div class="${etf.change >= 0 ? 'text-green-400' : 'text-red-400'}">+${etf.change.toFixed(2)}%</div>
-        <div class="text-lg font-bold text-cyan-400 mt-3 converted" data-usd="${etf.aum_usd}">$0</div>
-        <div class="text-xs text-gray-400">AUM</div>
-        <div class="text-gray-300">${(etf.xrp_held/1e6).toFixed(1)}M XRP</div>
-        <div class="text-xs mt-2 ${etf.daily_flow_usd >= 0 ? 'text-green-400' : 'text-red-400'}">
-          ${etf.daily_flow_usd >= 0 ? '+' : ''}$${bigNumber(Math.abs(etf.daily_flow_usd))}
-        </div>
-      ` : '<div class="text-3xl text-gray-600 mt-6">Coming Soon</div>'}
-    `;
-    grid.appendChild(card);
-  });
-
-  // Update totals
-  document.getElementById('totalAUM').dataset.usd = totalAUM;
-  document.getElementById('dailyFlow').dataset.usd = totalFlow;
-  document.getElementById('totalLocked').textContent = bigNumber(totalXRP) + ' XRP';
-  document.getElementById('shockEtf').textContent = (totalXRP/1e9).toFixed(2) + 'B';
-  const percent = Math.min(99, Math.round((totalXRP + 22.8e9) / 56.7e9 * 100));
-  document.getElementById('shockBar').style.width = percent + '%';
-  document.getElementById('shockPercent').textContent = percent + '%';
-  convertAll();
-   }
+  document.getElementById('currencySelect').value = currentCurrency;
+  document.getElementById('currencySelect').onchange = e => {
+    currentCurrency = e.target.value;
+    localStorage.setItem('xrpCurrency', currentCurrency);
+    convertAll();
     renderETFCards();
-    updatePriceAndVolume(); setInterval(updatePriceAndVolume, 5000);
-    renderETFCards();
-    addTrades(); setInterval(addTrades, 1900);
-    updateOrderBook(); setInterval(updateOrderBook, 4000);
-  </script>
+    updateOrderBook(); // Re-convert order book
+  };
+
+  // Start everything
+  updatePriceAndVolume(); setInterval(updatePriceAndVolume, 5000);
+  renderETFCards();
+  addTrades(); setInterval(addTrades, 1900);
+  updateOrderBook(); setInterval(updateOrderBook, 4000);
+</script>
 </body>
 </html>
+
 
 
 
