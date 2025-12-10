@@ -37,7 +37,7 @@
         XRP Price & Global Trades: Real Time • ETF Prices • XRP Holdings • AUM/Flows updated Daily
       </div>
       <div class="hidden md:flex items-center gap-3 bg-gradient-to-r from-purple-600/20 to-blue-600/20 px-6 py-2 rounded-full border border-purple-500/50 shadow-xl">
-        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiMwMDAwMDAiLz4KPGNpcmNsZCBjeD0iMTIiIGN5PSIxMiIgcj0iNCIgZmlsbD0iI0ZGRkZGRiIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI4IiBzdHJva2U9IiM5NTAwRkYiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iNSwgNSIvPgo8L3N2Zz4K" alt="Grok" class="w-6 h-6 grok-logo">
+        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiMwMDAwMDAiLz4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iNCIgZmlsbD0iI0ZGRkZGRiIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI4IiBzdHJva2U9IiM5NTAwRkYiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iNSwgNSIvPgo8L3N2Zz4K" alt="Grok" class="w-6 h-6 grok-logo">
         <span class="text-purple-300 font-bold tracking-wider">Created with Grok • xAI</span>
       </div>
     </div>
@@ -76,7 +76,7 @@
 
     <!-- Price Cards -->
     <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-6 gap-4">
-      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">XRP Price</div><div id="price" class="text-2xl font-bold mt-1">$2.1500</div></div>
+      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">XRP Price</div><div id="price" class="text-2xl font-bold mt-1">$2.1500</div><div id="change" class="text-sm mt-1 text-green-400">+1.20%</div></div>
       <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">24h Volume</div><div id="volume" class="text-xl font-semibold mt-1 converted" data-usd="2900000000">$2.90B</div></div>
       <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Market Cap</div><div id="marketCap" class="text-xl font-semibold mt-1 converted" data-usd="126000000000">$126B</div></div>
       <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Rank</div><div id="rank" class="text-2xl font-bold mt-1 text-cyan-300">#4</div></div>
@@ -122,9 +122,7 @@
       <div id="trades" class="h-64 font-mono text-sm p-4 space-y-1"></div>
     </div>
 
-    <!-- ETFs Section (will continue in Message 2 of 2) -->
-
-        <!-- ETFs Section -->
+    <!-- ETFs Section -->
     <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-cyan-800 p-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-cyan-400">XRP Spot ETFs • Daily Updates</h2>
@@ -133,7 +131,7 @@
       <div id="etfGrid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5"></div>
 
       <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-        <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">Total AUM</div><div id="totalAUM" class="text-2xl font-bold text-cyan-300 converted" data-usd="1230000000">$1.23B</div></div>
+        <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">Total AUM</div><div id="totalAUM" class="text-2xl font-bold text-cyan-300 converted" data-usd="1231000000">$1.23B</div></div>
         <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">XRP Locked</div><div id="totalLocked" class="text-2xl font-bold text-cyan-300">597M XRP</div></div>
         <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">Daily Net Flow</div><div id="dailyFlow" class="text-2xl font-bold text-green-400 converted" data-usd="38000000">+$38M</div></div>
       </div>
@@ -168,14 +166,14 @@
     let currentCurrency = localStorage.getItem('xrpCurrency') || 'USD';
 
     let etfData = [
-  {name:"Canary XRPC", ticker:"XRPC", status:"live", price:22.26, change:3.29, aum_usd:337200000, xrp_held:166130000, daily_flow_usd:15000000},
-  {name:"Grayscale GXRP", ticker:"GXRP", status:"live", price:40.55, change:3.14, aum_usd:210500000, xrp_held:103990000, daily_flow_usd:-5000000},
-  {name:"Bitwise XRP", ticker:"XRP", status:"live", price:23.40, change:3.13, aum_usd:186300000, xrp_held:91810000, daily_flow_usd:28000000},
-  {name:"Franklin XRPZ", ticker:"XRPZ", status:"live", price:22.73, change:3.18, aum_usd:127800000, xrp_held:62990000, daily_flow_usd:12000000},
-  {name:"REX-Osprey XRPR", ticker:"XRPR", status:"live", price:17.21, change:3.36, aum_usd:110500000, xrp_held:53000000, daily_flow_usd:22000000},
-  {name:"WisdomTree XRP", ticker:"WRP", status:"pending", launchDate:"2026-01-15"},
-  {name:"VanEck XRP", ticker:"VXRP", status:"announced"}
-];
+      {name:"Canary XRPC", price:22.26, change:3.29, aum_usd:352300000, xrp_held:169000000, daily_flow_usd:7300000},
+      {name:"Grayscale GXRP", price:41.06, change:1.27, aum_usd:217900000, xrp_held:104380000, daily_flow_usd:4970000},
+      {name:"Bitwise XRP", price:23.72, change:1.37, aum_usd:195600000, xrp_held:93830000, daily_flow_usd:6740000},
+      {name:"Franklin XRPZ", price:22.96, change:1.01, aum_usd:163000000, xrp_held:78200000, daily_flow_usd:9350000},
+      {name:"REX-Osprey XRPR", price:17.39, change:1.05, aum_usd:110500000, xrp_held:53000000, daily_flow_usd:5240000},
+      {name:"WisdomTree XRP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"pending", launchDate:"2026-01-15"},
+      {name:"VanEck XRP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"announced"}
+    ];
 
     function bigNumber(n){
       if(n >= 1e12) return (n/1e12).toFixed(2)+'T';
@@ -197,7 +195,11 @@
     async function updatePriceAndVolume() {
       try {
         const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT');
-        if(r.ok){ const d = await r.json(); currentUSDPrice = parseFloat(d.lastPrice); currentVolumeUSD = parseFloat(d.quoteVolume); }
+        if(r.ok){
+          const d = await r.json();
+          currentUSDPrice = parseFloat(d.lastPrice);
+          currentVolumeUSD = parseFloat(d.quoteVolume);
+        }
       } catch(e) {
         try {
           const r = await fetch('https://api.coingecko.com/api/v3/coins/ripple');
@@ -223,7 +225,11 @@
         const cities = Array.isArray(cityMap[ex]) ? cityMap[ex] : [cityMap[ex]];
         cities.forEach(name => {
           const el = document.querySelector(`.city[data-name="${name}"]`);
-          if(el){ el.classList.add('active'); if(!buy) el.classList.add('sell'); setTimeout(()=>el.classList.remove('active','sell'),1800); }
+          if(el){
+            el.classList.add('active');
+            if(!buy) el.classList.add('sell');
+            setTimeout(()=>el.classList.remove('active','sell'),1800);
+          }
         });
       }
     }
@@ -339,4 +345,3 @@
   </script>
 </body>
 </html>
-
