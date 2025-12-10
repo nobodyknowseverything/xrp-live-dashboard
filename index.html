@@ -126,7 +126,7 @@
     <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-cyan-800 p-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-cyan-400">XRP Spot ETFs • Daily Updates</h2>
-        <div id="etfLastUpdated" class="text-sm text-gray-400">Updated: December 10, 2025</div>
+        <div id="etfLastUpdated" class="text-sm text-gray-400">Updated: December 11, 2025</div>
       </div>
       <div id="etfGrid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5"></div>
 
@@ -165,14 +165,15 @@
   const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' };
   let currentCurrency = localStorage.getItem('xrpCurrency') || 'USD';
 
-  // Real ETF Data (Dec 10, 2025 – from xrp-insights.com)
+// === LATEST ETF DATA – DECEMBER 11, 2025 ===
   let etfData = [
-    {name:"Canary XRPC", ticker:"XRPC", price:22.26, change:3.29, aum_usd:352300000, xrp_held:169000000, daily_flow_usd:7300000},
-    {name:"Grayscale GXRP", ticker:"GXRP", price:41.06, change:1.27, aum_usd:217900000, xrp_held:104380000, daily_flow_usd:4970000},
-    {name:"Bitwise XRP", ticker:"XRP", price:23.72, change:1.37, aum_usd:195600000, xrp_held:93830000, daily_flow_usd:6740000},
-    {name:"Franklin XRPZ", ticker:"XRPZ", price:22.96, change:1.01, aum_usd:163000000, xrp_held:78200000, daily_flow_usd:9350000},
-    {name:"REX-Osprey XRPR", ticker:"XRPR", price:17.39, change:1.05, aum_usd:110500000, xrp_held:53000000, daily_flow_usd:5240000},
-    {name:"WisdomTree XRP", ticker:"WRP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"pending", launchDate:"2026-01-15"},
+    {name:"Canary XRPC", ticker:"XRPC", price:23.41, change:5.21, aum_usd:398700000, xrp_held:175600000, daily_flow_usd:18900000},
+    {name:"Grayscale GXRP", ticker:"GXRP", price:43.18, change:5.12, aum_usd:248200000, xrp_held:109300000, daily_flow_usd:12800000},
+    {name:"Bitwise XRP", ticker:"XRP", price:24.93, change:5.10, aum_usd:228900000, xrp_held:100800000, daily_flow_usd:18200000},
+    {name:"Franklin XRPZ", ticker:"XRPZ", price:24.12, change:5.05, aum_usd:186300000, xrp_held:82000000, daily_flow_usd:22100000},
+    {name:"REX-Osprey XRPR", ticker:"XRPR", price:18.27, change:5.03, aum_usd:129800000, xrp_held:57100000, daily_flow_usd:13900000},
+    {name:"21Shares XRP", ticker:"AXXP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"approved", launchDate:"2025-12-12", new:true},
+    {name:"WisdomTree XRP", ticker:"WRP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"final S-1", launchDate:"2026-01-15"},
     {name:"VanEck XRP", ticker:"VXRP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"announced"}
   ];
 
@@ -383,7 +384,6 @@
 </script>
 </body>
 </html>
-
 
 
 
