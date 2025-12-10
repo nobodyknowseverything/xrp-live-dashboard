@@ -280,7 +280,7 @@
       let totalAUM = 0, totalFlow = 0, totalXRP = 0;
 
       etfData.forEach(etf => {
-        const live = etf.status === "live";
+        const live = etf.status === "live" || etf.status === undefined;
         if(live){
           totalAUM += etf.aum_usd || 0;
           totalFlow += etf.daily_flow_usd || 0;
@@ -345,3 +345,4 @@
   </script>
 </body>
 </html>
+
