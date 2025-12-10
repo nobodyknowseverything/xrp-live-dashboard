@@ -275,66 +275,63 @@
       document.getElementById('totalAsk').textContent = bigNumber(askTotal)+' XRP';
     }
 
-    function renderETFCards() {
-      const grid = document.getElementById('etfGrid'); grid.innerHTML = '';
-      let totalAUM = 0, totalFlow = 0, totalXRP = 0;
+   function renderETFCards() {
+  const grid = document.getElementById('etfGrid'); 
+  grid.innerHTML = '';
+  let totalAUM = 0, totalFlow = 0, totalXRP = 0;
 
-      etfData.forEach(etf => {
-        const live = etf.status === "live" || etf.status === undefined;
-        if(live){
-          totalAUM += etf.aum_usd || 0;
-          totalFlow += etf.daily_flow_usd || 0;
-          totalXRP += etf.xrp_held || 0;
-        }
+  etfData.forEach(etf => {
+    // Live = has price > 0 OR explicitly says "live"
+    const live = (etf.price && etf.price > 0) || etf.status === "live";
 
-        const card = document.createElement('div');
-        card.className = `bg-gray-900/60 rounded-xl p-5 border text-center text-sm relative transition-all
-          ${live ? 'border-cyan-500' : 'border-gray-600 opacity-60'}`;
-
-        if(!live){
-          card.innerHTML += `<div class="absolute inset-0 bg-black/70 rounded-xl flex items-center justify-center z-10">
-            <div class="text-center"><div class="font-bold text-yellow-400 text-lg">${(etf.status||'coming soon').toUpperCase()}</div>
-            ${etf.launchDate ? `<div class="text-xs text-gray-300">~${etf.launchDate}</div>` : ''}</div></div>`;
-        }
-
-        card.innerHTML += `
-          <div class="font-bold text-gray-200">${etf.name}</div>
-          <div class="text-xs text-gray-500">${etf.ticker}</div>
-          ${live ? `
-            <div class="text-xl font-bold text-cyan-300 mt-2">$${etf.price.toFixed(2)}</div>
-            <div class="${etf.change >= 0 ? 'text-green-400' : 'text-red-400'}">+${etf.change.toFixed(2)}%</div>
-            <div class="text-lg font-bold text-cyan-400 mt-3 converted" data-usd="${etf.aum_usd}">$0</div>
-            <div class="text-xs text-gray-400">AUM</div>
-            <div class="text-gray-300">${(etf.xrp_held/1e6).toFixed(1)}M XRP</div>
-            <div class="text-xs mt-2 ${etf.daily_flow_usd >= 0 ? 'text-green-400' : 'text-red-400'}">
-              ${etf.daily_flow_usd >= 0 ? '+' : ''}$${bigNumber(Math.abs(etf.daily_flow_usd))}</div>
-          ` : '<div class="text-3xl text-gray-600 mt-6">Coming Soon</div>'}
-        `;
-        grid.appendChild(card);
-      });
-
-      document.getElementById('totalAUM').dataset.usd = totalAUM;
-      document.getElementById('dailyFlow').dataset.usd = totalFlow;
-      document.getElementById('totalLocked').textContent = bigNumber(totalXRP) + ' XRP';
-      document.getElementById('shockEtf').textContent = (totalXRP/1e9).toFixed(2) + 'B';
-      const percent = Math.min(99, Math.round((totalXRP + 22.8e9) / 56.7e9 * 100));
-      document.getElementById('shockBar').style.width = percent + '%';
-      document.getElementById('shockPercent').textContent = percent + '%';
-      convertAll();
+    if (live) {
+      totalAUM += etf.aum_usd || 0;
+      totalFlow += etf.daily_flow_usd || 0;
+      totalXRP += etf.xrp_held || 0;
     }
 
-    document.getElementById('themeToggle').onclick = () => {
-      document.documentElement.classList.toggle('dark');
-      const isDark = document.documentElement.classList.contains('dark');
-      document.body.style.background = isDark ? '#000' : '#f3f4f6';
-      document.getElementById('sun').classList.toggle('hidden', !isDark);
-      document.getElementById('moon').classList.toggle('hidden', isDark);
-    };
-    document.getElementById('currencySelect').value = currentCurrency;
-    document.getElementById('currencySelect').onchange = e => {
-      currentCurrency = e.target.value;
-      localStorage.setItem('xrpCurrency', currentCurrency);
-      convertAll();
+    const card = document.createElement('div');
+    card.className = `bg-gray-900/60 rounded-xl p-5 border text-center text-sm relative transition-all
+      ${live ? 'border-cyan-500' : 'border-gray-600 opacity-60'}`;
+
+    if (!live) {
+      card.innerHTML += `<div class="absolute inset-0 bg-black/70 rounded-xl flex items-center justify-center z-10">
+        <div class="text-center">
+          <div class="font-bold text-yellow-400 text-lg">
+            ${etf.status === "announced" ? "ANNOUNCED" : "PENDING"}
+          </div>
+          ${etf.launchDate ? `<div class="text-xs text-gray-300">~${etf.launchDate}</div>` : ''}
+        </div>
+      </div>`;
+    }
+
+    card.innerHTML += `
+      <div class="font-bold text-gray-200">${etf.name}</div>
+      <div class="text-xs text-gray-500">${etf.ticker || ''}</div>
+      ${live ? `
+        <div class="text-xl font-bold text-cyan-300 mt-2">$${etf.price.toFixed(2)}</div>
+        <div class="${etf.change >= 0 ? 'text-green-400' : 'text-red-400'}">+${etf.change.toFixed(2)}%</div>
+        <div class="text-lg font-bold text-cyan-400 mt-3 converted" data-usd="${etf.aum_usd}">$0</div>
+        <div class="text-xs text-gray-400">AUM</div>
+        <div class="text-gray-300">${(etf.xrp_held/1e6).toFixed(1)}M XRP</div>
+        <div class="text-xs mt-2 ${etf.daily_flow_usd >= 0 ? 'text-green-400' : 'text-red-400'}">
+          ${etf.daily_flow_usd >= 0 ? '+' : ''}$${bigNumber(Math.abs(etf.daily_flow_usd))}
+        </div>
+      ` : '<div class="text-3xl text-gray-600 mt-6">Coming Soon</div>'}
+    `;
+    grid.appendChild(card);
+  });
+
+  // Update totals
+  document.getElementById('totalAUM').dataset.usd = totalAUM;
+  document.getElementById('dailyFlow').dataset.usd = totalFlow;
+  document.getElementById('totalLocked').textContent = bigNumber(totalXRP) + ' XRP';
+  document.getElementById('shockEtf').textContent = (totalXRP/1e9).toFixed(2) + 'B';
+  const percent = Math.min(99, Math.round((totalXRP + 22.8e9) / 56.7e9 * 100));
+  document.getElementById('shockBar').style.width = percent + '%';
+  document.getElementById('shockPercent').textContent = percent + '%';
+  convertAll();
+}
       renderETFCards();
     };
 
@@ -345,4 +342,5 @@
   </script>
 </body>
 </html>
+
 
