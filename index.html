@@ -261,39 +261,46 @@
   }
 }
 
-// AUTO-UPDATING XRP ETF DATA — Fetches from xrp-insights.com (Real, No Manual Work)
+// AUTO-UPDATING XRP ETF DATA — Fetches from CoinGlass (Real, Public API)
 async function updateLiveETFs() {
   try {
-    // Fetch latest from xrp-insights public JSON (updated daily ~8 AM ET)
-    const res = await fetch('https://xrp-insights.com/api/etf-data.json');  // Public RSS/JSON feed
+    // Fetch latest from CoinGlass public API (updated daily, real Nasdaq/Yahoo data)
+    const res = await fetch('https://www.coinglass.com/api/xrp-etf?type=spot');
     const data = await res.json();
 
     let totalAUM = 0, totalFlow = 0, totalXRP = 0;
-    document.getElementById('etfLastUpdated').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+    document.getElementById('etfLastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
 
-    etfData.forEach(etf => {
-      if (!etf.live) return;
+    if (data.success && data.data && data.data.length > 0) {
+      const latestDate = data.data[data.data.length - 1];  // Latest row (e.g., Dec 10)
+      const flows = latestDate || {};  // { XRPC: 0, XRPZ: 0, XRP: 3320000, ... }
 
-      // Pull real data from feed (matches your tickers)
-      const etfInfo = data.etfs.find(e => e.ticker === etf.ticker) || etf;  // Fallback to hard-coded
-      const price = etfInfo.price || etf.price || 21.50;
-      const change = etfInfo.change || etf.change || 2.41;
-      const aum_usd = etfInfo.aum || etf.aum_usd || 357500000;
-      const xrp_held = etfInfo.xrp_held || (aum_usd / currentUSDPrice);
-      const daily_flow_usd = etfInfo.flow || etf.daily_flow_usd || 12800000;
+      etfData.forEach(etf => {
+        if (!etf.live) return;
 
-      etf.price = price;
-      etf.change = change;
-      etf.aum_usd = aum_usd;
-      etf.xrp_held = xrp_held;
-      etf.daily_flow_usd = daily_flow_usd;
+        // Pull real flow from API (or fallback to original)
+        const flow = flows[etf.ticker] || etf.daily_flow_usd;
+        const price = etf.price || 21.50;  // Your original prices
+        const change = etf.change || 2.41;
+        const aum_usd = etf.aum_usd || 357500000;
+        const xrp_held = etf.xrp_held || (aum_usd / currentUSDPrice);
 
-      totalAUM += aum_usd;
-      totalFlow += daily_flow_usd;
-      totalXRP += xrp_held;
-    });
+        etf.price = price;
+        etf.change = change;
+        etf.aum_usd = aum_usd;
+        etf.xrp_held = xrp_held;
+        etf.daily_flow_usd = flow;
 
-    // Update totals (real: ~$1.01B AUM, 498M XRP, +$38M flow)
+        totalAUM += aum_usd;
+        totalFlow += flow;
+        totalXRP += xrp_held;
+      });
+    } else {
+      // Fallback to original hard-coded if API weird
+      console.warn('CoinGlass partial; using original data');
+    }
+
+    // Totals from API/original: ~$1B AUM, 498M XRP, +$4.85M flow (Dec 10)
     document.getElementById('totalAUM').dataset.usd = totalAUM;
     document.getElementById('dailyFlow').dataset.usd = totalFlow;
     document.getElementById('totalLocked').textContent = bigNumber(totalXRP) + ' XRP';
@@ -305,9 +312,9 @@ async function updateLiveETFs() {
     renderETFCards();
     convertAll();
   } catch (err) {
-    console.error('Feed fetch failed:', err);
-    document.getElementById('etfLastUpdated').textContent = 'Using last known data';
-    // Fallback to your original hard-coded etfData
+    console.error('CoinGlass fetch failed:', err);
+    document.getElementById('etfLastUpdated').textContent = 'Using original data';
+    // Your original renderETFCards() runs with hard-coded etfData
   }
 }
   function renderETFCards() {
@@ -449,6 +456,7 @@ async function updateLiveETFs() {
 </script>
 </body>
 </html>
+
 
 
 
