@@ -190,13 +190,13 @@
     {name:"VanEck XRP", ticker:"VXRP", live:false, status:"announced"}
   ];
 
-  function bigNumber(n){
-    if(n >= 1e12) return (n/1e12).toFixed(2)+'T';
-    if(n >= 1e9) return (n/1e9).toFixed(2)+'B';
-    if(n >= 1e6) return (n/1e6).toFixed(1)+'M';
-    return n.toLocaleString();
-  }
-
+  function bigNumber(n) {
+  if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';  // Trillions: $1.23T
+  if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';    // Billions: $1.01B (not 1011M)
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';    // Millions: $123.4M
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';    // Thousands: $347.4K
+  return n.toLocaleString();                          // Raw: $1,234
+}
   function convertAll() {
     const rate = rates[currentCurrency];
     const sym = symbols[currentCurrency];
@@ -446,5 +446,6 @@
 </script>
 </body>
 </html>
+
 
 
