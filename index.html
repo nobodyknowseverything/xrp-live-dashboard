@@ -167,7 +167,7 @@
   </div>
 
 <script>
-  const TWELVE_DATA_KEY = '04d61850a61b4f9ab9e46a1b1f7dbe3f'; // ← PUT YOUR KEY HERE
+  const POLYGON_API_KEY = 'pGdXpQKZqip22ZYpEWD1nWA7BVg4I8RW';  // Free signup: polygon.io
   const ETF_TICKERS = ['XRPC', 'GXRP', 'XRP', 'XRPZ', 'XRPR', 'TOXR'];
 
   let currentUSDPrice = 2.15;
@@ -262,51 +262,67 @@
 }
 
   async function updateLiveETFs() {
-    if (!TWELVE_DATA_KEY || TWELVE_DATA_KEY.includes('YOUR_')) {
-      document.getElementById('etfLastUpdated').textContent = 'API Key Missing';
-      return;
-    }
+  if (!POLYGON_API_KEY || POLYGON_API_KEY.includes('YOUR_')) {
+    document.getElementById('etfLastUpdated').textContent = 'API Key Missing';
+    return;
+  }
 
-    try {
-      const res = await fetch(`https://api.twelvedata.com/price?symbol=${ETF_TICKERS.join(',')}&apikey=${TWELVE_DATA_KEY}`);
-      const data = await res.json();
+  const symbols = ETF_TICKERS.join(',');  // XRPC,GXRP,XRP,XRPZ,XRPR,TOXR
+  try {
+    const res = await fetch(`https://api.polygon.io/v2/last/nbbo/${symbols}?apikey=${POLYGON_API_KEY}`);
+    const data = await res.json();
 
-      let totalAUM = 0, totalFlow = 0, totalXRP = 0;
-      document.getElementById('etfLastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+    let totalAUM = 0, totalFlow = 0, totalXRP = 0;
+    document.getElementById('etfLastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+
+    if (data.status === 'OK' && data.results) {
+      const prices = {};  // Map ticker to price
+      data.results.forEach(item => {
+        if (item.T && item.P) prices[item.T] = parseFloat(item.P);  // Ask price as latest
+      });
 
       etfData.forEach(etf => {
         if (!etf.live) return;
 
-        let price = currentUSDPrice * (10 + Math.random() * 5);
-        if (data[etf.ticker]?.price && !isNaN(parseFloat(data[etf.ticker].price))) {
-          price = parseFloat(data[etf.ticker].price);
-        }
-
-        const change = (Math.random() - 0.5) * 12;
-        const aum = price * 52_000_000;
+        const price = prices[etf.ticker] || etf.price || 21.50;  // Fallback to last known
+        const prevClose = price / 1.02;  // Est. % change
+        const change = ((price - prevClose) / prevClose * 100);
+        const aum = price * 52000000;  // Shares est. (adjust per ETF if needed)
         const xrpHeld = aum / currentUSDPrice;
-        const flow = Math.random() > 0.5 ? Math.random() * 35_000_000 : -Math.random() * 12_000_000;
+        const flow = Math.random() > 0.5 ? Math.random() * 35000000 : -Math.random() * 12000000;
 
-        etf.price = price; etf.change = change; etf.aum_usd = aum; etf.xrp_held = xrpHeld; etf.daily_flow_usd = flow;
+        etf.price = price;
+        etf.change = change;
+        etf.aum_usd = aum;
+        etf.xrp_held = xrpHeld;
+        etf.daily_flow_usd = flow;
 
-        totalAUM += aum; totalFlow += flow; totalXRP += xrpHeld;
+        totalAUM += aum;
+        totalFlow += flow;
+        totalXRP += xrpHeld;
       });
-
-      document.getElementById('totalAUM').dataset.usd = totalAUM;
-      document.getElementById('dailyFlow').dataset.usd = totalFlow;
-      document.getElementById('totalLocked').textContent = bigNumber(totalXRP) + ' XRP';
-      document.getElementById('shockEtf').textContent = (totalXRP/1e9).toFixed(2) + 'B';
-      const percent = Math.min(99, Math.round((totalXRP + 22.8e9) / 56.7e9 * 100));
-      document.getElementById('shockBar').style.width = percent + '%';
-      document.getElementById('shockPercent').textContent = percent + '%';
-
-      renderETFCards();
-      convertAll();
-    } catch (err) {
-      document.getElementById('etfLastUpdated').textContent = 'Using estimates';
+    } else {
+      // Graceful fallback if API lags on new tickers
+      console.warn('Polygon partial data; using estimates');
+      // [Insert your realData object from before as backup]
     }
-  }
 
+    document.getElementById('totalAUM').dataset.usd = totalAUM;
+    document.getElementById('dailyFlow').dataset.usd = totalFlow;
+    document.getElementById('totalLocked').textContent = bigNumber(totalXRP) + ' XRP';
+    document.getElementById('shockEtf').textContent = (totalXRP/1e9).toFixed(2) + 'B';
+    const percent = Math.min(99, Math.round((totalXRP + 22.8e9) / 56.7e9 * 100));
+    document.getElementById('shockBar').style.width = percent + '%';
+    document.getElementById('shockPercent').textContent = percent + '%';
+
+    renderETFCards();
+    convertAll();
+  } catch (err) {
+    console.error('Polygon Error:', err);
+    document.getElementById('etfLastUpdated').textContent = 'Using estimates';
+    // Call your realData fallback here if needed
+  }
+}
   function renderETFCards() {
     const grid = document.getElementById('etfGrid'); grid.innerHTML = '';
     etfData.forEach(etf => {
@@ -446,6 +462,7 @@
 </script>
 </body>
 </html>
+
 
 
 
