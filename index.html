@@ -210,34 +210,40 @@
   }
 
   // SMART MARKET TIMER (Opens in / Closes in)
-  function updateMarketTimer() {
+ function updateMarketTimer() {
   const now = new Date();
-  const nyTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
-  const day = nyTime.getDay(); // 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
-  const hour = nyTime.getHours();
-  const min = nyTime.getMinutes();
+  const ny = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+  const day = ny.getDay();           // 0=Sun, 1=Mon ... 5=Fri, 6=Sat
+  const hour = ny.getHours();
+  const min = ny.getMinutes();
 
-  const openTime = new Date(nyTime);
-  openTime.setHours(9, 30, 0, 0);
-  const closeTime = new Date(nyTime);
-  closeTime.setHours(16, 0, 0, 0);
+  // Create today's open/close times
+  const todayOpen = new Date(ny);
+  todayOpen.setHours(9, 30, 0, 0);
+  const todayClose = new Date(ny);
+  todayClose.setHours(16, 0, 0, 0);
 
-  const isOpen = day >= 1 && day <= 5 && (hour > 9 || (hour === 9 && min >= 30)) && hour < 16;
+  const isWeekday = day >= 1 && day <= 5;
+  const isOpen = isWeekday && ny >= todayOpen && ny < todayClose;
+
   const timer = document.getElementById('marketTimerText');
 
   if (isOpen) {
-    const diff = Math.floor((closeTime - nyTime) / 60000);
-    const h = Math.floor(diff / 60);
-    const m = diff % 60;
+    // Market is OPEN → count DOWN to close
+    const minsLeft = Math.max(0, Math.floor((todayClose - ny) / 60000));
+    const h = Math.floor(minsLeft / 60);
+    const m = minsLeft % 60;
     timer.innerHTML = `MARKET OPEN • Closes in <span class="text-green-400">${h}h ${m}m</span>`;
-  } else if (day >= 1 && day <= 5) {
-    // It's a weekday but before 9:30 AM → opens TODAY
-    const diff = Math.floor((openTime - nyTime) / 60000);
-    const h = Math.floor(diff / 60);
-    const m = diff % 60;
+  }
+  else if (isWeekday && ny < todayOpen) {
+    // Weekday before 9:30 AM → count DOWN to open (THIS WAS BROKEN BEFORE)
+    const minsToOpen = Math.max(0, Math.floor((todayOpen - ny) / 60000));
+    const h = Math.floor(minsToOpen / 60);
+    const m = minsToOpen % 60;
     timer.innerHTML = `Market opens in <span class="text-yellow-400">${h}h ${m}m</span>`;
-  } else {
-    // Weekend → opens next Monday
+  }
+  else {
+    // After-hours on weekday or weekend → next open is Monday
     timer.innerHTML = `Opens Monday 9:30 AM ET`;
   }
 }
@@ -427,3 +433,4 @@
 </script>
 </body>
 </html>
+
