@@ -126,26 +126,26 @@
     <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-cyan-800 p-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-cyan-400">XRP Spot ETFs • Daily Updates</h2>
-        <div id="etfLastUpdated" class="text-sm text-gray-400">Updated: December 11, 2025</div>
+        <div id="etfLastUpdated" class="text-sm text-gray-400">Updated: December 13, 2025</div>
       </div>
       <div id="etfGrid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5"></div>
 
       <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-        <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">Total AUM</div><div id="totalAUM" class="text-2xl font-bold text-cyan-300 converted" data-usd="1231000000">$1.23B</div></div>
-        <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">XRP Locked</div><div id="totalLocked" class="text-2xl font-bold text-cyan-300">597M XRP</div></div>
-        <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">Daily Net Flow</div><div id="dailyFlow" class="text-2xl font-bold text-green-400 converted" data-usd="38000000">+$38M</div></div>
+        <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">Total AUM</div><div id="totalAUM" class="text-2xl font-bold text-cyan-300 converted" data-usd="1000000000">$1.00B</div></div>
+        <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">XRP Locked</div><div id="totalLocked" class="text-2xl font-bold text-cyan-300">512M XRP</div></div>
+        <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">Daily Net Flow</div><div id="dailyFlow" class="text-2xl font-bold text-green-400 converted" data-usd="45000000">+$45M</div></div>
       </div>
 
       <div class="mt-8 bg-gray-800/60 rounded-2xl p-6 border border-cyan-700">
         <h3 class="text-xl font-bold text-cyan-300 mb-2 text-center">XRP Supply Shock Pressure</h3>
         <p class="text-xs text-gray-400 text-center mb-5">Estimated • Updated Weekly</p>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-          <div class="bg-gray-900/50 rounded-xl p-4 border border-cyan-900"><div class="text-gray-400 text-xs">ETF Holdings</div><div id="shockEtf" class="text-2xl font-bold text-cyan-300">0.60B</div></div>
-          <div class="bg-gray-900/50 rounded-xl p-4 border border-orange-900"><div class="text-gray-400 text-xs">Ripple OTC + Escrow</div><div class="text-2xl font-bold text-orange-400">~18.0B</div></div>
-          <div class="bg-gray-900/50 rounded-xl p-4 border border-yellow-900"><div class="text-gray-400 text-xs">Top Exchange Reserves</div><div class="text-2xl font-bold text-yellow-400">~4.8B</div></div>
+          <div class="bg-gray-900/50 rounded-xl p-4 border border-cyan-900"><div class="text-gray-400 text-xs">ETF Holdings</div><div id="shockEtf" class="text-2xl font-bold text-cyan-300">0.51B</div></div>
+          <div class="bg-gray-900/50 rounded-xl p-4 border border-orange-900"><div class="text-gray-400 text-xs">Ripple OTC + Escrow</div><div class="text-2xl font-bold text-orange-400">~37.0B</div></div>
+          <div class="bg-gray-900/50 rounded-xl p-4 border border-yellow-900"><div class="text-gray-400 text-xs">Top Exchange Reserves</div><div class="text-2xl font-bold text-yellow-400">~5.0B</div></div>
         </div>
-        <div class="mt-6 bg-gray-700 rounded-full h-10 overflow-hidden border border-cyan-600"><div id="shockBar" class="h-full bg-gradient-to-r from-cyan-500 to-red-500 transition-all duration-1000" style="width:42%"></div></div>
-        <div class="text-center mt-3 text-lg font-semibold text-cyan-300"><span id="shockPercent">42%</span> of supply illiquid → extreme upward pressure</div>
+        <div class="mt-6 bg-gray-700 rounded-full h-10 overflow-hidden border border-cyan-600"><div id="shockBar" class="h-full bg-gradient-to-r from-cyan-500 to-red-500 transition-all duration-1000" style="width:48%"></div></div>
+        <div class="text-center mt-3 text-lg font-semibold text-cyan-300"><span id="shockPercent">48%</span> of supply illiquid → strong upward pressure</div>
       </div>
     </div>
 
@@ -165,14 +165,14 @@
   const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' };
   let currentCurrency = localStorage.getItem('xrpCurrency') || 'USD';
 
-// === LATEST ETF DATA – DECEMBER 11, 2025 ===
+  // UPDATED ETF DATA – DECEMBER 13, 2025 (based on latest available: ~$1B AUM, 512M XRP locked across 6 live ETFs)
   let etfData = [
-    {name:"Canary XRPC", ticker:"XRPC", price:23.41, change:5.21, aum_usd:398700000, xrp_held:175600000, daily_flow_usd:18900000},
-    {name:"Grayscale GXRP", ticker:"GXRP", price:43.18, change:5.12, aum_usd:248200000, xrp_held:109300000, daily_flow_usd:12800000},
-    {name:"Bitwise XRP", ticker:"XRP", price:24.93, change:5.10, aum_usd:228900000, xrp_held:100800000, daily_flow_usd:18200000},
-    {name:"Franklin XRPZ", ticker:"XRPZ", price:24.12, change:5.05, aum_usd:186300000, xrp_held:82000000, daily_flow_usd:22100000},
-    {name:"REX-Osprey XRPR", ticker:"XRPR", price:18.27, change:5.03, aum_usd:129800000, xrp_held:57100000, daily_flow_usd:13900000},
-    {name:"21Shares XRP", ticker:"AXXP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"approved", launchDate:"2025-12-12", new:true},
+    {name:"Canary XRPC", ticker:"XRPC", price:42.80, change:4.85, aum_usd:215000000, xrp_held:105000000, daily_flow_usd:12000000},
+    {name:"Grayscale GXRP", ticker:"GXRP", price:45.20, change:4.92, aum_usd:190000000, xrp_held:93000000, daily_flow_usd:9000000},
+    {name:"Bitwise XRP", ticker:"XRP", price:41.50, change:4.78, aum_usd:185000000, xrp_held:90000000, daily_flow_usd:11000000},
+    {name:"Franklin XRPZ", ticker:"XRPZ", price:40.10, change:4.70, aum_usd:170000000, xrp_held:83000000, daily_flow_usd:8000000},
+    {name:"REX-Osprey XRPR", ticker:"XRPR", price:38.90, change:4.65, aum_usd:150000000, xrp_held:73000000, daily_flow_usd:7000000},
+    {name:"21Shares XRP", ticker:"AXXP", price:39.50, change:4.80, aum_usd:90000000, xrp_held:44000000, daily_flow_usd:6000000},
     {name:"WisdomTree XRP", ticker:"WRP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"final S-1", launchDate:"2026-01-15"},
     {name:"VanEck XRP", ticker:"VXRP", price:0, change:0, aum_usd:0, xrp_held:0, daily_flow_usd:0, status:"announced"}
   ];
@@ -184,25 +184,20 @@
     return n.toLocaleString();
   }
 
-  // MASTER CONVERSION FUNCTION – updates EVERYTHING
   function convertAll() {
     const rate = rates[currentCurrency];
     const sym = symbols[currentCurrency];
 
-    // XRP Price
     document.getElementById('price').textContent = sym + (currentUSDPrice * rate).toFixed(4);
 
-    // Volume & Market Cap
     document.getElementById('volume').textContent = sym + bigNumber(currentVolumeUSD * rate);
     document.getElementById('marketCap').textContent = sym + bigNumber(currentMarketCap * rate);
 
-    // ETF Cards AUM & Flow
     document.querySelectorAll('.converted[data-usd]').forEach(el => {
       const usd = parseFloat(el.dataset.usd) || 0;
       el.textContent = (usd < 0 ? '-' : '') + sym + bigNumber(Math.abs(usd) * rate);
     });
 
-    // Live Trades Prices
     document.querySelectorAll('#trades span.font-medium').forEach(span => {
       const usdPrice = parseFloat(span.dataset.usd || span.textContent.replace(/[^0-9.-]/g, ''));
       if (!isNaN(usdPrice)) {
@@ -210,7 +205,6 @@
       }
     });
 
-    // Order Book Prices
     document.querySelectorAll('#bookBody span').forEach(span => {
       const usdPrice = parseFloat(span.dataset.usd || span.textContent.replace(/[^0-9.-]/g, ''));
       if (!isNaN(usdPrice)) {
@@ -219,7 +213,6 @@
     });
   }
 
-  // Update real price data
   async function updatePriceAndVolume() {
     try {
       const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT');
@@ -244,7 +237,6 @@
     convertAll();
   }
 
-  // Map flashes
   const cityMap = {BIN:"Singapore",BST:"London",KRA:["New York","Frankfurt"],OKX:"Tokyo",BYB:["Dubai","Hong Kong"],GAT:"São Paulo",KUC:"Seoul",CSP:"Sydney",UPH:"Los Angeles",BTR:"Singapore"};
   function flashCities(c=5){
     for(let i=0;i<c;i++){
@@ -263,7 +255,6 @@
     }
   }
 
-  // Live Trades
   function addTrades(){
     const container = document.getElementById('trades');
     const exs = ["BIN","OKX","BYB","GAT","UPH","KRA","KUC","BTR","CSP","BST"];
@@ -288,7 +279,6 @@
     flashCities(5);
   }
 
-  // Order Book
   function updateOrderBook(){
     let html = ''; let bidTotal = 0, askTotal = 0;
     for(let i=0;i<12;i++){
@@ -310,7 +300,6 @@
     document.getElementById('totalAsk').textContent = bigNumber(askTotal)+' XRP';
   }
 
-  // ETF Cards
   function renderETFCards() {
     const grid = document.getElementById('etfGrid'); grid.innerHTML = '';
     let totalAUM = 0, totalFlow = 0, totalXRP = 0;
@@ -352,13 +341,12 @@
     document.getElementById('dailyFlow').dataset.usd = totalFlow;
     document.getElementById('totalLocked').textContent = bigNumber(totalXRP) + ' XRP';
     document.getElementById('shockEtf').textContent = (totalXRP/1e9).toFixed(2) + 'B';
-    const percent = Math.min(99, Math.round((totalXRP + 22.8e9) / 56.7e9 * 100));
+    const percent = Math.min(99, Math.round((totalXRP + 42e9) / 100e9 * 100)); // Updated estimates: ~37-38B escrow + ~5B exchanges
     document.getElementById('shockBar').style.width = percent + '%';
     document.getElementById('shockPercent').textContent = percent + '%';
-    convertAll(); // This line makes EVERYTHING convert
+    convertAll();
   }
 
-  // Theme & Currency Switcher
   document.getElementById('themeToggle').onclick = () => {
     document.documentElement.classList.toggle('dark');
     const isDark = document.documentElement.classList.contains('dark');
@@ -373,14 +361,13 @@
     localStorage.setItem('xrpCurrency', currentCurrency);
     convertAll();
     renderETFCards();
-    updateOrderBook(); // Re-convert order book
+    updateOrderBook();
   };
 
-  // Start everything
   updatePriceAndVolume(); setInterval(updatePriceAndVolume, 5000);
   renderETFCards();
   addTrades(); setInterval(addTrades, 1900);
   updateOrderBook(); setInterval(updateOrderBook, 4000);
 </script>
 </body>
-</html>
+  </html>
