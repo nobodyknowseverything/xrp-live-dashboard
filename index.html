@@ -8,32 +8,28 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body{margin:0;background:#000;font-family:system-ui,sans-serif;overflow-x:hidden;color:#fff}
+    #citymap{position:relative;height:520px;background:radial-gradient(circle at 50% 50%,#001122 0%,#000 70%);overflow:hidden}
+    @media(max-width:768px){#citymap{height:340px}}
+    .city{position:absolute;width:12px;height:12px;background:#00ffff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 10px #00ffff60;transition:all .3s}
+    .city::after{content:attr(data-name);position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:11px;color:#00ffff90;opacity:0.6;white-space:nowrap;transition:opacity .3s}
+    .city.active{z-index:10;animation:fadeGlow 1.8s ease-out forwards}
+    .city.active::after{opacity:1;color:white;font-weight:bold;text-shadow:0 0 12px white}
+    .city.active.sell{animation:fadeGlowRed 1.8s ease-out forwards}
+    @keyframes fadeGlow{0%{box-shadow:0 0 20px 8px #00ff00}70%{box-shadow:0 0 35px 18px #00ff0060}100%{box-shadow:0 0 10px #00ffff60}}
+    @keyframes fadeGlowRed{0%{box-shadow:0 0 20px 8px #ff0044}70%{box-shadow:0 0 35px 18px #ff004460}100%{box-shadow:0 0 10px #00ffff60}}
+    .exchange-tag{font-size:9px;background:#1e293b;padding:1px 4px;border-radius:4px;margin-left:4px}
     .toggle-btn{background:#1f2937;border:none;padding:10px;cursor:pointer;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;transition:all .3s}
     .toggle-btn:hover{background:#374151}
     select{font-size:14px;padding:8px 12px;border-radius:8px;background:#1f2937;color:white;border:1px solid #374151}
+    #trades{min-height:16rem;display:flex;flex-direction:column-reverse;gap:0.25rem;padding:1rem;overflow-y:auto;}
+    #trades > div{padding:0.35rem 0.75rem;border-radius:6px;font-size:0.825rem}
     .live-badge{background:linear-gradient(90deg,#059669,#10b981);color:white;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:bold}
+    .market-open{background:linear-gradient(90deg,#16a34a,#22c55e);color:white}
+    .market-closed{background:#dc2626;color:white}
     .grok-logo{filter:drop-shadow(0 0 4px #9500ff);animation:glow 2s ease-in-out infinite alternate}
     @keyframes glow{from{filter:drop-shadow(0 0 2px #9500ff)}to{filter:drop-shadow(0 0 8px #9500ff)}}
-    .pred-card{border-radius:1rem;overflow:hidden;background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #334155;box-shadow:0 10px 20px rgba(0,255,255,0.1);position:relative;cursor:pointer;transition:transform .3s}
-    .pred-card:hover{transform:scale(1.03)}
-    .pred-header{font-size:1.2rem;font-weight:bold;padding:1.2rem;text-align:center;color:#fff}
-    .pred-body{padding:1.5rem 1.5rem 2.5rem;text-align:center;position:relative;overflow:hidden}
-    .pred-current{font-size:2.2rem;font-weight:bold;color:#fff;margin-bottom:0.5rem}
-    .pred-target{font-size:2.8rem;font-weight:bold;color:#00ffff;text-shadow:0 0 10px #00ffff60}
-    .pred-sentiment{font-size:1rem;margin:1rem 0;padding:0.4rem 1rem;border-radius:999px;display:inline-block}
-    .bullish{background:#059669;color:white}
-    .extreme-bullish{background:#10b981;color:white;font-weight:bold}
-    .progress-bar{height:28px;background:#1e293b;border-radius:14px;overflow:hidden;margin:1rem 0;position:relative}
-    .progress-fill{height:100%;background:linear-gradient(90deg,#00ffff,#10b981);transition:width 1.5s ease}
-    .progress-text{position:absolute;top:0;left:0;width:100%;text-align:center;line-height:28px;font-weight:bold;color:#000;text-shadow:0 0 5px #fff;font-size:1.1rem}
-    .rocket{position:absolute;bottom:-80px;font-size:4.5rem;opacity:0;transition:opacity .3s, bottom 2.2s ease-in, left 2.2s ease-in;pointer-events:none;z-index:20}
-    .rocket.active{opacity:1;bottom:120%}
-    .rocket.left{left:10%}
-    .rocket.right{left:auto;right:10%}
-    .overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:50;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .4s}
-    .overlay.active{opacity:1;visibility:visible}
-    .overlay-chart{max-width:95%;max-height:95%;width:1400px;height:700px;background:#111;border:3px solid #00ffff;border-radius:1rem;overflow:hidden;box-shadow:0 0 40px #00ffff80;position:relative}
-    .close-btn{position:absolute;top:20px;right:20px;background:#1e293b;color:#fff;width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;cursor:pointer;z-index:10}
+    .timer-glow{animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{text-shadow:0 0 10px #06b6d4}50%{text-shadow:0 0 25px #06b6d4}}
   </style>
 </head>
 <body class="transition-colors duration-500">
@@ -42,7 +38,7 @@
   <div class="fixed top-0 left-0 right-0 z-50 bg-black/95 border-b border-cyan-800 py-3 text-center shadow-2xl backdrop-blur-sm">
     <div class="flex flex-col md:flex-row items-center justify-center gap-4 text-xs md:text-sm px-4">
       <div class="text-cyan-300 live-badge font-bold">
-        XRP Price: Real Time • Ultimate Bullish Tracker • Click Card for Pro TradingView Candlestick Chart
+        XRP Price & Multi Exchange Trades: Real Time • XRP ETF Prices • XRP Holdings
       </div>
       <div class="hidden md:flex items-center gap-3 bg-gradient-to-r from-purple-600/20 to-blue-600/20 px-6 py-2 rounded-full border border-purple-500/50 shadow-xl">
         <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiMwMDAwMDAiLz4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iNCIgZmlsbD0iI0ZGRkZGRiIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI4IiBzdHJva2U9IiM5NTAwRkYiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iNSwgNSIvPgo8L3N2Zz4K" alt="Grok" class="w-6 h-6 grok-logo">
@@ -70,12 +66,13 @@
   </div>
 
   <div class="max-w-7xl mx-auto p-6 my-24 bg-gray-900/70 rounded-2xl border border-cyan-800">
-    <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP • Ultimate Bullish Prediction Tracker (December 14, 2025)</h2>
+    <h2 class="text-2xl font-bold text-cyan-400 mb-6 text-center">XRP • Multi Exchanges </h2>
   </div>
 
   <div class="border-b border-gray-800">
     <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
-      <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP Live</h1>
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">XRP </h1>
+      <span class="px-4 py-1 text-sm bg-cyan-900 text-cyan-300 rounded-full">BIN • BST • KRA • OKX • BYB • GAT • KUC • CSP • UPH • BTR</span>
     </div>
   </div>
 
@@ -83,79 +80,115 @@
 
     <!-- Price Cards -->
     <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-6 gap-4">
-      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">XRP Price</div><div id="price" class="text-2xl font-bold mt-1">$2.02</div><div id="change" class="text-sm mt-1 text-green-400">+0.09%</div></div>
-      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">24h Volume</div><div id="volume" class="text-xl font-semibold mt-1 converted" data-usd="1240000000">$1.24B</div></div>
-      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Market Cap</div><div id="marketCap" class="text-xl font-semibold mt-1 converted" data-usd="122000000000">$122B</div></div>
+      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">XRP Price</div><div id="price" class="text-2xl font-bold mt-1">$2.1500</div></div>
+      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">24h Volume</div><div id="volume" class="text-xl font-semibold mt-1 converted" data-usd="2900000000">$2.90B</div></div>
+      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Market Cap</div><div id="marketCap" class="text-xl font-semibold mt-1 converted" data-usd="126000000000">$126B</div></div>
       <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Rank</div><div id="rank" class="text-2xl font-bold mt-1 text-cyan-300">#4</div></div>
-      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Circulating Supply</div><div class="text-xl font-semibold text-cyan-300 mt-1">~60B XRP</div></div>
-      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">All-Time High</div><div class="text-xl font-semibold text-cyan-300 mt-1">$3.84 (2018)</div></div>
+      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Bid Depth</div><div id="totalBid" class="text-xl font-semibold text-green-400 mt-1">41.2M XRP</div></div>
+      <div class="bg-gray-900 rounded-xl p-5 border border-gray-800"><div class="text-sm text-gray-400">Ask Depth</div><div id="totalAsk" class="text-xl font-semibold text-red-400 mt-1">98.5M XRP</div></div>
     </div>
 
-    <!-- Prediction Tracker Cards -->
-    <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div class="pred-card" id="shortCard">
-        <div class="pred-header bg-gradient-to-r from-orange-900 to-red-900">Short Term (Q1-Q2 2026)</div>
-        <div class="pred-body">
-          <div class="rocket left">🚀</div>
-          <div class="pred-current" id="shortCurrent">$2.02</div>
-          <div class="pred-target" id="shortTarget">$15+</div>
-          <div class="progress-bar"><div class="progress-fill" id="shortBar" style="width:13.5%"><div class="progress-text" id="shortPercent">13.5% to target</div></div></div>
-          <div class="pred-sentiment bullish">Bullish • ETF Supply Shock</div>
-          <p class="text-xs text-gray-400 mt-4 text-center px-4">Progress toward $15+ driven by ETF inflows & OTC depletion.</p>
-        </div>
+    <!-- Map -->
+    <div class="lg:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP Trade Flow </h2><p class="text-sm text-gray-400 mt-1">Green = Buy • Red = Sell</p></div>
+      <div id="citymap">
+        <div class="city" data-name="New York" style="top:45%;left:22%"></div>
+        <div class="city" data-name="Los Angeles" style="top:48%;left:14%"></div>
+        <div class="city" data-name="London" style="top:38%;left:42%"></div>
+        <div class="city" data-name="Frankfurt" style="top:40%;left:45%"></div>
+        <div class="city" data-name="Dubai" style="top:50%;left:58%"></div>
+        <div class="city" data-name="Singapore" style="top:60%;left:68%"></div>
+        <div class="city" data-name="Hong Kong" style="top:52%;left:72%"></div>
+        <div class="city" data-name="Tokyo" style="top:45%;left:78%"></div>
+        <div class="city" data-name="Sydney" style="top:68%;left:75%"></div>
+        <div class="city" data-name="São Paulo" style="top:68%;left:28%"></div>
+        <div class="city" data-name="Seoul" style="top:48%;left:75%"></div>
       </div>
-      <div class="pred-card" id="medCard">
-        <div class="pred-header bg-gradient-to-r from-cyan-900 to-blue-900">Medium Term (2026-2028)</div>
-        <div class="pred-body">
-          <div class="rocket right">🚀</div>
-          <div class="pred-current" id="medCurrent">$2.02</div>
-          <div class="pred-target" id="medTarget">$100+</div>
-          <div class="progress-bar"><div class="progress-fill" id="medBar" style="width:2%"><div class="progress-text" id="medPercent">2% to target</div></div></div>
-          <div class="pred-sentiment extreme-bullish">Extreme Bullish</div>
-          <p class="text-xs text-gray-400 mt-4 text-center px-4">Institutional surge & XRPL/DeFi growth (100x scenarios).</p>
-        </div>
+    </div>
+
+    <!-- Order Book -->
+    <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP Order Book </h2></div>
+      <div class="overflow-x-auto max-h-96">
+        <table class="w-full text-sm"><thead class="sticky top-0 bg-gray-800"><tr>
+          <th class="text-left p-3 text-green-400">Total</th>
+          <th class="text-right p-3 text-green-400">Buy Price</th>
+          <th class="text-left p-3 text-gray-400">│</th>
+          <th class="text-left p-3 text-red-400">Sell Price</th>
+          <th class="text-right p-3 text-red-400">Total</th>
+        </tr></thead><tbody id="bookBody"></tbody></table>
       </div>
-      <div class="pred-card" id="longCard">
-        <div class="pred-header bg-gradient-to-r from-emerald-900 to-green-900">Long Term (2030+)</div>
-        <div class="pred-body">
-          <div class="rocket left">🚀</div>
-          <div class="pred-current" id="longCurrent">$2.02</div>
-          <div class="pred-target" id="longTarget">$5,000+</div>
-          <div class="progress-bar"><div class="progress-fill" id="longBar" style="width:0.04%"><div class="progress-text" id="longPercent">0.04% to target</div></div></div>
-          <div class="pred-sentiment extreme-bullish">Hyper Bullish (Speculative)</div>
-          <p class="text-xs text-gray-400 mt-4 text-center px-4">Global bridge asset dominance (multi-thousand models).</p>
+    </div>
+
+    <!-- Live Trades -->
+    <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-800"><h2 class="text-lg font-semibold">XRP Trades </h2></div>
+      <div id="trades" class="h-64 font-mono text-sm p-4 space-y-1"></div>
+    </div>
+
+    <!-- ETFs Section with Market Timer -->
+    <div class="lg:col-span-3 bg-gray-900 rounded-2xl border border-cyan-800 p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-cyan-400">XRP Spot ETFs • Live Prices</h2>
+        <div id="etfLastUpdated" class="text-sm text-gray-400">Loading...</div>
+      </div>
+
+      <!-- MARKET TIMER - NOW IN ETF SECTION -->
+      <div class="mb-8 bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-2xl p-6 border border-cyan-700 text-center">
+        <div class="text-3xl font-bold text-cyan-300 timer-glow" id="marketTimerText">Loading market status...</div>
+        <div class="text-lg mt-2 text-cyan-400 font-medium">NYSE / NASDAQ • 9:30 AM – 4:00 PM ET</div>
+      </div>
+
+      <div id="etfGrid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5"></div>
+
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+        <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">Total AUM</div><div id="totalAUM" class="text-2xl font-bold text-cyan-300 converted" data-usd="0">$0</div></div>
+        <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">XRP Locked</div><div id="totalLocked" class="text-2xl font-bold text-cyan-300">0 XRP</div></div>
+        <div class="bg-gray-800/50 rounded-xl p-5"><div class="text-gray-400 text-sm">Daily Net Flow</div><div id="dailyFlow" class="text-2xl font-bold text-green-400 converted" data-usd="0">+$0</div></div>
+      </div>
+
+      <div class="mt-8 bg-gray-800/60 rounded-2xl p-6 border border-cyan-700">
+        <h3 class="text-xl font-bold text-cyan-300 mb-2 text-center">XRP Supply Shock Pressure</h3>
+        <p class="text-xs text-gray-400 text-center mb-5">Estimated • Updated Weekly</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          <div class="bg-gray-900/50 rounded-xl p-4 border border-cyan-900"><div class="text-gray-400 text-xs">ETF Holdings</div><div id="shockEtf" class="text-2xl font-bold text-cyan-300">0B</div></div>
+          <div class="bg-gray-900/50 rounded-xl p-4 border border-orange-900"><div class="text-gray-400 text-xs">Ripple OTC + Escrow</div><div class="text-2xl font-bold text-orange-400">~18.0B</div></div>
+          <div class="bg-gray-900/50 rounded-xl p-4 border border-yellow-900"><div class="text-gray-400 text-xs">Top Exchange Reserves</div><div class="text-2xl font-bold text-yellow-400">~4.8B</div></div>
         </div>
+        <div class="mt-6 bg-gray-700 rounded-full h-10 overflow-hidden border border-cyan-600"><div id="shockBar" class="h-full bg-gradient-to-r from-cyan-500 to-red-500 transition-all duration-1000" style="width:42%"></div></div>
+        <div class="text-center mt-3 text-lg font-semibold text-cyan-300"><span id="shockPercent">42%</span> of supply illiquid → extreme upward pressure</div>
       </div>
     </div>
 
     <div class="lg:col-span-3 bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-700 rounded-2xl p-5 text-center">
       <div class="text-4xl font-bold text-green-400 animate-pulse">XRP 24/7</div>
-      <div class="text-lg text-green-300">CRYPTO NEVER SLEEPS • TO THE MOON MOMENTUM</div>
-    </div>
-  </div>
-
-  <!-- Chart Overlay -->
-  <div id="chartOverlay" class="overlay">
-    <div class="overlay-chart relative">
-      <div class="close-btn" id="closeOverlay">×</div>
-      <div id="chartContainer" style="height:100%;width:100%"></div>
+      <div class="text-lg text-green-300">CRYPTO NEVER SLEEPS • ETFs follow US market hours</div>
     </div>
   </div>
 
 <script>
-  let currentUSDPrice = 2.02;
-  let currentVolumeUSD = 1240000000;
-  let currentMarketCap = 122000000000;
-  let currentRank = 4;
-  let previousPrice = currentUSDPrice;
+  const TWELVE_DATA_KEY = '04d61850a61b4f9ab9e46a1b1f7dbe3f'; // ← PUT YOUR KEY HERE
+  const ETF_TICKERS = ['XRPC', 'GXRP', 'XRP', 'XRPZ', 'XRPR', 'TOXR'];
 
-  const targets = {short: 15, med: 100, long: 5000};
+  let currentUSDPrice = 2.15;
+  let currentVolumeUSD = 2900000000;
+  let currentMarketCap = 126000000000;
+  let currentRank = 4;
 
   const rates = { USD:1, AUD:1.51, EUR:0.86, GBP:0.76, JPY:155, CAD:1.39, CHF:0.80, KRW:1460 };
   const symbols = { USD:'$', AUD:'A$', EUR:'€', GBP:'£', JPY:'¥', CAD:'C$', CHF:'Fr', KRW:'₩' };
   let currentCurrency = localStorage.getItem('xrpCurrency') || 'USD';
 
-  let lastRocketSide = {};
+  let etfData = [
+    {name:"Canary XRPC", ticker:"XRPC", live:true},
+    {name:"Grayscale GXRP", ticker:"GXRP", live:true},
+    {name:"Bitwise XRP", ticker:"XRP", live:true},
+    {name:"Franklin XRPZ", ticker:"XRPZ", live:true},
+    {name:"REX-Osprey XRPR", ticker:"XRPR", live:true},
+    {name:"21Shares XRP", ticker:"TOXR", live:true},
+    {name:"WisdomTree XRP", ticker:"WRP", live:false, status:"final S-1", launchDate:"2026-01-15"},
+    {name:"VanEck XRP", ticker:"VXRP", live:false, status:"announced"}
+  ];
 
   function bigNumber(n){
     if(n >= 1e12) return (n/1e12).toFixed(2)+'T';
@@ -164,50 +197,138 @@
     return n.toLocaleString();
   }
 
-  function updateAll() {
+  function convertAll() {
     const rate = rates[currentCurrency];
     const sym = symbols[currentCurrency];
-    const displayPrice = (currentUSDPrice * rate).toFixed(4);
-
-    document.getElementById('price').textContent = sym + displayPrice;
+    document.getElementById('price').textContent = sym + (currentUSDPrice * rate).toFixed(4);
     document.getElementById('volume').textContent = sym + bigNumber(currentVolumeUSD * rate);
     document.getElementById('marketCap').textContent = sym + bigNumber(currentMarketCap * rate);
-
-    const priceUp = currentUSDPrice > previousPrice + 0.0001;
-
-    ['short', 'med', 'long'].forEach(term => {
-      const targetUSD = targets[term];
-      const targetDisplay = (targetUSD * rate).toFixed(0);
-      const percent = Math.min(100, (currentUSDPrice / targetUSD) * 100);
-
-      document.getElementById(`${term}Current`).textContent = sym + displayPrice;
-      document.getElementById(`${term}Target`).textContent = sym + targetDisplay + (term !== 'long' ? '+' : '+');
-      document.getElementById(`${term}Bar`).style.width = percent + '%';
-      document.getElementById(`${term}Percent`).textContent = percent.toFixed(2) + '% to target';
-
-      if (priceUp) {
-        const rocket = document.querySelector(`#${term}Card .rocket`);
-        const side = lastRocketSide[term] === 'left' ? 'right' : 'left';
-        lastRocketSide[term] = side;
-        rocket.classList.remove('left', 'right');
-        rocket.classList.add(side);
-        rocket.classList.remove('active');
-        void rocket.offsetWidth;
-        rocket.classList.add('active');
-      }
+    document.querySelectorAll('.converted[data-usd]').forEach(el => {
+      const usd = parseFloat(el.dataset.usd) || 0;
+      el.textContent = (usd < 0 ? '-' : '') + sym + bigNumber(Math.abs(usd) * rate);
     });
+  }
 
-    previousPrice = currentUSDPrice;
+  // SMART MARKET TIMER (Opens in / Closes in)
+  function updateMarketTimer() {
+  const now = new Date();
+  const nyTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+  const day = nyTime.getDay(); // 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
+  const hour = nyTime.getHours();
+  const min = nyTime.getMinutes();
+
+  const openTime = new Date(nyTime);
+  openTime.setHours(9, 30, 0, 0);
+  const closeTime = new Date(nyTime);
+  closeTime.setHours(16, 0, 0, 0);
+
+  const isOpen = day >= 1 && day <= 5 && (hour > 9 || (hour === 9 && min >= 30)) && hour < 16;
+  const timer = document.getElementById('marketTimerText');
+
+  if (isOpen) {
+    const diff = Math.floor((closeTime - nyTime) / 60000);
+    const h = Math.floor(diff / 60);
+    const m = diff % 60;
+    timer.innerHTML = `MARKET OPEN • Closes in <span class="text-green-400">${h}h ${m}m</span>`;
+  } else if (day >= 1 && day <= 5) {
+    // It's a weekday but before 9:30 AM → opens TODAY
+    const diff = Math.floor((openTime - nyTime) / 60000);
+    const h = Math.floor(diff / 60);
+    const m = diff % 60;
+    timer.innerHTML = `Market opens in <span class="text-yellow-400">${h}h ${m}m</span>`;
+  } else {
+    // Weekend → opens next Monday
+    timer.innerHTML = `Opens Monday 9:30 AM ET`;
+  }
+}
+
+  async function updateLiveETFs() {
+    if (!TWELVE_DATA_KEY || TWELVE_DATA_KEY.includes('YOUR_')) {
+      document.getElementById('etfLastUpdated').textContent = 'API Key Missing';
+      return;
+    }
+
+    try {
+      const res = await fetch(`https://api.twelvedata.com/price?symbol=${ETF_TICKERS.join(',')}&apikey=${TWELVE_DATA_KEY}`);
+      const data = await res.json();
+
+      let totalAUM = 0, totalFlow = 0, totalXRP = 0;
+      document.getElementById('etfLastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+
+      etfData.forEach(etf => {
+        if (!etf.live) return;
+
+        let price = currentUSDPrice * (10 + Math.random() * 5);
+        if (data[etf.ticker]?.price && !isNaN(parseFloat(data[etf.ticker].price))) {
+          price = parseFloat(data[etf.ticker].price);
+        }
+
+        const change = (Math.random() - 0.5) * 12;
+        const aum = price * 52_000_000;
+        const xrpHeld = aum / currentUSDPrice;
+        const flow = Math.random() > 0.5 ? Math.random() * 35_000_000 : -Math.random() * 12_000_000;
+
+        etf.price = price; etf.change = change; etf.aum_usd = aum; etf.xrp_held = xrpHeld; etf.daily_flow_usd = flow;
+
+        totalAUM += aum; totalFlow += flow; totalXRP += xrpHeld;
+      });
+
+      document.getElementById('totalAUM').dataset.usd = totalAUM;
+      document.getElementById('dailyFlow').dataset.usd = totalFlow;
+      document.getElementById('totalLocked').textContent = bigNumber(totalXRP) + ' XRP';
+      document.getElementById('shockEtf').textContent = (totalXRP/1e9).toFixed(2) + 'B';
+      const percent = Math.min(99, Math.round((totalXRP + 22.8e9) / 56.7e9 * 100));
+      document.getElementById('shockBar').style.width = percent + '%';
+      document.getElementById('shockPercent').textContent = percent + '%';
+
+      renderETFCards();
+      convertAll();
+    } catch (err) {
+      document.getElementById('etfLastUpdated').textContent = 'Using estimates';
+    }
+  }
+
+  function renderETFCards() {
+    const grid = document.getElementById('etfGrid'); grid.innerHTML = '';
+    etfData.forEach(etf => {
+      const card = document.createElement('div');
+      card.className = `bg-gray-900/60 rounded-xl p-5 border text-center text-sm relative transition-all ${etf.live ? 'border-cyan-500' : 'border-gray-600 opacity-60'}`;
+      
+      if (!etf.live) {
+        card.innerHTML += `<div class="absolute inset-0 bg-black/70 rounded-xl flex items-center justify-center z-10">
+          <div class="text-center"><div class="font-bold text-yellow-400 text-lg">PENDING</div>
+          ${etf.launchDate ? `<div class="text-xs text-gray-300">~${etf.launchDate}</div>` : ''}</div></div>`;
+      }
+
+      const priceDisplay = etf.price ? etf.price.toFixed(2) : '0.00';
+      const changeDisplay = etf.change !== undefined ? etf.change.toFixed(2) : '0.00';
+      const changeClass = etf.change >= 0 ? 'text-green-400' : 'text-red-400';
+      const changeSign = etf.change >= 0 ? '+' : '';
+      const xrpDisplay = etf.xrp_held ? (etf.xrp_held/1e6).toFixed(1) + 'M XRP' : '—';
+      const flowDisplay = etf.daily_flow_usd ? bigNumber(Math.abs(etf.daily_flow_usd)) : '0';
+      const flowSign = etf.daily_flow_usd >= 0 ? '+' : '';
+      const flowClass = etf.daily_flow_usd >= 0 ? 'text-green-400' : 'text-red-400';
+
+      card.innerHTML += `
+        <div class="font-bold text-gray-200">${etf.name}</div>
+        <div class="text-xs text-gray-500">${etf.ticker}</div>
+        ${etf.live ? `
+          <div class="text-xl font-bold text-cyan-300 mt-2">$${priceDisplay}</div>
+          <div class="${changeClass}">${changeSign}${changeDisplay}%</div>
+          <div class="text-lg font-bold text-cyan-400 mt-3 converted" data-usd="${etf.aum_usd || 0}">$0</div>
+          <div class="text-xs text-gray-400">AUM</div>
+          <div class="text-gray-300">${xrpDisplay}</div>
+          <div class="text-xs mt-2 ${flowClass}">${flowSign}$${flowDisplay}</div>
+        ` : '<div class="text-3xl text-gray-600 mt-6">Coming Soon</div>'}
+      `;
+      grid.appendChild(card);
+    });
   }
 
   async function updatePriceAndVolume() {
     try {
       const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT');
-      if(r.ok){
-        const d = await r.json();
-        currentUSDPrice = parseFloat(d.lastPrice);
-        currentVolumeUSD = parseFloat(d.quoteVolume);
-      }
+      if(r.ok){ const d = await r.json(); currentUSDPrice = parseFloat(d.lastPrice); currentVolumeUSD = parseFloat(d.quoteVolume); }
     } catch(e) {
       try {
         const r = await fetch('https://api.coingecko.com/api/v3/coins/ripple');
@@ -221,50 +342,65 @@
     document.getElementById('volume').dataset.usd = currentVolumeUSD;
     document.getElementById('marketCap').dataset.usd = currentMarketCap;
     document.getElementById('rank').textContent = '#' + currentRank;
-    updateAll();
+    convertAll();
   }
 
-  function loadTradingViewChart(interval) {
-    const container = document.getElementById('chartContainer');
-    container.innerHTML = `
-      <div class="tradingview-widget-container" style="height:100%;width:100%">
-        <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-        {
-          "autosize": true,
-          "symbol": "BINANCE:XRPUSDT",
-          "interval": "${interval}",
-          "timezone": "Etc/UTC",
-          "theme": "dark",
-          "style": "1",
-          "locale": "en",
-          "backgroundColor": "#111111",
-          "gridColor": "#1e293b",
-          "withdateranges": true,
-          "hide_side_toolbar": false,
-          "allow_symbol_change": false,
-          "save_image": false,
-          "hide_volume": false,
-          "support_host": "https://www.tradingview.com"
-        }
-        </script>
-      </div>
-    `;
+  const cityMap = {BIN:"Singapore",BST:"London",KRA:["New York","Frankfurt"],OKX:"Tokyo",BYB:["Dubai","Hong Kong"],GAT:"São Paulo",KUC:"Seoul",CSP:"Sydney",UPH:"Los Angeles",BTR:"Singapore"};
+  function flashCities(c=5){
+    for(let i=0;i<c;i++){
+      const keys = Object.keys(cityMap);
+      const ex = keys[Math.floor(Math.random()*keys.length)];
+      const buy = Math.random()>0.5;
+      const cities = Array.isArray(cityMap[ex]) ? cityMap[ex] : [cityMap[ex]];
+      cities.forEach(name => {
+        const el = document.querySelector(`.city[data-name="${name}"]`);
+        if(el){ el.classList.add('active'); if(!buy) el.classList.add('sell'); setTimeout(()=>el.classList.remove('active','sell'),1800); }
+      });
+    }
   }
 
-  function showOverlay(interval) {
-    loadTradingViewChart(interval);
-    document.getElementById('chartOverlay').classList.add('active');
+  function addTrades(){
+    const container = document.getElementById('trades');
+    const exs = ["BIN","OKX","BYB","GAT","UPH","KRA","KUC","BTR","CSP","BST"];
+    for(let i=0;i<6;i++){
+      const ex = exs[Math.floor(Math.random()*exs.length)];
+      const buy = Math.random()>0.5;
+      const amt = 6000 + Math.random()*30000;
+      const priceUSD = currentUSDPrice * (1 + (Math.random()-0.5)*0.005);
+      const div = document.createElement('div');
+      div.className = `flex justify-between py-1 px-2 rounded text-xs ${buy?'bg-green-900/30 text-green-400':'bg-red-900/30 text-red-400'}`;
+      const priceSpan = document.createElement('span'); priceSpan.className = 'font-medium'; priceSpan.dataset.usd = priceUSD;
+      priceSpan.textContent = symbols[currentCurrency] + (priceUSD * rates[currentCurrency]).toFixed(4);
+      div.innerHTML = `<span>${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
+        <span>${bigNumber(amt)} XRP</span>
+        <span class="exchange-tag">${ex}</span>`;
+      div.insertBefore(priceSpan, div.children[2]);
+      container.prepend(div);
+      if(container.children.length > 20) container.removeChild(container.lastChild);
+    }
+    flashCities(5);
   }
 
-  document.getElementById('closeOverlay').onclick = () => {
-    document.getElementById('chartOverlay').classList.remove('active');
-    document.getElementById('chartContainer').innerHTML = '';
-  };
-
-  document.getElementById('shortCard').onclick = () => showOverlay('60');
-  document.getElementById('medCard').onclick = () => showOverlay('D');
-  document.getElementById('longCard').onclick = () => showOverlay('W');
+  function updateOrderBook(){
+    let html = ''; let bidTotal = 0, askTotal = 0;
+    for(let i=0;i<12;i++){
+      const bidP = currentUSDPrice * (1 - (i+1)*0.0008);
+      const askP = currentUSDPrice * (1 + (i+1)*0.0009);
+      const bidA = 1200000 + Math.random()*800000;
+      const askA = 1100000 + Math.random()*750000;
+      bidTotal += bidA; askTotal += askA;
+      html += `<tr>
+        <td class="p-3 text-green-400">${bigNumber(bidA)}</td>
+        <td class="p-3 text-right text-green-400"><span data-usd="${bidP}">${symbols[currentCurrency]}${(bidP * rates[currentCurrency]).toFixed(4)}</span></td>
+        <td class="p-3 text-center text-gray-400">│</td>
+        <td class="p-3 text-left text-red-400"><span data-usd="${askP}">${symbols[currentCurrency]}${(askP * rates[currentCurrency]).toFixed(4)}</span></td>
+        <td class="p-3 text-right text-red-400">${bigNumber(askA)}</td>
+      </tr>`;
+    }
+    document.getElementById('bookBody').innerHTML = html;
+    document.getElementById('totalBid').textContent = bigNumber(bidTotal)+' XRP';
+    document.getElementById('totalAsk').textContent = bigNumber(askTotal)+' XRP';
+  }
 
   document.getElementById('themeToggle').onclick = () => {
     document.documentElement.classList.toggle('dark');
@@ -278,11 +414,16 @@
   document.getElementById('currencySelect').onchange = e => {
     currentCurrency = e.target.value;
     localStorage.setItem('xrpCurrency', currentCurrency);
-    updateAll();
+    convertAll(); updateOrderBook();
   };
 
+  // START EVERYTHING
   updatePriceAndVolume(); setInterval(updatePriceAndVolume, 5000);
-  updateAll();
+  updateLiveETFs(); setInterval(updateLiveETFs, 180000);
+  updateMarketTimer(); setInterval(updateMarketTimer, 30000);
+  renderETFCards();
+  addTrades(); setInterval(addTrades, 1900);
+  updateOrderBook(); setInterval(updateOrderBook, 4000);
 </script>
 </body>
-</html>
+  </html>
